@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="application-name" content="Agenda PRO">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Agenda PRO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="description" content="Agenda PRO - Stylo Design">
+<link rel="manifest" id="pwaManifest">
+<link rel="apple-touch-icon" id="pwaAppleIcon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230b0f1a'/><text y='.9em' font-size='80' x='10'>✂️</text></svg>">
+
+<title>Agenda PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root{
+  --bg:#0b0f1a;--surface:#111827;--surface2:#1a2235;--border:#243048;
+  --accent:#c9a84c;--accent2:#e8c96a;--text:#e8eaf0;--muted:#7a8499;
+  --green:#0d4a30;--green-b:#16a34a;--yellow:#4a3200;--yellow-b:#ca8a04;
+  --red:#4a0d0d;--red-b:#dc2626;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* AUTH WRAP */
+.auth-wrap{flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#1e2d4a 0%,var(--bg) 65%);animation:fadeIn .4s ease;}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 38px;width:390px;max-width:95vw;box-shadow:var(--shadow);text-align:center;}
+.auth-logo-icon{font-size:52px;margin-bottom:8px;display:block;}
+.auth-logo-img{height:64px;width:64px;object-fit:contain;border-radius:12px;margin:0 auto 8px;display:block;}
+.auth-box h1{font-family:'Playfair Display',serif;font-size:24px;color:var(--accent2);margin-bottom:4px;}
+.auth-box .sub{color:var(--muted);font-size:13px;margin-bottom:26px;}
+.input-group{position:relative;margin-bottom:11px;}
+.input-group .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;}
+.input-group input{width:100%;padding:11px 12px 11px 38px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .2s;}
+.input-group input:focus{border-color:var(--accent);}
+.btn-primary{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0f1a;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:.4px;transition:opacity .2s,transform .1s;margin-top:4px;}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-google{width:100%;padding:11px;background:#fff;color:#222;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;border:1px solid #ddd;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:box-shadow .2s;margin-top:8px;}
+.btn-google:hover{box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.btn-google img{height:18px;}
+.divider-or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:12px;}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border);}
+.link-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;text-decoration:underline;}
+.err-msg{color:#f87171;font-size:12px;margin-top:8px;min-height:16px;}
+.ok-msg{color:#4ade80;font-size:12px;margin-top:8px;min-height:16px;}
+
+/* SETUP */
+.setup-step{display:none;} .setup-step.active{display:block;}
+.upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;cursor:pointer;transition:border .2s;text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px;}
+.upload-area:hover{border-color:var(--accent);}
+.upload-area img{height:60px;border-radius:8px;margin:0 auto 6px;display:block;}
+.color-row{display:flex;gap:10px;align-items:center;margin-bottom:12px;}
+.color-row label{font-size:12px;color:var(--muted);flex:1;text-align:left;}
+.color-row input[type=color]{width:40px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;}
+
+/* APP */
+#app{flex-direction:column;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.4);}
+.header-brand{display:flex;align-items:center;gap:10px;}
+.brand-logo-img{height:32px;width:32px;object-fit:contain;border-radius:8px;}
+.brand-logo-icon{font-size:24px;}
+.header-brand h2{font-family:'Playfair Display',serif;font-size:17px;color:var(--accent2);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.caixa-badge{background:var(--green);border:1px solid var(--green-b);color:#4ade80;padding:5px 12px;border-radius:999px;font-weight:600;font-size:13px;}
+.user-pill{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:4px 12px 4px 7px;font-size:12px;}
+.user-pill img{height:24px;width:24px;border-radius:50%;object-fit:cover;}
+.btn-sm{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 11px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+
+.layout{display:flex;flex:1;min-height:calc(100vh - 60px);}
+
+/* SIDEBAR */
+.sidebar{width:310px;min-width:310px;background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;overflow-y:auto;}
+.sidebar h3{font-family:'Playfair Display',serif;font-size:14px;color:var(--accent);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.form-row{margin-bottom:8px;}
+.form-label{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.form-control{width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border .2s;}
+.form-control:focus{border-color:var(--accent);}
+select.form-control option{background:var(--surface2);}
+textarea.form-control{resize:vertical;min-height:64px;}
+.extra-fields{display:none;} .extra-fields.visible{display:block;}
+.btn-cadastrar{width:100%;padding:10px;margin-top:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0f1a;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:var(--radius);cursor:pointer;transition:opacity .2s;}
+.btn-cadastrar:hover{opacity:.88;}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.btn-export{width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;transition:all .2s;display:block;text-align:center;margin-bottom:6px;}
+.btn-export:hover{border-color:var(--accent);color:var(--accent);}
+
+/* DRIVE */
+.drive-section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;margin-bottom:8px;}
+.drive-section h4{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.drive-status{display:flex;align-items:center;gap:7px;font-size:11px;margin-bottom:7px;padding:5px 9px;border-radius:8px;background:rgba(0,0,0,.2);}
+.drive-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.drive-dot.off{background:var(--muted);}
+.drive-dot.on{background:#4ade80;box-shadow:0 0 5px #4ade80;}
+.drive-dot.sync{background:#fbbf24;animation:pulse 1s infinite;}
+.btn-drive{width:100%;padding:7px;background:#1a73e8;border:none;color:#fff;border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;transition:opacity .2s;margin-bottom:4px;}
+.btn-drive:hover{opacity:.88;}
+.btn-drive.red-btn{background:#dc2626;}
+
+/* MAIN */
+.main{flex:1;padding:24px 26px;overflow-y:auto;}
+.main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.main-header h2{font-family:'Playfair Display',serif;font-size:20px;}
+.stats-row{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.stat-card{flex:1;min-width:110px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.stat-val{font-size:22px;font-weight:700;font-family:'Playfair Display',serif;color:var(--accent2);}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:13px;}
+.service-card{border-radius:var(--radius);padding:15px;border:1px solid transparent;position:relative;overflow:hidden;animation:slideUp .3s ease;transition:transform .15s;}
+.service-card:hover{transform:translateY(-2px);}
+.service-card::before{content:'';position:absolute;inset:0;opacity:.07;background:linear-gradient(135deg,white,transparent);pointer-events:none;}
+.service-card.green{background:var(--green);border-color:var(--green-b);}
+.service-card.yellow{background:var(--yellow);border-color:var(--yellow-b);}
+.service-card.red{background:var(--red);border-color:var(--red-b);}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.card-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;line-height:1.2;}
+.card-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:999px;text-transform:uppercase;white-space:nowrap;margin-left:6px;flex-shrink:0;}
+.service-card.green .card-badge{background:var(--green-b);color:#fff;}
+.service-card.yellow .card-badge{background:var(--yellow-b);color:#fff;}
+.service-card.red .card-badge{background:var(--red-b);color:#fff;}
+.card-meta{font-size:11px;color:rgba(232,234,240,.75);line-height:1.7;}
+.card-valor{font-size:16px;font-weight:700;color:var(--accent2);margin-top:8px;}
+.card-progress{height:4px;background:rgba(255,255,255,.1);border-radius:99px;margin-top:9px;overflow:hidden;}
+.card-progress-bar{height:100%;border-radius:99px;transition:width .4s;}
+.service-card.green .card-progress-bar{background:var(--green-b);}
+.service-card.yellow .card-progress-bar{background:var(--yellow-b);}
+.service-card.red .card-progress-bar{background:var(--red-b);}
+.card-actions{display:flex;gap:6px;margin-top:9px;}
+.btn-del{flex:1;padding:6px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5;border-radius:8px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-del:hover{background:rgba(220,38,38,.3);}
+.empty-state{grid-column:1/-1;text-align:center;padding:52px 20px;color:var(--muted);}
+.empty-state .icon{font-size:44px;display:block;margin-bottom:10px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:450px;max-width:95vw;box-shadow:var(--shadow);}
+.modal-box h3{font-family:'Playfair Display',serif;color:var(--accent2);margin-bottom:8px;font-size:18px;}
+.modal-box p{color:var(--muted);font-size:12px;line-height:1.7;margin-bottom:12px;}
+.modal-box ol{color:var(--muted);font-size:12px;padding-left:16px;line-height:2;margin-bottom:12px;}
+.modal-box a{color:var(--accent2);}
+.modal-actions{display:flex;gap:10px;margin-top:14px;}
+.btn-cancel{flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;}
+
+/* EMAILJS CONFIG BOX */
+.ejs-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;text-align:left;font-size:12px;color:var(--muted);display:none;}
+.ejs-box b{color:var(--accent2);}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:999px;font-size:13px;font-weight:500;box-shadow:var(--shadow);transition:transform .3s ease;z-index:9999;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+@media(max-width:768px){
+  .layout{flex-direction:column;}
+  .sidebar{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);}
+  .main{padding:16px 12px;}
+  .header{padding:0 12px;}
+  .cards-grid{grid-template-columns:1fr;}
+  .header-brand h2{font-size:13px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TELA: LOGIN ══ -->
+<div id="screenLogin" class="screen auth-wrap active">
+  <div class="auth-box">
+    <span id="loginLogoIcon" class="auth-logo-icon">✂️</span>
+    <img id="loginLogoImg" class="auth-logo-img" src="" alt="" style="display:none">
+    <h1 id="loginNome">Agenda PRO</h1>
+    <p class="sub">Faça login para continuar</p>
+    <div class="input-group">
+      <span class="ico">📧</span>
+      <input id="loginEmail" type="email" placeholder="Seu e-mail">
+    </div>
+    <div class="input-group">
+      <span class="ico">🔒</span>
+      <input id="loginSenha" type="password" placeholder="Sua senha" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
+    <div class="divider-or">ou</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+      Continuar com Google
+    </button>
+    <div style="margin-top:14px">
+      <button class="link-btn" onclick="irPara('screenRecuperar')">🔑 Esqueci minha senha</button>
+    </div>
+    <div class="err-msg" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ══ TELA: RECUPERAR SENHA ══ -->
+<div id="screenRecuperar" class="screen auth-wrap">
+  <div class="auth-box">
+    <span class="auth-logo-icon">🔑</span>
+    <h1>Recuperar Senha</h1>
+    <p class="sub">Enviaremos um código de 6 dígitos para o seu e-mail</p>
+
+    <div id="recStep1">
+      <div class="input-group">
+        <span class="ico">📧</span>
+        <input id="recEmail" type="email" placeholder="Seu e-mail cadastrado">
+      </div>
+      <div class="ejs-box" id="ejsBox">
+        <b>⚙️ Configure o envio de e-mail (só uma vez)</b><br><br>
+        Crie conta grátis em <a href="https://emailjs.com" target="_blank">emailjs.com</a> → Email Services → Gmail<br><br>
+        <div class="form-row"><label class="form-label">Service ID</label><input class="form-control" id="ejsService" placeholder="service_xxxxxxx"></div>
+        <div class="form-row"><label class="form-label">Template ID</label><input class="form-control" id="ejsTemplate" placeholder="template_xxxxxxx"></div>
+        <div class="form-row"><label class="form-label">Public Key</label><input class="form-control" id="ejsKey" placeholder="sua_public_key"></div>
+        <small>Template deve ter: <b>{{to_email}}</b>, <b>{{codigo}}</b>, <b>{{nome_sistema}}</b></small><br>
+        <button class="btn-primary" style="margin-top:8px" onclick="salvarEJS()">💾 Salvar configuração</button>
+      </div>
+      <button class="btn-primary" onclick="enviarCodigo()">📨 Enviar código</button>
+      <div class="err-msg" id="recErr"></div>
+      <div class="ok-msg" id="recOk"></div>
+    </div>
+
+    <div id="recStep2" style="display:none">
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Código enviado para <b id="recEmailLabel"></b></p>
+      <div class="input-group">
+        <span class="ico">🔢</span>
+        <input id="recCodigo" type="text" maxlength="6" placeholder="000000" style="letter-spacing:8px;font-size:22px;text-align:center;padding-left:12px">
+      </div>
+      <div class="input-group"><span class="ico">🔒</span><input id="recNovaSenha" type="password" placeholder="Nova senha"></div>
+      <div class="input-group"><span class="ico">🔒</span><input id="recConfirmar" type="password" placeholder="Confirmar nova senha"></div>
+      <button class="btn-primary" onclick="confirmarCodigo()">✅ Redefinir senha</button>
+      <div class="err-msg" id="recErr2"></div>
+    </div>
+
+    <div style="margin-top:16px">
+      <button class="link-btn" onclick="irPara('screenLogin')">← Voltar ao login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TELA: SETUP (primeira vez) ══ -->
+<div id="screenSetup" class="screen auth-wrap">
+  <div class="auth-box" style="width:420px;max-width:96vw">
+    <span class="auth-logo-icon">🎨</span>
+    <h1>Personalizar sua Agenda</h1>
+    <p class="sub">Configure o visual do seu sistema antes de começar</p>
+
+    <div class="setup-step active" id="setupStep1">
+      <div class="form-row">
+        <label class="form-label">Nome do seu negócio / sistema</label>
+        <input class="form-control" id="setupNome" placeholder="Ex: Agenda PRO - Minha Empresa" value="Agenda PRO">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Logo (PNG ou JPG — opcional)</label>
+        <div class="upload-area" onclick="document.getElementById('setupLogoFile').click()" id="uploadArea">
+          <div id="uploadPreview">📁 Clique para enviar sua logo</div>
+        </div>
+        <input type="file" id="setupLogoFile" accept="image/*" style="display:none" onchange="previewLogo(event,'uploadPreview')">
+      </div>
+      <div class="color-row">
+        <label>Cor de destaque principal</label>
+        <input type="color" id="setupCor" value="#c9a84c">
+      </div>
+      <button class="btn-primary" onclick="setupProximo()">Próximo →</button>
+    </div>
+
+    <div class="setup-step" id="setupStep2">
+      <p style="color:var(--muted);font-size:13px;margin-bottom:14px;text-align:left">Crie sua conta de acesso:</p>
+      <div class="input-group"><span class="ico">👤</span><input id="setupUser" type="text" placeholder="Seu nome"></div>
+      <div class="input-group"><span class="ico">📧</span><input id="setupEmail" type="email" placeholder="Seu e-mail"></div>
+      <div class="input-group"><span class="ico">🔒</span><input id="setupSenha" type="password" placeholder="Crie uma senha (mín. 4 caracteres)"></div>
+      <div class="input-group"><span class="ico">🔒</span><input id="setupSenha2" type="password" placeholder="Confirme a senha"></div>
+      <button class="btn-primary" onclick="setupFinalizar()">✅ Criar conta e começar</button>
+      <div style="margin-top:10px"><button class="link-btn" onclick="irSetupStep(1)">← Voltar</button></div>
+      <div class="err-msg" id="setupErr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" class="screen" style="flex-direction:column">
+  <header class="header">
+    <div class="header-brand">
+      <img id="appLogoImg" class="brand-logo-img" src="" style="display:none" alt="">
+      <span id="appLogoIcon" class="brand-logo-icon">✂️</span>
+      <h2 id="appNome">Agenda PRO</h2>
+    </div>
+    <div class="header-right">
+      <span class="caixa-badge" id="caixaBadge">💰 R$ 0,00</span>
+      <div class="user-pill" id="userPill">
+        <img id="userAvatar" src="" style="display:none" alt="">
+        <span id="userNome">Usuário</span>
+      </div>
+      <button class="btn-sm" onclick="abrirAdminLicenca()" style="border-color:#c9a84c;color:#c9a84c">🔐 Licenças</button>
+      <a href="https://wa.me/5517991992589" target="_blank" class="btn-sm" style="text-decoration:none;display:flex;align-items:center;gap:5px">💬 Suporte</a>
+      <button class="btn-sm" onclick="abrirPerfil()">⚙️ Perfil</button>
+      <button class="btn-sm" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>📋 Novo Serviço</h3>
+      <div class="form-row"><label class="form-label">Nome do Cliente</label><input class="form-control" id="cliente" placeholder="Ex: João Silva"></div>
+      <div class="form-row">
+        <label class="form-label">Tipo do Projeto</label>
+        <select class="form-control" id="tipo" onchange="mostrarCampos()">
+          <option value="">Selecione...</option>
+          <option value="apartamento">Apartamento</option>
+          <option value="residencia">Residência</option>
+          <option value="comercial">Comercial</option>
+        </select>
+      </div>
+      <div class="extra-fields" id="apartamentoCampos">
+        <div class="form-row"><label class="form-label">Ambientes</label><input class="form-control" id="apAmbientes" placeholder="Ex: Sala, Cozinha"></div>
+        <div class="form-row"><label class="form-label">Cor do Puxador</label><input class="form-control" id="apPuxador" placeholder="Ex: Preto fosco"></div>
+        <div class="form-row"><label class="form-label">Altura do Rodapé</label><input class="form-control" id="apRodape" placeholder="Ex: 10 cm"></div>
+        <div class="form-row"><label class="form-label">Cor da Pedra</label><input class="form-control" id="apPedra" placeholder="Ex: Branco polar"></div>
+      </div>
+      <div class="extra-fields" id="residenciaCampos">
+        <div class="form-row"><label class="form-label">Ambientes</label><textarea class="form-control" id="resAmbientes" placeholder="Liste os ambientes..."></textarea></div>
+      </div>
+      <div class="extra-fields" id="comercialCampos">
+        <div class="form-row"><label class="form-label">Tipo do Comércio</label><input class="form-control" id="comTipo" placeholder="Ex: Restaurante"></div>
+        <div class="form-row"><label class="form-label">Ambientes</label><textarea class="form-control" id="comAmbientes" placeholder="Liste os ambientes..."></textarea></div>
+      </div>
+      <div class="form-row"><label class="form-label">Data de Início</label><input class="form-control" type="date" id="dataInicio"></div>
+      <div class="form-row"><label class="form-label">Duração (dias)</label><input class="form-control" type="number" id="duracao" placeholder="Ex: 30" min="1"></div>
+      <div class="form-row"><label class="form-label">Valor (R$)</label><input class="form-control" type="number" id="valor" placeholder="Ex: 5000" min="0"></div>
+      <button class="btn-cadastrar" onclick="addServico()">➕ Cadastrar Serviço</button>
+
+      <hr class="divider">
+
+      <div class="drive-section">
+        <h4>☁️ Google Drive</h4>
+        <div class="drive-status" id="driveStatus">
+          <span class="drive-dot off" id="driveDot"></span>
+          <span id="driveStatusText">Desconectado</span>
+        </div>
+        <button class="btn-drive" id="btnDriveConnect" onclick="driveConectar()">🔗 Conectar ao Drive</button>
+        <button class="btn-drive" id="btnDriveSync" onclick="driveSalvar()" style="display:none">☁️ Salvar agora</button>
+        <button class="btn-drive" id="btnDriveLoad" onclick="driveCarregar()" style="display:none">📥 Carregar do Drive</button>
+        <button class="btn-drive red-btn" id="btnDriveDisc" onclick="driveDesconectar()" style="display:none">✖ Desconectar</button>
+      </div>
+
+      <button class="btn-export" onclick="exportarJSON()">📤 Exportar backup (JSON)</button>
+      <button class="btn-export" onclick="exportarCSV()">📊 Exportar relatório (CSV)</button>
+      <label class="btn-export" style="cursor:pointer">
+        📥 Importar backup (JSON)
+        <input type="file" accept=".json" id="importFile" style="display:none" onchange="importarJSON(event)">
+      </label>
+    </aside>
+
+    <main class="main">
+      <div class="main-header"><h2>Serviços Ativos</h2></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val" id="statTotal">0</div></div>
+        <div class="stat-card"><div class="stat-label">Em Dia ✅</div><div class="stat-val" id="statGreen" style="color:#4ade80">0</div></div>
+        <div class="stat-card"><div class="stat-label">Atenção ⚠️</div><div class="stat-val" id="statYellow" style="color:#fbbf24">0</div></div>
+        <div class="stat-card"><div class="stat-label">Crítico 🔴</div><div class="stat-val" id="statRed" style="color:#f87171">0</div></div>
+      </div>
+      <div class="cards-grid" id="lista"></div>
+    </main>
+  </div>
+</div>
+
+<!-- MODAL: Perfil -->
+<div class="modal-overlay" id="modalPerfil">
+  <div class="modal-box">
+    <h3>⚙️ Perfil & Personalização</h3>
+    <div class="form-row"><label class="form-label">Nome do sistema</label><input class="form-control" id="perfilNome" placeholder="Nome da agenda"></div>
+    <div class="form-row">
+      <label class="form-label">Logo</label>
+      <div class="upload-area" onclick="document.getElementById('perfilLogoFile').click()">
+        <div id="perfilUploadPreview">📁 Clique para trocar a logo</div>
+      </div>
+      <input type="file" id="perfilLogoFile" accept="image/*" style="display:none" onchange="previewLogo(event,'perfilUploadPreview')">
+    </div>
+    <div class="color-row"><label>Cor de destaque</label><input type="color" id="perfilCor" value="#c9a84c"></div>
+    <hr class="divider">
+    <p style="color:var(--muted);font-size:12px;margin-bottom:4px">🔑 Código de liberação de acesso</p>
+    <p style="color:var(--muted);font-size:11px;margin-bottom:8px">Defina um código secreto para liberar clientes bloqueados. Mande pelo WhatsApp quando precisar.</p>
+    <div class="form-row" style="position:relative">
+      <input class="form-control" id="perfilCodigo" type="password" placeholder="Digite o código secreto" autocomplete="off" style="padding-right:40px">
+      <button onclick="toggleVerCodigo()" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted)" id="btnVerCodigo">👁</button>
+    </div>
+    <hr class="divider">
+    <p style="color:var(--muted);font-size:12px;margin-bottom:8px">Alterar senha de login (deixe em branco para manter)</p>
+    <div class="form-row"><input class="form-control" id="perfilSenhaAtual" type="password" placeholder="Senha atual"></div>
+    <div class="form-row"><input class="form-control" id="perfilNovaSenha" type="password" placeholder="Nova senha"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModal('modalPerfil')">Cancelar</button>
+      <button class="btn-primary" style="flex:1" onclick="salvarPerfil()">💾 Salvar</button>
+    </div>
+    <div class="err-msg" id="perfilErr"></div>
+  </div>
+</div>
+
+<!-- MODAL: Drive config -->
+<div class="modal-overlay" id="modalDrive">
+  <div class="modal-box">
+    <h3>☁️ Configurar Google Drive</h3>
+    <p>Gere um <b>Client ID OAuth 2.0</b> gratuito no Google Cloud:</p>
+    <ol>
+      <li>Acesse <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a></li>
+      <li>Criar projeto → APIs e Serviços → Biblioteca → ative <b>Google Drive API</b></li>
+      <li>Credenciais → Criar → ID OAuth 2.0 → Aplicativo da Web</li>
+      <li>Em "Origens JS autorizadas" adicione: <b>null</b></li>
+      <li>Copie o Client ID e cole abaixo</li>
+    </ol>
+    <div class="form-row"><label class="form-label">Client ID do Google</label><input class="form-control" id="driveClientId" placeholder="xxxxx.apps.googleusercontent.com"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModal('modalDrive')">Cancelar</button>
+      <button class="btn-primary" style="flex:1" onclick="driveIniciarAuth()">Conectar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Admin Licença -->
+<div class="modal-overlay" id="modalAdmin" style="z-index:1300">
+  <div class="modal-box" style="max-width:440px">
+    <h3>🔐 Painel de Licenças</h3>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Configure o JSONBin para controlar o código de liberação de todos os clientes remotamente.</p>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.8">
+      <b style="color:var(--accent2)">📋 Como configurar (só uma vez):</b><br>
+      1. Acesse <a href="https://jsonbin.io" target="_blank" style="color:var(--accent)">jsonbin.io</a> e crie conta grátis<br>
+      2. Clique em <b>+ Create Bin</b> → cole <code style="color:#4ade80">{}</code> → Save<br>
+      3. Copie o <b>BIN ID</b> (começa com 6...)<br>
+      4. Vá em Account → API Keys → copie a <b>Master Key</b><br>
+      5. Cole os dois campos abaixo e defina seu código secreto
+    </div>
+
+    <div class="form-row"><label class="form-label">BIN ID do JSONBin</label><input class="form-control" id="adminJbId" placeholder="6xxxxxxxxxxxxxxxxxxxxxxx"></div>
+    <div class="form-row"><label class="form-label">Master Key</label><input class="form-control" id="adminJbKey" type="password" placeholder="$2a$10$..."></div>
+    <div class="form-row">
+      <label class="form-label">Código de liberação (você escolhe)</label>
+      <input class="form-control" id="adminCodigo" type="text" placeholder="Ex: stylo2026, minhasenha, qualquer coisa">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModal('modalAdmin')">Cancelar</button>
+      <button class="btn-primary" style="flex:1" onclick="salvarAdmin()">☁️ Salvar código online</button>
+    </div>
+    <div id="adminMsg" style="font-size:12px;margin-top:10px;min-height:16px;color:#4ade80"></div>
+  </div>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwaBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 18px;z-index:8000;box-shadow:var(--shadow);width:320px;max-width:92vw;animation:slideUp .3s ease">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-size:32px">📲</span>
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:14px;color:var(--accent2)">Instalar como App</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">Adicione à tela inicial para acesso rápido</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button onclick="document.getElementById('pwaBanner').style.display='none'" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px">Agora não</button>
+    <button id="pwaInstallBtn" onclick="pwaInstalar()" style="flex:2;padding:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#0b0f1a;border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700">📲 Instalar App</button>
+  </div>
+</div>
+
+<!-- iOS INSTALL INSTRUCTIONS -->
+<div id="iosInstall" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:18px 20px 28px;z-index:8000;box-shadow:0 -4px 24px rgba(0,0,0,.5);animation:slideUp .3s ease">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-weight:700;font-size:15px;color:var(--accent2)">📲 Instalar no iPhone/iPad</span>
+    <button onclick="document.getElementById('iosInstall').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--muted)">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px;width:32px;text-align:center">1️⃣</span><span>Toque no botão <b style="color:var(--text)">Compartilhar</b> (quadrado com seta pra cima) no Safari</span></div>
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px;width:32px;text-align:center">2️⃣</span><span>Role para baixo e toque em <b style="color:var(--text)">"Adicionar à Tela de Início"</b></span></div>
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px;width:32px;text-align:center">3️⃣</span><span>Toque em <b style="color:var(--text)">Adicionar</b> no canto superior direito</span></div>
+  </div>
+</div>
+
+<!-- MODAL: Boas-vindas Trial -->
+<div class="modal-overlay" id="modalBoasVindas" style="z-index:1400;background:rgba(0,0,0,.88)">
+  <div class="modal-box" style="text-align:center;max-width:400px;padding:36px 32px">
+    <div style="font-size:54px;margin-bottom:4px">🎉</div>
+    <h3 style="font-size:22px;color:var(--accent2);margin-bottom:6px">Bem-vindo ao <span id="bvNome">Agenda PRO</span>!</h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Você ganhou um período de teste completo e gratuito.</p>
+
+    <div style="background:var(--surface2);border:1px solid var(--green-b);border-radius:16px;padding:20px;margin-bottom:20px">
+      <div style="font-size:48px;font-weight:900;color:#4ade80;font-family:'Playfair Display',serif;line-height:1">7</div>
+      <div style="font-size:14px;font-weight:700;color:#4ade80;margin-top:2px">DIAS GRÁTIS</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">Acesso completo a todos os recursos</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;text-align:left">
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:#4ade80;font-size:16px">✅</span> Cadastro ilimitado de clientes</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:#4ade80;font-size:16px">✅</span> Controle de prazos e alertas</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:#4ade80;font-size:16px">✅</span> Exportação de relatórios</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)"><span style="color:#4ade80;font-size:16px">✅</span> Backup no Google Drive</div>
+    </div>
+
+    <div style="background:var(--yellow);border:1px solid var(--yellow-b);border-radius:12px;padding:12px;margin-bottom:20px;font-size:12px;color:#fbbf24">
+      ⚠️ Após 7 dias, a assinatura mensal é de <b>R$ 30,00/mês</b> para continuar usando.
+    </div>
+
+    <button class="btn-primary" onclick="fecharModal('modalBoasVindas')" style="font-size:15px;padding:14px">
+      🚀 Começar meu teste grátis!
+    </button>
+    <div style="margin-top:12px">
+      <a href="https://mpago.li/2ax46gC" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:underline">Já quero assinar agora — R$ 30,00/mês</a>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Aviso 7 dias -->
+<div class="modal-overlay open" id="modalAviso7" style="display:none;z-index:1100">
+  <div class="modal-box" style="text-align:center;max-width:380px">
+    <div style="font-size:48px;margin-bottom:8px">⚠️</div>
+    <h3 style="color:#fbbf24;margin-bottom:8px">⏰ Teste encerrando!</h3>
+    <p style="margin-bottom:6px">Seu período de teste do <b id="aviso7Nome">Agenda PRO</b> vence em <b style="color:#fbbf24" id="aviso7Dias">7</b> dias.</p>
+    <p style="margin-bottom:16px">Assine agora por <b style="color:#4ade80">R$ 30,00/mês</b> e continue usando sem interrupção.</p>
+    <a href="https://mpago.li/2ax46gC" target="_blank" class="btn-primary" style="display:block;text-decoration:none;margin-bottom:10px">💳 Pagar agora — R$ 30,00</a>
+    <button class="btn-cancel" style="width:100%" onclick="fecharModal('modalAviso7')">Lembrar depois</button>
+    <a href="https://wa.me/5517991992589" target="_blank" style="display:block;margin-top:8px;color:var(--accent);font-size:12px;text-decoration:none;text-align:center">💬 Falar com suporte</a>
+  </div>
+</div>
+
+<!-- MODAL: Bloqueado -->
+<div class="modal-overlay" id="modalBloqueado" style="z-index:1200;background:rgba(0,0,0,.92)">
+  <div class="modal-box" style="text-align:center;max-width:400px">
+    <div style="font-size:56px;margin-bottom:8px">🔒</div>
+    <h3 style="color:#f87171;font-size:22px;margin-bottom:8px">Teste Encerrado</h3>
+    <p style="margin-bottom:6px">Seu período de <b>7 dias grátis</b> expirou.</p>
+    <p style="margin-bottom:20px">Assine por <b style="color:#4ade80">R$ 30,00/mês</b> para continuar usando todos os recursos.</p>
+    <a href="https://mpago.li/2ax46gC" target="_blank" class="btn-primary" style="display:block;text-decoration:none;margin-bottom:12px;font-size:16px;padding:14px">💳 Renovar agora — R$ 30,00</a>
+    <p style="font-size:11px;color:var(--muted)">Após o pagamento, clique em "Já paguei" para liberar o acesso.</p>
+    <button class="btn-cancel" style="width:100%;margin-top:8px" onclick="confirmarPagamento()">✅ Já paguei</button>
+    <a href="https://wa.me/5517991992589" target="_blank" style="display:block;margin-top:8px;color:var(--accent);font-size:12px;text-decoration:none;text-align:center">💬 Falar com suporte</a>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── UTILS ──
+function irPara(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function abrirModal(id){document.getElementById(id).classList.add('open');}
+function fecharModal(id){document.getElementById(id).classList.remove('open');}
+function toast(msg,dur=3200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function formatBRL(v){return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2});}
+function LS(k,v){if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}
+function LSJ(k,v){if(v===undefined){const x=localStorage.getItem(k);return x?JSON.parse(x):null;}localStorage.setItem(k,JSON.stringify(v));}
+function LSDel(k){localStorage.removeItem(k);}
+function diasRestantes(s){const h=new Date();h.setHours(0,0,0,0);const i=new Date(s.dataInicio+'T00:00:00');const f=new Date(i);f.setDate(f.getDate()+s.duracao);return Math.ceil((f-h)/86400000);}
+function cor(s){const r=diasRestantes(s);if(r>s.duracao/2)return'green';if(r>s.duracao/4)return'yellow';return'red';}
+function progresso(s){return Math.min(100,Math.max(0,(diasRestantes(s)/s.duracao)*100)).toFixed(1);}
+
+// ── BRANDING ──
+let _logoB64=null;
+function previewLogo(e,previewId){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{_logoB64=ev.target.result;document.getElementById(previewId).innerHTML=`<img src="${_logoB64}">`; };
+  r.readAsDataURL(file);
+}
+function aplicarBranding(){
+  const b=LSJ('brand')||{};
+  const nome=b.nome||'Agenda PRO';
+  const cor=b.cor||'#c9a84c';
+  const logo=b.logo||null;
+  document.title=nome;
+  ['appNome','loginNome'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=nome;});
+  document.documentElement.style.setProperty('--accent',cor);
+  document.documentElement.style.setProperty('--accent2',cor);
+  if(logo){
+    ['loginLogoImg','appLogoImg'].forEach(id=>{const el=document.getElementById(id);el.src=logo;el.style.display='block';});
+    ['loginLogoIcon','appLogoIcon'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  }
+  gerarManifest(nome, cor, logo);
+}
+
+// ── SETUP ──
+function irSetupStep(n){document.querySelectorAll('.setup-step').forEach(s=>s.classList.remove('active'));document.getElementById('setupStep'+n).classList.add('active');}
+function setupProximo(){
+  const nome=document.getElementById('setupNome').value.trim();
+  if(!nome){toast('⚠️ Informe o nome do sistema');return;}
+  irSetupStep(2);
+}
+function setupFinalizar(){
+  const user=document.getElementById('setupUser').value.trim();
+  const email=document.getElementById('setupEmail').value.trim();
+  const s1=document.getElementById('setupSenha').value;
+  const s2=document.getElementById('setupSenha2').value;
+  const err=document.getElementById('setupErr');
+  if(!user||!email||!s1){err.textContent='⚠️ Preencha todos os campos';return;}
+  if(s1!==s2){err.textContent='⚠️ As senhas não coincidem';return;}
+  if(s1.length<4){err.textContent='⚠️ Senha: mínimo 4 caracteres';return;}
+  const brand={nome:document.getElementById('setupNome').value.trim(),cor:document.getElementById('setupCor').value,logo:_logoB64||null};
+  LSJ('brand',brand);
+  LSJ('conta',{user,email,senha:s1,googleId:null,googleAvatar:null});
+  LS('setupDone','1');
+  _logoB64=null;
+  aplicarBranding();
+  entrarNoApp(LSJ('conta'));
+}
+
+// ── AUTH ──
+function fazerLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const senha=document.getElementById('loginSenha').value;
+  const err=document.getElementById('loginErr');
+  const conta=LSJ('conta');
+  if(!conta){err.textContent='⚠️ Nenhuma conta cadastrada.';return;}
+  if(conta.email!==email){err.textContent='❌ E-mail não encontrado.';return;}
+  if(conta.senha!==senha){err.textContent='❌ Senha incorreta.';return;}
+  err.textContent='';
+  entrarNoApp(conta);
+}
+
+function loginGoogle(){
+  const cid=LS('drive_client_id')||'';
+  if(!cid){toast('⚠️ Configure o Client ID do Google primeiro');abrirModal('modalDrive');return;}
+  const scope='https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+  const url='https://accounts.google.com/o/oauth2/v2/auth?client_id='+encodeURIComponent(cid)+'&redirect_uri='+encodeURIComponent(location.href.split('?')[0].split('#')[0])+'&response_type=token&scope='+encodeURIComponent(scope)+'&prompt=consent';
+  const popup=window.open(url,'gAuth','width=520,height=640,left=200,top=80');
+  const timer=setInterval(async()=>{
+    try{
+      const u=popup.location.href;
+      if(u.includes('access_token=')){
+        clearInterval(timer);popup.close();
+        const p=new URLSearchParams(u.split('#')[1]||u.split('?')[1]||'');
+        const tk=p.get('access_token');
+        LS('drive_token',tk);LS('drive_token_exp',Date.now()+parseInt(p.get('expires_in')||'3600')*1000);
+        driveToken=tk;
+        const info=await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:'Bearer '+tk}}).then(r=>r.json());
+        let conta=LSJ('conta');
+        if(!conta){conta={user:info.name,email:info.email,senha:null,googleId:info.id,googleAvatar:info.picture};LSJ('conta',conta);if(!LS('setupDone')){LSJ('brand',{nome:'Agenda PRO',cor:'#c9a84c',logo:null});LS('setupDone','1');aplicarBranding();}}
+        else{conta.googleId=info.id;conta.googleAvatar=info.picture;LSJ('conta',conta);}
+        driveSetStatus('on','✅ Conectado');driveSetConnected(true);
+        entrarNoApp(conta);toast('✅ Login com Google realizado!');
+      }
+    }catch(e){}
+    try{if(popup.closed&&!driveToken){clearInterval(timer);}}catch(e){}
+  },600);
+}
+
+function entrarNoApp(conta){
+  LS('sessao','1');
+  document.getElementById('userNome').textContent=conta.user||conta.email;
+  if(conta.googleAvatar){const av=document.getElementById('userAvatar');av.src=conta.googleAvatar;av.style.display='block';}
+  servicos=LSJ('servicos_agenda')||[];
+  aplicarBranding();render();irPara('app');licencaIniciar();licencaVerificar();
+}
+
+function sair(){LSDel('sessao');irPara('screenLogin');document.getElementById('loginSenha').value='';document.getElementById('loginErr').textContent='';}
+
+// ── RECUPERAÇÃO ──
+let _codRec=null,_emailRec=null;
+function salvarEJS(){LS('ejs_s',document.getElementById('ejsService').value.trim());LS('ejs_t',document.getElementById('ejsTemplate').value.trim());LS('ejs_k',document.getElementById('ejsKey').value.trim());toast('✅ EmailJS configurado!');document.getElementById('ejsBox').style.display='none';}
+async function enviarCodigo(){
+  const email=document.getElementById('recEmail').value.trim();
+  const err=document.getElementById('recErr'),ok=document.getElementById('recOk');
+  err.textContent='';ok.textContent='';
+  if(!email){err.textContent='⚠️ Informe seu e-mail';return;}
+  const conta=LSJ('conta');
+  if(!conta||conta.email!==email){err.textContent='❌ E-mail não encontrado.';return;}
+  const svc=LS('ejs_s'),tpl=LS('ejs_t'),key=LS('ejs_k');
+  if(!svc||!tpl||!key){document.getElementById('ejsBox').style.display='block';err.textContent='⚠️ Configure o EmailJS abaixo primeiro.';return;}
+  _codRec=Math.floor(100000+Math.random()*900000).toString();_emailRec=email;
+  try{
+    emailjs.init(key);
+    await emailjs.send(svc,tpl,{to_email:email,codigo:_codRec,nome_sistema:(LSJ('brand')||{}).nome||'Agenda PRO'});
+    ok.textContent='✅ Código enviado! Verifique seu e-mail.';
+    document.getElementById('recEmailLabel').textContent=email;
+    document.getElementById('recStep1').style.display='none';
+    document.getElementById('recStep2').style.display='block';
+  }catch(e){err.textContent='❌ Erro ao enviar: '+(e.text||e.message||JSON.stringify(e));}
+}
+function confirmarCodigo(){
+  const cod=document.getElementById('recCodigo').value.trim();
+  const ns=document.getElementById('recNovaSenha').value;
+  const nc=document.getElementById('recConfirmar').value;
+  const err=document.getElementById('recErr2');
+  if(cod!==_codRec){err.textContent='❌ Código incorreto.';return;}
+  if(!ns||ns.length<4){err.textContent='⚠️ Senha: mínimo 4 caracteres.';return;}
+  if(ns!==nc){err.textContent='⚠️ As senhas não coincidem.';return;}
+  const conta=LSJ('conta');conta.senha=ns;LSJ('conta',conta);_codRec=null;
+  toast('✅ Senha redefinida! Faça login.');
+  irPara('screenLogin');
+  document.getElementById('recStep1').style.display='block';
+  document.getElementById('recStep2').style.display='none';
+  ['recCodigo','recNovaSenha','recConfirmar','recEmail'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── PERFIL ──
+function abrirPerfil(){
+  _logoB64=null;
+  const b=LSJ('brand')||{};
+  document.getElementById('perfilNome').value=b.nome||'';
+  document.getElementById('perfilCor').value=b.cor||'#c9a84c';
+  document.getElementById('perfilUploadPreview').innerHTML=b.logo?`<img src="${b.logo}">`:'📁 Clique para trocar a logo';
+  document.getElementById('perfilSenhaAtual').value='';
+  document.getElementById('perfilNovaSenha').value='';
+  document.getElementById('perfilCodigo').value=LS('codigo_liberacao')||'';
+  document.getElementById('perfilErr').textContent='';
+  abrirModal('modalPerfil');
+}
+function salvarPerfil(){
+  const err=document.getElementById('perfilErr');err.textContent='';
+  const b=LSJ('brand')||{};
+  b.nome=document.getElementById('perfilNome').value.trim()||b.nome;
+  b.cor=document.getElementById('perfilCor').value;
+  if(_logoB64)b.logo=_logoB64;
+  LSJ('brand',b);aplicarBranding();
+  const sa=document.getElementById('perfilSenhaAtual').value;
+  const sn=document.getElementById('perfilNovaSenha').value;
+  if(sa||sn){
+    const conta=LSJ('conta');
+    if(sa!==conta.senha){err.textContent='❌ Senha atual incorreta.';return;}
+    if(sn.length<4){err.textContent='⚠️ Nova senha: mínimo 4 caracteres.';return;}
+    conta.senha=sn;LSJ('conta',conta);
+    toast('✅ Perfil e senha atualizados!');
+  }else toast('✅ Perfil atualizado!');
+  const cod=document.getElementById('perfilCodigo').value.trim();
+  if(cod) LS('codigo_liberacao',cod);
+  _logoB64=null;fecharModal('modalPerfil');
+}
+
+
+function toggleVerCodigo(){
+  const inp=document.getElementById('perfilCodigo');
+  const btn=document.getElementById('btnVerCodigo');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+
+// ── SERVIÇOS ──
+let servicos=[];
+function salvarServicos(){LSJ('servicos_agenda',servicos);driveAutoSave();}
+function mostrarCampos(){['apartamentoCampos','residenciaCampos','comercialCampos'].forEach(id=>document.getElementById(id).classList.remove('visible'));const t=document.getElementById('tipo').value;if(t)document.getElementById(t+'Campos').classList.add('visible');}
+function addServico(){
+  const tipo=document.getElementById('tipo').value,cliente=document.getElementById('cliente').value.trim(),dataInicio=document.getElementById('dataInicio').value,duracao=+document.getElementById('duracao').value,valor=+document.getElementById('valor').value;
+  if(!cliente||!tipo||!dataInicio||!duracao){toast('⚠️ Preencha todos os campos obrigatórios');return;}
+  let extra={};
+  if(tipo==='apartamento')extra={ambientes:document.getElementById('apAmbientes').value,puxador:document.getElementById('apPuxador').value,rodape:document.getElementById('apRodape').value,pedra:document.getElementById('apPedra').value};
+  if(tipo==='residencia')extra={ambientes:document.getElementById('resAmbientes').value};
+  if(tipo==='comercial')extra={tipoComercial:document.getElementById('comTipo').value,ambientes:document.getElementById('comAmbientes').value};
+  servicos.push({id:Date.now(),cliente,tipo,dataInicio,duracao,valor,...extra});
+  salvarServicos();render();
+  ['cliente','apAmbientes','apPuxador','apRodape','apPedra','resAmbientes','comTipo','comAmbientes','valor'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('tipo').value='';mostrarCampos();toast('✅ Serviço cadastrado!');
+}
+function excluir(id){if(!confirm('Remover este serviço?'))return;servicos=servicos.filter(s=>s.id!==id);salvarServicos();render();toast('🗑️ Serviço removido');}
+function render(){
+  const lista=document.getElementById('lista');lista.innerHTML='';let total=0,ng=0,ny=0,nr=0;
+  if(!servicos.length){lista.innerHTML='<div class="empty-state"><span class="icon">📋</span><p>Nenhum serviço cadastrado ainda.<br>Use o formulário ao lado para começar.</p></div>';}
+  servicos.forEach(s=>{
+    total+=s.valor||0;const dias=diasRestantes(s),c=cor(s),pct=progresso(s);
+    if(c==='green')ng++;else if(c==='yellow')ny++;else nr++;
+    let det='';
+    if(s.tipo==='apartamento')det=[s.ambientes,s.puxador&&`Puxador: ${s.puxador}`,s.rodape&&`Rodapé: ${s.rodape}`,s.pedra&&`Pedra: ${s.pedra}`].filter(Boolean).join(' · ');
+    if(s.tipo==='residencia')det=(s.ambientes||'').replace(/\n/g,' · ');
+    if(s.tipo==='comercial')det=[s.tipoComercial,s.ambientes].filter(Boolean).join(' — ');
+    const tl={apartamento:'🏢 Apartamento',residencia:'🏠 Residência',comercial:'🏪 Comercial'}[s.tipo]||s.tipo;
+    const dl=dias<=0?'⚠️ Vencido':`${dias} dia${dias!==1?'s':''} rest.`;
+    lista.innerHTML+=`<div class="service-card ${c}"><div class="card-top"><span class="card-name">${s.cliente}</span><span class="card-badge">${dl}</span></div><div class="card-meta">${tl}<br>Início: ${new Date(s.dataInicio+'T00:00:00').toLocaleDateString('pt-BR')} · ${s.duracao} dias<br>${det?det+'<br>':''}</div><div class="card-valor">${formatBRL(s.valor)}</div><div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div><div class="card-actions"><button class="btn-del" onclick="excluir(${s.id})">🗑️ Remover</button></div></div>`;
+    if(dias>=0&&dias<=3)notificar(s.cliente+' — prazo em '+dias+' dias!');
+  });
+  document.getElementById('caixaBadge').textContent='💰 '+formatBRL(total);
+  document.getElementById('statTotal').textContent=servicos.length;
+  document.getElementById('statGreen').textContent=ng;
+  document.getElementById('statYellow').textContent=ny;
+  document.getElementById('statRed').textContent=nr;
+}
+function notificar(msg){if(Notification.permission==='granted')new Notification('Agenda PRO',{body:msg});else if(Notification.permission!=='denied')Notification.requestPermission();}
+function exportarJSON(){const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([JSON.stringify(servicos,null,2)],{type:'application/json'})),download:'backup_'+new Date().toISOString().slice(0,10)+'.json'});a.click();toast('📤 Backup exportado!');}
+function exportarCSV(){const h=['Cliente','Tipo','Início','Duração','Valor','Dias','Status'];const rows=servicos.map(s=>[s.cliente,s.tipo,new Date(s.dataInicio+'T00:00:00').toLocaleDateString('pt-BR'),s.duracao,s.valor,diasRestantes(s),cor(s).toUpperCase()]);const csv=[h,...rows].map(r=>r.join(';')).join('\n');const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'})),download:'relatorio_'+new Date().toISOString().slice(0,10)+'.csv'});a.click();toast('📊 CSV exportado!');}
+function importarJSON(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!Array.isArray(d))throw new Error();servicos=d;salvarServicos();render();toast('✅ '+d.length+' serviços importados!');}catch{toast('❌ Arquivo inválido');}};r.readAsText(file);e.target.value='';}
+
+// ── GOOGLE DRIVE ──
+const DRIVE_FILE='agenda_pro_backup.json';
+let driveToken=null,driveFileId=LS('drive_file_id')||null;
+function driveSetStatus(e,t){document.getElementById('driveDot').className='drive-dot '+e;document.getElementById('driveStatusText').textContent=t;}
+function driveSetConnected(on){['btnDriveConnect'].forEach(id=>document.getElementById(id).style.display=on?'none':'');['btnDriveSync','btnDriveLoad','btnDriveDisc'].forEach(id=>document.getElementById(id).style.display=on?'':'none');}
+function driveConectar(){LS('drive_client_id')&&(document.getElementById('driveClientId').value=LS('drive_client_id'));abrirModal('modalDrive');}
+function driveIniciarAuth(){
+  const cid=document.getElementById('driveClientId').value.trim();
+  if(!cid){toast('⚠️ Informe o Client ID');return;}
+  LS('drive_client_id',cid);fecharModal('modalDrive');
+  const scope='https://www.googleapis.com/auth/drive.file';
+  const url='https://accounts.google.com/o/oauth2/v2/auth?client_id='+encodeURIComponent(cid)+'&redirect_uri='+encodeURIComponent(location.href.split('?')[0].split('#')[0])+'&response_type=token&scope='+encodeURIComponent(scope)+'&prompt=consent';
+  const popup=window.open(url,'driveAuth','width=520,height=640,left=200,top=80');
+  driveSetStatus('sync','Aguardando login...');
+  const timer=setInterval(()=>{
+    try{const u=popup.location.href;if(u.includes('access_token=')){clearInterval(timer);popup.close();const p=new URLSearchParams(u.split('#')[1]||u.split('?')[1]||'');driveToken=p.get('access_token');LS('drive_token',driveToken);LS('drive_token_exp',Date.now()+parseInt(p.get('expires_in')||'3600')*1000);driveSetStatus('on','✅ Conectado');driveSetConnected(true);toast('☁️ Drive conectado!');driveSalvarInterno();}}catch(e){}
+    try{if(popup.closed&&!driveToken){clearInterval(timer);driveSetStatus('off','Cancelado');}}catch(e){}
+  },600);
+}
+function driveVerificarToken(){const tk=LS('drive_token'),exp=parseInt(LS('drive_token_exp')||'0');if(tk&&Date.now()<exp){driveToken=tk;driveSetStatus('on','✅ Conectado');driveSetConnected(true);}}
+async function driveGetFid(){if(driveFileId)return driveFileId;const r=await fetch("https://www.googleapis.com/drive/v3/files?q=name='"+DRIVE_FILE+"' and trashed=false&fields=files(id)",{headers:{Authorization:'Bearer '+driveToken}});const d=await r.json();if(d.files&&d.files.length){driveFileId=d.files[0].id;LS('drive_file_id',driveFileId);return driveFileId;}return null;}
+async function driveSalvarInterno(){
+  if(!driveToken)return;driveSetStatus('sync','Salvando...');
+  try{
+    const body=JSON.stringify(servicos,null,2);const fid=await driveGetFid();
+    if(fid){const r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+fid+'?uploadType=media',{method:'PATCH',headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'},body});if(!r.ok)throw new Error(await r.text());}
+    else{const form=new FormData();form.append('metadata',new Blob([JSON.stringify({name:DRIVE_FILE,mimeType:'application/json'})],{type:'application/json'}));form.append('file',new Blob([body],{type:'application/json'}));const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:'Bearer '+driveToken},body:form});const d=await r.json();if(d.id){driveFileId=d.id;LS('drive_file_id',driveFileId);}else throw new Error(JSON.stringify(d));}
+    driveSetStatus('on','☁️ Salvo '+new Date().toLocaleTimeString('pt-BR'));toast('☁️ Salvo no Google Drive!');
+  }catch(e){driveSetStatus('on','⚠️ Erro ao salvar');toast('❌ Erro ao salvar no Drive.');console.error(e);}
+}
+async function driveSalvar(){await driveSalvarInterno();}
+async function driveCarregar(){
+  if(!driveToken){toast('⚠️ Conecte ao Drive primeiro');return;}driveSetStatus('sync','Carregando...');
+  try{const fid=await driveGetFid();if(!fid){toast('ℹ️ Nenhum arquivo encontrado.');driveSetStatus('on','✅ Conectado');return;}const r=await fetch('https://www.googleapis.com/drive/v3/files/'+fid+'?alt=media',{headers:{Authorization:'Bearer '+driveToken}});const data=await r.json();if(!Array.isArray(data))throw new Error();servicos=data;LSJ('servicos_agenda',servicos);render();driveSetStatus('on','☁️ Carregado '+new Date().toLocaleTimeString('pt-BR'));toast('✅ '+data.length+' serviços carregados!');}
+  catch(e){driveSetStatus('on','⚠️ Erro');toast('❌ Erro ao carregar.');}
+}
+function driveDesconectar(){if(!confirm('Desconectar do Drive?'))return;driveToken=null;driveFileId=null;['drive_token','drive_token_exp','drive_file_id'].forEach(k=>LSDel(k));driveSetStatus('off','Desconectado');driveSetConnected(false);toast('✅ Desconectado');}
+function driveAutoSave(){if(!driveToken)return;clearTimeout(window._dT);window._dT=setTimeout(()=>driveSalvarInterno(),2000);}
+
+
+// ── PWA ──
+let _pwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _pwaPrompt = e;
+  setTimeout(() => {
+    if (!LS('pwa_installed')) document.getElementById('pwaBanner').style.display = 'block';
+  }, 3000);
+});
+
+window.addEventListener('appinstalled', () => {
+  LS('pwa_installed', '1');
+  document.getElementById('pwaBanner').style.display = 'none';
+  toast('✅ App instalado com sucesso!');
+});
+
+function pwaInstalar() {
+  if (_pwaPrompt) {
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then(r => {
+      if (r.outcome === 'accepted') { LS('pwa_installed','1'); }
+      document.getElementById('pwaBanner').style.display = 'none';
+    });
+  }
+}
+
+function pwaVerificarIOS() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari = /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  if (isIOS && isSafari && !isStandalone && !LS('pwa_installed')) {
+    setTimeout(() => document.getElementById('iosInstall').style.display = 'block', 3000);
+  }
+}
+
+function gerarManifest(nome, cor, logo) {
+  const icon = logo || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%230b0f1a'/><text y='380' x='60' font-size='380'>✂️</text></svg>";
+  const manifest = {
+    name: nome || 'Agenda PRO',
+    short_name: nome || 'Agenda PRO',
+    description: 'Sistema de agenda - Stylo Design',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#0b0f1a',
+    theme_color: cor || '#c9a84c',
+    orientation: 'portrait',
+    icons: [
+      { src: icon, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: icon, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  document.getElementById('pwaManifest').href = url;
+  if (logo) {
+    document.getElementById('pwaAppleIcon').href = logo;
+  }
+}
+
+
+
+pwaVerificarIOS();
+
+// ── LICENÇA (JSONBin) ──
+const LICENCA_DIAS = 7; // dias de teste grátis
+const JSONBIN_ID   = ''; // preenchido no setup
+const JSONBIN_KEY  = ''; // preenchido no setup
+
+// Salva/lê config do JSONBin (código mestre + lista de clientes)
+async function jbGet() {
+  const id  = LS('jb_id');
+  const key = LS('jb_key');
+  if (!id || !key) return null;
+  try {
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + id + '/latest', {
+      headers: { 'X-Master-Key': key }
+    });
+    const d = await r.json();
+    return d.record || null;
+  } catch(e) { return null; }
+}
+
+async function jbSet(data) {
+  const id  = LS('jb_id');
+  const key = LS('jb_key');
+  if (!id || !key) return false;
+  try {
+    await fetch('https://api.jsonbin.io/v3/b/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
+      body: JSON.stringify(data)
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+function licencaIniciar() {
+  if (!LS('licenca_inicio')) {
+    LS('licenca_inicio', Date.now().toString());
+    // Primeira vez — mostrar tela de boas-vindas com trial
+    setTimeout(() => mostrarBoasVindas(), 400);
+  }
+}
+
+function mostrarBoasVindas() {
+  const nome = (LSJ('brand') || {}).nome || 'Agenda PRO';
+  document.getElementById('bvNome').textContent = nome;
+  document.getElementById('modalBoasVindas').classList.add('open');
+}
+
+function licencaDiasRestantes() {
+  const inicio = parseInt(LS('licenca_inicio') || '0');
+  if (!inicio) return LICENCA_DIAS;
+  const passou = Math.floor((Date.now() - inicio) / 86400000);
+  return LICENCA_DIAS - passou;
+}
+
+async function licencaVerificar() {
+  const dias = licencaDiasRestantes();
+  const nome = (LSJ('brand') || {}).nome || 'Agenda PRO';
+  document.getElementById('aviso7Nome').textContent = nome;
+
+  if (dias <= 0) {
+    document.getElementById('modalBloqueado').classList.add('open');
+  } else if (dias <= 2) {
+    const hoje = new Date().toDateString();
+    if (LS('aviso7_visto') !== hoje) {
+      document.getElementById('aviso7Dias').textContent = dias;
+      document.getElementById('modalAviso7').style.display = 'flex';
+      document.getElementById('modalAviso7').classList.add('open');
+      LS('aviso7_visto', hoje);
+    }
+  }
+}
+
+async function confirmarPagamento() {
+  const code = prompt('Digite o código de liberação fornecido pela Stylo Design:');
+  if (!code) return;
+  toast('🔄 Verificando código...');
+  // Busca o código mestre online (JSONBin)
+  const rec = await jbGet();
+  const codigoMestre = rec && rec.codigo ? rec.codigo : null;
+  // Fallback: código local (quando o próprio dono usa)
+  const codigoLocal  = LS('codigo_liberacao');
+  const valido = codigoMestre ? (code === codigoMestre) : (codigoLocal ? code === codigoLocal : false);
+  if (valido) {
+    LS('licenca_inicio', Date.now().toString());
+    fecharModal('modalBloqueado');
+    toast('✅ Acesso renovado por mais 30 dias!');
+  } else {
+    toast('❌ Código inválido. Fale com a Stylo Design.');
+  }
+}
+
+// ── PAINEL ADMIN (só para o dono) ──
+async function abrirAdminLicenca() {
+  const id  = LS('jb_id')  || '';
+  const key = LS('jb_key') || '';
+  document.getElementById('adminJbId').value  = id;
+  document.getElementById('adminJbKey').value = key;
+  document.getElementById('adminCodigo').value = '';
+  document.getElementById('adminMsg').textContent = '';
+  if (id && key) {
+    const rec = await jbGet();
+    if (rec && rec.codigo) document.getElementById('adminCodigo').value = rec.codigo;
+  }
+  abrirModal('modalAdmin');
+}
+
+async function salvarAdmin() {
+  const id    = document.getElementById('adminJbId').value.trim();
+  const key   = document.getElementById('adminJbKey').value.trim();
+  const codigo = document.getElementById('adminCodigo').value.trim();
+  const msg   = document.getElementById('adminMsg');
+  if (!id || !key || !codigo) { msg.textContent = '⚠️ Preencha todos os campos'; return; }
+  LS('jb_id', id);
+  LS('jb_key', key);
+  LS('codigo_liberacao', codigo);
+  msg.textContent = '🔄 Salvando online...';
+  const rec = await jbGet() || {};
+  rec.codigo = codigo;
+  const ok = await jbSet(rec);
+  if (ok) {
+    msg.style.color = '#4ade80';
+    msg.textContent = '✅ Código salvo! Todos os clientes usarão este código.';
+  } else {
+    msg.style.color = '#f87171';
+    msg.textContent = '❌ Erro ao salvar. Verifique o ID e Key do JSONBin.';
+  }
+}
+
+(function(){
+  aplicarBranding();
+  driveVerificarToken();
+  if(!LS('setupDone')){irPara('screenSetup');return;}
+  if(LS('sessao')){const c=LSJ('conta');if(c)entrarNoApp(c);else irPara('screenLogin');}
+  else irPara('screenLogin');
+})();
+</script>
+</body>
+</html>
