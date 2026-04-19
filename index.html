@@ -1259,12 +1259,6 @@ async function carregarUsuarios() {
 }
 
 (function(){
-  // Pré-cadastro da conta do dono
-  if(!LSJ('conta')){
-    LSJ('conta',{user:'Stylo',email:'stylodesignprojetos@gmail.com',senha:'96502208%',googleId:null,googleAvatar:null});
-    LSJ('brand',{nome:'Agenda Stylo Design',cor:'#c9a84c',logo:null});
-    LS('setupDone','1');
-  }
   aplicarBranding();
   driveVerificarToken();
   if(!LS('setupDone')){irPara('screenSetup');return;}
