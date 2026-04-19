@@ -1084,9 +1084,13 @@ const JSONBIN_ID   = ''; // preenchido no setup
 const JSONBIN_KEY  = ''; // preenchido no setup
 
 // Salva/lê config do JSONBin (código mestre + lista de clientes)
+// JSONBin fixo — funciona em todos os dispositivos
+const _JB_ID  = '69e43b1c856a6821894be5b3';
+const _JB_KEY = '$2a$10$IY5M3WdvjVwHFhkQLbFh7eRYvEDZu5WIV.0/PIpPgnzBGU/UuJxZy';
+
 async function jbGet() {
-  const id  = LS('jb_id');
-  const key = LS('jb_key');
+  const id  = LS('jb_id')  || _JB_ID;
+  const key = LS('jb_key') || _JB_KEY;
   if (!id || !key) return null;
   try {
     const r = await fetch('https://api.jsonbin.io/v3/b/' + id + '/latest', {
@@ -1098,8 +1102,8 @@ async function jbGet() {
 }
 
 async function jbSet(data) {
-  const id  = LS('jb_id');
-  const key = LS('jb_key');
+  const id  = LS('jb_id')  || _JB_ID;
+  const key = LS('jb_key') || _JB_KEY;
   if (!id || !key) return false;
   try {
     await fetch('https://api.jsonbin.io/v3/b/' + id, {
@@ -1124,9 +1128,7 @@ async function licencaIniciar() {
 async function registrarUsuario() {
   const conta = LSJ('conta');
   if (!conta) return;
-  const jbId = LS('jb_id');
-  const jbKey = LS('jb_key');
-  if (!jbId || !jbKey) return; // JSONBin não configurado ainda
+  // Usa JSONBin fixo do código — funciona em qualquer dispositivo
   const rec = await jbGet() || {};
   if (!rec.usuarios) rec.usuarios = [];
   const idx = rec.usuarios.findIndex(u => u.email === conta.email);
