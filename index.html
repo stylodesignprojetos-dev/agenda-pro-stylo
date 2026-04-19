@@ -740,7 +740,9 @@ function entrarNoApp(conta){
   document.getElementById('userNome').textContent=conta.user||conta.email;
   if(conta.googleAvatar){const av=document.getElementById('userAvatar');av.src=conta.googleAvatar;av.style.display='block';}
   servicos=LSJ('servicos_agenda')||[];
-  aplicarBranding();render();irPara('app');licencaIniciar();licencaVerificar();
+  aplicarBranding();render();irPara('app');
+  licencaIniciar();licencaVerificar();
+  registrarUsuario();
 }
 
 function sair(){LSDel('sessao');irPara('screenLogin');document.getElementById('loginSenha').value='';document.getElementById('loginErr').textContent='';}
@@ -1122,18 +1124,28 @@ async function licencaIniciar() {
 async function registrarUsuario() {
   const conta = LSJ('conta');
   if (!conta) return;
+  const jbId = LS('jb_id');
+  const jbKey = LS('jb_key');
+  if (!jbId || !jbKey) return; // JSONBin não configurado ainda
   const rec = await jbGet() || {};
   if (!rec.usuarios) rec.usuarios = [];
-  const jaExiste = rec.usuarios.find(u => u.email === conta.email);
-  if (!jaExiste) {
-    rec.usuarios.push({
-      nome: conta.user || conta.email,
-      email: conta.email,
-      inicio: new Date().toISOString().slice(0,10),
-      diasTrial: 7
-    });
-    await jbSet(rec);
+  const idx = rec.usuarios.findIndex(u => u.email === conta.email);
+  const inicio = LS('licenca_inicio') ? new Date(parseInt(LS('licenca_inicio'))).toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
+  const passou = LS('licenca_inicio') ? Math.floor((Date.now() - parseInt(LS('licenca_inicio'))) / 86400000) : 0;
+  const restam = Math.max(0, 7 - passou);
+  const entrada = {
+    nome: conta.user || conta.email,
+    email: conta.email,
+    inicio: inicio,
+    diasRestantes: restam,
+    ultimoAcesso: new Date().toISOString().slice(0,10)
+  };
+  if (idx === -1) {
+    rec.usuarios.push(entrada);
+  } else {
+    rec.usuarios[idx] = {...rec.usuarios[idx], ...entrada};
   }
+  await jbSet(rec);
 }
 
 function mostrarBoasVindas() {
@@ -1238,19 +1250,20 @@ async function carregarUsuarios() {
   const usuarios = (rec && rec.usuarios) || [];
   if (!usuarios.length) { el.innerHTML = '<span style="color:var(--muted)">Nenhum usuário registrado ainda.</span>'; return; }
   let html = '<table style="width:100%;border-collapse:collapse">';
-  html += '<tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px"><td style="padding:4px 6px">Nome</td><td style="padding:4px 6px">E-mail</td><td style="padding:4px 6px">Início</td><td style="padding:4px 6px">Status</td></tr>';
+  html += '<tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px"><td style="padding:4px 6px">Nome</td><td style="padding:4px 6px">E-mail</td><td style="padding:4px 6px">Início</td><td style="padding:4px 6px">Último acesso</td><td style="padding:4px 6px">Status</td></tr>';
   usuarios.forEach(u => {
-    const inicio = new Date(u.inicio);
-    const passou = Math.floor((Date.now() - inicio.getTime()) / 86400000);
-    const restam = 7 - passou;
+    const restam = u.diasRestantes !== undefined ? u.diasRestantes : 7;
     let status, cor;
     if (restam > 2) { status = `✅ ${restam}d restantes`; cor = '#4ade80'; }
     else if (restam > 0) { status = `⚠️ ${restam}d restantes`; cor = '#fbbf24'; }
     else { status = '🔴 Bloqueado'; cor = '#f87171'; }
+    const inicioFmt = u.inicio ? new Date(u.inicio+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+    const acessoFmt = u.ultimoAcesso ? new Date(u.ultimoAcesso+'T00:00:00').toLocaleDateString('pt-BR') : '—';
     html += `<tr style="border-top:1px solid var(--border)">
       <td style="padding:5px 6px;color:var(--text)">${u.nome}</td>
       <td style="padding:5px 6px;color:var(--muted);font-size:11px">${u.email}</td>
-      <td style="padding:5px 6px;color:var(--muted)">${inicio.toLocaleDateString('pt-BR')}</td>
+      <td style="padding:5px 6px;color:var(--muted)">${inicioFmt}</td>
+      <td style="padding:5px 6px;color:var(--muted)">${acessoFmt}</td>
       <td style="padding:5px 6px;color:${cor};font-size:11px">${status}</td>
     </tr>`;
   });
