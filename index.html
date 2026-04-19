@@ -186,6 +186,26 @@ textarea.form-control{resize:vertical;min-height:64px;}
   .cards-grid{grid-template-columns:1fr;}
   .header-brand h2{font-size:13px;}
 }
+
+/* ORÇAMENTO */
+.orc-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.orc-tab{padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s;}
+.orc-tab.active{background:var(--accent);color:#0b0f1a;border-color:var(--accent);}
+.orc-movel-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;}
+.orc-movel-title{font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.orc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.orc-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.orc-resultado{background:var(--surface);border:1px solid var(--green-b);border-radius:var(--radius);padding:12px;margin-top:10px;}
+.orc-resultado h4{color:#4ade80;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.orc-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.orc-item:last-child{border-bottom:none;}
+.orc-item-nome{color:var(--text);}
+.orc-item-qty{color:var(--accent2);font-weight:700;}
+.orc-total{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:2px solid var(--accent);font-weight:700;font-size:15px;color:var(--accent2);}
+.preco-table{width:100%;border-collapse:collapse;font-size:12px;}
+.preco-table th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);}
+.preco-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);}
+.preco-table input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;width:90px;font-size:12px;font-family:'DM Sans',sans-serif;}
 </style>
 </head>
 <body>
@@ -315,6 +335,7 @@ textarea.form-control{resize:vertical;min-height:64px;}
         <img id="userAvatar" src="" style="display:none" alt="">
         <span id="userNome">Usuário</span>
       </div>
+      <button class="btn-sm" onclick="abrirOrcamento()" style="border-color:#60a5fa;color:#60a5fa">📐 Orçamento</button>
       <button class="btn-sm" onclick="abrirAdminLicenca()" style="border-color:#c9a84c;color:#c9a84c">🔐 Licenças</button>
       <a href="https://wa.me/5517991992589" target="_blank" class="btn-sm" style="text-decoration:none;display:flex;align-items:center;gap:5px">💬 Suporte</a>
       <button class="btn-sm" onclick="abrirPerfil()">⚙️ Perfil</button>
@@ -827,6 +848,319 @@ function toggleVerCodigo(){
   else{inp.type='password';btn.textContent='👁';}
 }
 
+
+// ── ORÇAMENTO ──
+const _orcToggles = {};
+function toggleOrc(key, val) {
+  _orcToggles[key] = val;
+  document.getElementById(key+'Sim').classList.toggle('active', val==='sim');
+  document.getElementById(key+'Nao').classList.toggle('active', val==='nao');
+}
+function getToggle(key, def='nao') { return _orcToggles[key] || def; }
+
+function abrirOrcamento() {
+  irPara('screenOrcamento');
+  iniciarPrecos();
+}
+function fecharOrcamento() { irPara('app'); }
+
+function orcTab(tab) {
+  ['armario','cozinha','closet','nicho','painel','precos'].forEach(t => {
+    const el = document.getElementById('orc'+t.charAt(0).toUpperCase()+t.slice(1));
+    if (el) el.style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.orc-tab').forEach((btn,i) => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(tab) || (tab==='precos' && btn.textContent.includes('Preços')));
+  });
+}
+
+// Materiais padrão
+const MATERIAIS = [
+  {id:'chapa_mdf', nome:'Chapa MDF', unidade:'chapa (2750x1830mm)'},
+  {id:'fita_borda', nome:'Fita de borda', unidade:'metro'},
+  {id:'dobradiça', nome:'Dobradiça', unidade:'par'},
+  {id:'corrediça', nome:'Corrediça gaveta', unidade:'par'},
+  {id:'parafuso', nome:'Parafuso (cx 100un)', unidade:'caixa'},
+  {id:'cam_lock', nome:'Cam lock (minifix)', unidade:'un'},
+  {id:'fundo_chapa', nome:'Fundo chapa 3mm', unidade:'m²'},
+  {id:'puxador', nome:'Puxador', unidade:'un'},
+  {id:'iluminacao', nome:'Fita LED 5m', unidade:'rolo'},
+  {id:'vidro', nome:'Vidro/espelho', unidade:'m²'},
+  {id:'cabideiro', nome:'Cabideiro', unidade:'un'},
+  {id:'mo_obra', nome:'Mão de obra', unidade:'verba'},
+];
+
+function iniciarPrecos() {
+  const precos = LSJ('orc_precos') || {};
+  const tb = document.getElementById('precosTabela');
+  if (!tb) return;
+  tb.innerHTML = MATERIAIS.map(m => `
+    <tr>
+      <td>${m.nome}</td>
+      <td style="color:var(--muted)">${m.unidade}</td>
+      <td><input type="number" min="0" step="0.01" placeholder="0,00" value="${precos[m.id]||''}" id="preco_${m.id}"></td>
+    </tr>`).join('');
+}
+
+function salvarPrecos() {
+  const precos = {};
+  MATERIAIS.forEach(m => {
+    const v = document.getElementById('preco_'+m.id);
+    if (v && v.value) precos[m.id] = parseFloat(v.value);
+  });
+  LSJ('orc_precos', precos);
+  toast('✅ Preços salvos!');
+}
+
+function getPreco(id) { return (LSJ('orc_precos')||{})[id] || 0; }
+
+function chapasNecessarias(areaTotal, esp=18) {
+  // Chapa padrão 2750x1830mm = 5.0325 m²
+  return Math.ceil(areaTotal / 5.03);
+}
+
+function renderResultado(containerId, itens, cliente, tipoMovel) {
+  const precos = LSJ('orc_precos') || {};
+  let total = 0;
+  let html = '<div class="orc-resultado">';
+  html += '<h4>📋 Lista de Materiais</h4>';
+  itens.forEach(it => {
+    const p = getPreco(it.id);
+    const subtotal = p * it.qty;
+    total += subtotal;
+    html += `<div class="orc-item">
+      <span class="orc-item-nome">${it.nome}</span>
+      <span style="display:flex;gap:16px;align-items:center">
+        <span class="orc-item-qty">${it.qty} ${it.un}</span>
+        ${p ? `<span style="color:var(--muted);font-size:11px">${formatBRL(subtotal)}</span>` : ''}
+      </span>
+    </div>`;
+  });
+  if (total > 0) {
+    html += `<div class="orc-total"><span>Total estimado</span><span>${formatBRL(total)}</span></div>`;
+  }
+  html += `<div style="display:flex;gap:8px;margin-top:12px">
+    <button onclick="gerarPDF('${tipoMovel}')" class="btn-cadastrar" style="flex:1;margin-top:0">📄 Gerar PDF do Orçamento</button>
+  </div>`;
+  html += '</div>';
+  document.getElementById(containerId).innerHTML = html;
+  // Salvar último resultado para o PDF
+  window._ultimoOrc = { itens, tipoMovel, total };
+}
+
+// ── CÁLCULOS ──
+function calcularArmario() {
+  const L=+document.getElementById('armLarg').value;
+  const A=+document.getElementById('armAlt').value;
+  const P=+document.getElementById('armProf').value;
+  const portas=+document.getElementById('armPortas').value||2;
+  const gavetas=+document.getElementById('armGavetas').value||0;
+  const prateleiras=+document.getElementById('armPrateleiras').value||2;
+  const esp=+document.getElementById('armEsp').value;
+  const espelho=getToggle('armEsp')==='sim';
+  const ilum=getToggle('armIlum')==='sim';
+  if (!L||!A||!P) { toast('⚠️ Preencha largura, altura e profundidade'); return; }
+
+  // Áreas em m²
+  const areaLateral = 2 * (A/100 * P/100);
+  const areaFundo = A/100 * L/100;
+  const areaTampo = 2 * (L/100 * P/100); // tampo + base
+  const areaPrateleiras = prateleiras * (L/100 * P/100);
+  const areaPortas = portas * ((A/100) * (L/100/portas));
+  const areaTotal = areaLateral + areaFundo + areaTampo + areaPrateleiras + areaPortas;
+  const chapas = chapasNecessarias(areaTotal, esp);
+  const fitaBorda = Math.ceil((2*(A+P) + 2*(L+P) + prateleiras*2*(L+P) + portas*(2*(A/portas+L/portas))) / 100) + 5;
+  const camLock = (prateleiras * 4) + 8;
+  const parafusos = Math.ceil(areaTotal * 8);
+
+  const itens = [
+    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
+    {id:'fita_borda', nome:'Fita de borda', qty:fitaBorda, un:'metros'},
+    {id:'dobradiça', nome:'Dobradiças', qty:portas*2, un:'pares'},
+    {id:'cam_lock', nome:'Cam lock (minifix)', qty:camLock, un:'un'},
+    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(parafusos/100), un:'caixas'},
+    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(A/100*L/100).toFixed(2), un:'m²'},
+    {id:'puxador', nome:'Puxadores', qty:portas+gavetas, un:'un'},
+    ...(gavetas>0?[{id:'corrediça', nome:'Corrediças gaveta', qty:gavetas, un:'pares'}]:[]),
+    ...(espelho?[{id:'vidro', nome:'Espelho para portas', qty:+(areaPortas).toFixed(2), un:'m²'}]:[]),
+    ...(ilum?[{id:'iluminacao', nome:'Fita LED', qty:Math.ceil(L/250), un:'rolos'}]:[]),
+    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  ];
+  renderResultado('resArmario', itens, '', 'Armário');
+}
+
+function calcularCozinha() {
+  const L=+document.getElementById('cozLarg').value;
+  const AltSup=+document.getElementById('cozAltSup').value||70;
+  const AltInf=+document.getElementById('cozAltInf').value||85;
+  const ProfSup=+document.getElementById('cozProfSup').value||35;
+  const ProfInf=+document.getElementById('cozProfInf').value||60;
+  const portasSup=+document.getElementById('cozPortasSup').value||0;
+  const portasInf=+document.getElementById('cozPortasInf').value||0;
+  const gavetas=+document.getElementById('cozGavetas').value||0;
+  const esp=+document.getElementById('cozEsp').value;
+  if (!L) { toast('⚠️ Preencha a largura total'); return; }
+
+  const areaSup = (L/100*AltSup/100) + (L/100*ProfSup/100) + 2*(AltSup/100*ProfSup/100) + portasSup*(L/100/Math.max(portasSup,1)*AltSup/100);
+  const areaInf = (L/100*AltInf/100) + (L/100*ProfInf/100) + 2*(AltInf/100*ProfInf/100) + portasInf*(L/100/Math.max(portasInf,1)*AltInf/100);
+  const areaTotal = areaSup + areaInf;
+  const chapas = chapasNecessarias(areaTotal, esp);
+  const totalPortas = portasSup + portasInf;
+  const camLock = 16 + totalPortas*2;
+
+  const itens = [
+    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
+    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*4)+5, un:'metros'},
+    {id:'dobradiça', nome:'Dobradiças', qty:totalPortas*2, un:'pares'},
+    {id:'cam_lock', nome:'Cam lock (minifix)', qty:camLock, un:'un'},
+    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
+    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(L/100*(AltSup+AltInf)/100).toFixed(2), un:'m²'},
+    {id:'puxador', nome:'Puxadores', qty:totalPortas+gavetas, un:'un'},
+    ...(gavetas>0?[{id:'corrediça', nome:'Corrediças gaveta', qty:gavetas, un:'pares'}]:[]),
+    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  ];
+  renderResultado('resCozinha', itens, '', 'Cozinha');
+}
+
+function calcularCloset() {
+  const L=+document.getElementById('closLarg').value;
+  const A=+document.getElementById('closAlt').value;
+  const P=+document.getElementById('closProf').value;
+  const cabid=+document.getElementById('closCabid').value||1;
+  const gavetas=+document.getElementById('closGavetas').value||0;
+  const prateleiras=+document.getElementById('closPrateleiras').value||4;
+  const esp=+document.getElementById('closEsp').value;
+  const ilum=getToggle('closIlum')==='sim';
+  if (!L||!A||!P) { toast('⚠️ Preencha todas as dimensões'); return; }
+
+  const areaLateral = 2*(A/100*P/100);
+  const areaTampo = 2*(L/100*P/100);
+  const areaPrat = prateleiras*(L/100*P/100);
+  const areaTotal = areaLateral + areaTampo + areaPrat;
+  const chapas = chapasNecessarias(areaTotal, esp);
+
+  const itens = [
+    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
+    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*3)+5, un:'metros'},
+    {id:'cam_lock', nome:'Cam lock (minifix)', qty:prateleiras*4+8, un:'un'},
+    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
+    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(A/100*L/100).toFixed(2), un:'m²'},
+    {id:'cabideiro', nome:'Cabideiros', qty:cabid, un:'un'},
+    ...(gavetas>0?[{id:'corrediça', nome:'Corrediças gaveta', qty:gavetas, un:'pares'},{id:'puxador', nome:'Puxadores gaveta', qty:gavetas, un:'un'}]:[]),
+    ...(ilum?[{id:'iluminacao', nome:'Fita LED', qty:Math.ceil(L/250), un:'rolos'}]:[]),
+    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  ];
+  renderResultado('resCloset', itens, '', 'Closet');
+}
+
+function calcularNicho() {
+  const L=+document.getElementById('nichLarg').value;
+  const A=+document.getElementById('nichAlt').value;
+  const P=+document.getElementById('nichProf').value;
+  const qtd=+document.getElementById('nichQtd').value||1;
+  const esp=+document.getElementById('nichEsp').value;
+  const fundo=getToggle('nichFundo')==='sim';
+  if (!L||!A||!P) { toast('⚠️ Preencha todas as dimensões'); return; }
+
+  const areaUm = 2*(A/100*P/100) + 2*(L/100*P/100) + (L/100*A/100);
+  const areaTotal = areaUm * qtd;
+  const chapas = chapasNecessarias(areaTotal, esp);
+  const fundoArea = fundo ? +(L/100*A/100*qtd).toFixed(2) : 0;
+
+  const itens = [
+    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
+    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*3)+2, un:'metros'},
+    {id:'cam_lock', nome:'Cam lock (minifix)', qty:qtd*8, un:'un'},
+    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
+    ...(fundo?[{id:'fundo_chapa', nome:'Fundo 3mm', qty:fundoArea, un:'m²'}]:[]),
+    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  ];
+  renderResultado('resNicho', itens, '', `${qtd}x Nicho`);
+}
+
+function calcularPainel() {
+  const L=+document.getElementById('painLarg').value;
+  const A=+document.getElementById('painAlt').value;
+  const P=+document.getElementById('painProf').value;
+  const nichos=+document.getElementById('painNichos').value||2;
+  const esp=+document.getElementById('painEsp').value;
+  const ilum=getToggle('painIlum')==='sim';
+  const vidro=getToggle('painVidro')==='sim';
+  if (!L||!A||!P) { toast('⚠️ Preencha todas as dimensões'); return; }
+
+  const areaBase = (L/100*A/100) + 2*(A/100*P/100) + (L/100*P/100);
+  const areaNichos = nichos*(L/100/nichos*A/100/2);
+  const areaTotal = areaBase + areaNichos;
+  const chapas = chapasNecessarias(areaTotal, esp);
+  const vidroArea = vidro ? +(L/100*(A/100*0.3)).toFixed(2) : 0;
+
+  const itens = [
+    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
+    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*3)+5, un:'metros'},
+    {id:'cam_lock', nome:'Cam lock (minifix)', qty:nichos*4+8, un:'un'},
+    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
+    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(L/100*A/100).toFixed(2), un:'m²'},
+    ...(vidro?[{id:'vidro', nome:'Vidro/espelho', qty:vidroArea, un:'m²'}]:[]),
+    ...(ilum?[{id:'iluminacao', nome:'Fita LED', qty:Math.ceil(L/200), un:'rolos'}]:[]),
+    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  ];
+  renderResultado('resPainel', itens, '', 'Painel TV');
+}
+
+// ── GERAR PDF ──
+function gerarPDF(tipoMovel) {
+  if (!window._ultimoOrc) { toast('⚠️ Calcule primeiro!'); return; }
+  const {itens, total} = window._ultimoOrc;
+  const precos = LSJ('orc_precos') || {};
+  const brand = LSJ('brand') || {};
+  const data = new Date().toLocaleDateString('pt-BR');
+
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    body{font-family:Arial,sans-serif;padding:40px;color:#1a1a1a;max-width:800px;margin:0 auto}
+    .header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #c9a84c;padding-bottom:16px;margin-bottom:24px}
+    .brand{font-size:22px;font-weight:700;color:#c9a84c}
+    .sub{font-size:13px;color:#666}
+    h2{font-size:18px;color:#1a1a1a;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;margin-bottom:24px}
+    th{background:#f5f5f5;padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #ddd}
+    td{padding:10px 12px;border-bottom:1px solid #eee;font-size:13px}
+    .total-row td{font-weight:700;font-size:15px;color:#c9a84c;border-top:2px solid #c9a84c;border-bottom:none}
+    .footer{margin-top:40px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#999;text-align:center}
+    .badge{display:inline-block;background:#c9a84c;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+  </style></head><body>
+  <div class="header">
+    <div><div class="brand">${brand.nome||'Agenda PRO'}</div><div class="sub">Orçamento de Móveis Planejados</div></div>
+    <div style="text-align:right"><div class="badge">${tipoMovel}</div><div class="sub" style="margin-top:6px">Data: ${data}</div></div>
+  </div>
+  <h2>📋 Lista de Materiais — ${tipoMovel}</h2>
+  <table>
+    <thead><tr><th>Material</th><th>Quantidade</th><th>Unidade</th>${total>0?'<th>Preço Unit.</th><th>Subtotal</th>':''}</tr></thead>
+    <tbody>`;
+
+  itens.forEach(it => {
+    const p = getPreco(it.id);
+    const sub = p * it.qty;
+    html += `<tr><td>${it.nome}</td><td style="font-weight:700">${it.qty}</td><td style="color:#666">${it.un}</td>${total>0?`<td>${p?'R$ '+p.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td><td>${sub?'R$ '+sub.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td>`:''}</tr>`;
+  });
+
+  if (total > 0) {
+    html += `<tr class="total-row"><td colspan="${total>0?'3':'2'}">TOTAL ESTIMADO</td><td colspan="2">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+  }
+
+  html += `</tbody></table>
+  <div class="footer">Orçamento gerado pelo sistema ${brand.nome||'Agenda PRO'} • Este orçamento é uma estimativa e pode variar conforme especificações finais do projeto.</div>
+  </body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `orcamento_${tipoMovel.toLowerCase().replace(' ','_')}_${data.replace(/\//g,'-')}.html`;
+  a.click();
+  toast('📄 PDF gerado! Abra o arquivo e imprima como PDF.');
+}
+
 // ── SERVIÇOS ──
 let servicos=[];
 function salvarServicos(){LSJ('servicos_agenda',servicos);driveAutoSave();}
@@ -1164,6 +1498,27 @@ function licencaDiasRestantes() {
 }
 
 async function licencaVerificar() {
+  // Verifica se foi liberado manualmente pelo admin
+  const conta = LSJ('conta');
+  if (conta) {
+    const rec = await jbGet();
+    if (rec && rec.liberacoes && rec.liberacoes[conta.email]) {
+      const lib = rec.liberacoes[conta.email];
+      const expira = new Date(lib.expira + 'T00:00:00');
+      if (expira > new Date()) {
+        // Renovar licença local
+        const novoInicio = new Date();
+        novoInicio.setDate(novoInicio.getDate() - (30 - lib.dias));
+        LS('licenca_inicio', novoInicio.getTime().toString());
+        // Remover token para não renovar toda vez
+        delete rec.liberacoes[conta.email];
+        await jbSet(rec);
+        toast('✅ Acesso renovado pelo administrador!');
+        return;
+      }
+    }
+  }
+
   const dias = licencaDiasRestantes();
   const nome = (LSJ('brand') || {}).nome || 'Agenda PRO';
   document.getElementById('aviso7Nome').textContent = nome;
@@ -1251,26 +1606,69 @@ async function carregarUsuarios() {
   const rec = await jbGet();
   const usuarios = (rec && rec.usuarios) || [];
   if (!usuarios.length) { el.innerHTML = '<span style="color:var(--muted)">Nenhum usuário registrado ainda.</span>'; return; }
-  let html = '<table style="width:100%;border-collapse:collapse">';
-  html += '<tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px"><td style="padding:4px 6px">Nome</td><td style="padding:4px 6px">E-mail</td><td style="padding:4px 6px">Início</td><td style="padding:4px 6px">Último acesso</td><td style="padding:4px 6px">Status</td></tr>';
+
+  // Separar por status
+  const bloqueados = [], atencao = [], ativos = [], liberados = [];
   usuarios.forEach(u => {
-    const restam = u.diasRestantes !== undefined ? u.diasRestantes : 7;
-    let status, cor;
-    if (restam > 2) { status = `✅ ${restam}d restantes`; cor = '#4ade80'; }
-    else if (restam > 0) { status = `⚠️ ${restam}d restantes`; cor = '#fbbf24'; }
-    else { status = '🔴 Bloqueado'; cor = '#f87171'; }
-    const inicioFmt = u.inicio ? new Date(u.inicio+'T00:00:00').toLocaleDateString('pt-BR') : '—';
-    const acessoFmt = u.ultimoAcesso ? new Date(u.ultimoAcesso+'T00:00:00').toLocaleDateString('pt-BR') : '—';
-    html += `<tr style="border-top:1px solid var(--border)">
-      <td style="padding:5px 6px;color:var(--text)">${u.nome}</td>
-      <td style="padding:5px 6px;color:var(--muted);font-size:11px">${u.email}</td>
-      <td style="padding:5px 6px;color:var(--muted)">${inicioFmt}</td>
-      <td style="padding:5px 6px;color:var(--muted)">${acessoFmt}</td>
-      <td style="padding:5px 6px;color:${cor};font-size:11px">${status}</td>
-    </tr>`;
+    const r = u.diasRestantes !== undefined ? u.diasRestantes : 7;
+    if (u.liberadoManual) liberados.push(u);
+    else if (r <= 0) bloqueados.push(u);
+    else if (r <= 2) atencao.push(u);
+    else ativos.push(u);
   });
-  html += '</table>';
-  el.innerHTML = html;
+
+  function mkSecao(titulo, cor, lista, mostrarLiberar) {
+    if (!lista.length) return '';
+    let h = `<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:${cor};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding:4px 8px;background:rgba(0,0,0,.2);border-radius:6px">${titulo} (${lista.length})</div>`;
+    lista.forEach(u => {
+      const inicioFmt = u.inicio ? new Date(u.inicio+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+      const acessoFmt = u.ultimoAcesso ? new Date(u.ultimoAcesso+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+      const r = u.diasRestantes !== undefined ? u.diasRestantes : 7;
+      const dStr = u.liberadoManual ? `Liberado até: ${u.liberadoAte||'—'}` : (r<=0 ? 'Vencido' : `${r} dia(s) restantes`);
+      h += `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--surface2)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${u.nome}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${u.email}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Início: ${inicioFmt} · Último acesso: ${acessoFmt}</div>
+            <div style="font-size:11px;color:${cor};margin-top:3px">${dStr}</div>
+          </div>
+          ${mostrarLiberar ? `<button onclick="liberarUsuario('${u.email}')" style="background:#16a34a;border:none;color:#fff;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;white-space:nowrap;margin-left:8px">🔓 Liberar</button>` : ''}
+        </div>
+      </div>`;
+    });
+    h += '</div>';
+    return h;
+  }
+
+  let html = '';
+  html += mkSecao('🔴 Bloqueados — aguardando liberação', '#f87171', bloqueados, true);
+  html += mkSecao('⚠️ Atenção — vencendo em breve', '#fbbf24', atencao, false);
+  html += mkSecao('✅ Ativos — em dia', '#4ade80', ativos, false);
+  html += mkSecao('🔓 Liberados manualmente', '#60a5fa', liberados, false);
+
+  el.innerHTML = html || '<span style="color:var(--muted)">Nenhum usuário registrado ainda.</span>';
+}
+
+async function liberarUsuario(email) {
+  if (!confirm('Liberar acesso de ' + email + ' por mais 30 dias?')) return;
+  const rec = await jbGet();
+  if (!rec || !rec.usuarios) { toast('❌ Erro ao carregar dados.'); return; }
+  const idx = rec.usuarios.findIndex(u => u.email === email);
+  if (idx === -1) { toast('❌ Usuário não encontrado.'); return; }
+  const hoje = new Date();
+  const ate = new Date(hoje); ate.setDate(ate.getDate() + 30);
+  rec.usuarios[idx].diasRestantes = 30;
+  rec.usuarios[idx].liberadoManual = true;
+  rec.usuarios[idx].liberadoAte = ate.toLocaleDateString('pt-BR');
+  rec.usuarios[idx].inicio = hoje.toISOString().slice(0,10);
+  // Salva token de liberação para o cliente
+  if (!rec.liberacoes) rec.liberacoes = {};
+  rec.liberacoes[email] = { dias: 30, expira: ate.toISOString().slice(0,10) };
+  const ok = await jbSet(rec);
+  if (ok) { toast('✅ ' + email + ' liberado por 30 dias!'); carregarUsuarios(); }
+  else toast('❌ Erro ao salvar.');
 }
 
 (function(){
