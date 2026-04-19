@@ -93,6 +93,21 @@ textarea.form-control{resize:vertical;min-height:64px;}
 .divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .btn-export{width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;transition:all .2s;display:block;text-align:center;margin-bottom:6px;}
 .btn-export:hover{border-color:var(--accent);color:var(--accent);}
+.checkbox-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-bottom:8px;}
+.cb-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer;}
+.cb-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;}
+.mdf-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px;margin-bottom:6px;position:relative;}
+.mdf-remove{position:absolute;top:6px;right:6px;background:rgba(220,38,38,.2);border:none;color:#fca5a5;border-radius:6px;cursor:pointer;font-size:11px;padding:2px 6px;}
+.foto-area{border:1.5px dashed var(--border);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;font-size:12px;color:var(--muted);margin-top:6px;transition:border .2s;}
+.foto-area:hover{border-color:var(--accent);}
+.foto-thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.foto-thumb{position:relative;width:56px;height:56px;}
+.foto-thumb img{width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border);}
+.foto-thumb-del{position:absolute;top:-4px;right:-4px;background:#dc2626;border:none;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.toggle-row{display:flex;gap:8px;margin-bottom:8px;}
+.toggle-btn{flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-align:center;}
+.toggle-btn.active{background:var(--accent);color:#0b0f1a;border-color:var(--accent);font-weight:700;}
+
 
 /* DRIVE */
 .drive-section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;margin-bottom:8px;}
@@ -320,19 +335,86 @@ textarea.form-control{resize:vertical;min-height:64px;}
           <option value="comercial">Comercial</option>
         </select>
       </div>
-      <div class="extra-fields" id="apartamentoCampos">
-        <div class="form-row"><label class="form-label">Ambientes</label><input class="form-control" id="apAmbientes" placeholder="Ex: Sala, Cozinha"></div>
-        <div class="form-row"><label class="form-label">Cor do Puxador</label><input class="form-control" id="apPuxador" placeholder="Ex: Preto fosco"></div>
-        <div class="form-row"><label class="form-label">Altura do Rodapé</label><input class="form-control" id="apRodape" placeholder="Ex: 10 cm"></div>
-        <div class="form-row"><label class="form-label">Cor da Pedra</label><input class="form-control" id="apPedra" placeholder="Ex: Branco polar"></div>
+      <!-- CAMPOS COMUNS (todos os tipos) -->
+      <div class="extra-fields" id="camposComuns">
+
+        <!-- Ambientes checkboxes -->
+        <div class="form-row">
+          <label class="form-label">Ambientes</label>
+          <div class="checkbox-grid" id="ambientesGrid">
+            <label class="cb-item"><input type="checkbox" value="Sala"> Sala</label>
+            <label class="cb-item"><input type="checkbox" value="Cozinha"> Cozinha</label>
+            <label class="cb-item"><input type="checkbox" value="Quarto"> Quarto</label>
+            <label class="cb-item"><input type="checkbox" value="Escritório"> Escritório</label>
+            <label class="cb-item"><input type="checkbox" value="Banheiro"> Banheiro</label>
+            <label class="cb-item"><input type="checkbox" value="Brinquedoteca"> Brinquedoteca</label>
+            <label class="cb-item"><input type="checkbox" value="Varanda"> Varanda</label>
+            <label class="cb-item"><input type="checkbox" value="Fachada"> Fachada</label>
+            <label class="cb-item"><input type="checkbox" value="Lavabo"> Lavabo</label>
+            <label class="cb-item"><input type="checkbox" value="Área Gourmet"> Área Gourmet</label>
+          </div>
+          <input class="form-control" id="ambientesOutros" placeholder="Outros ambientes..." style="margin-top:4px">
+        </div>
+
+        <!-- Comercial: tipo do comércio -->
+        <div class="form-row" id="tipoComercialRow" style="display:none">
+          <label class="form-label">Tipo do Comércio</label>
+          <input class="form-control" id="comTipo" placeholder="Ex: Restaurante, Clínica...">
+        </div>
+
+        <!-- MDF -->
+        <div class="form-row">
+          <label class="form-label">MDF — Cores e Fotos</label>
+          <div id="mdfLista"></div>
+          <button type="button" onclick="addMDF()" style="width:100%;padding:7px;background:var(--surface2);border:1px dashed var(--border);color:var(--accent);border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;margin-top:4px">+ Adicionar MDF</button>
+        </div>
+
+        <!-- Espelho / Vidro -->
+        <div class="form-row">
+          <label class="form-label">Espelho / Vidro</label>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn" id="espelhoSim" onclick="toggleEspelho('sim')">Sim</button>
+            <button type="button" class="toggle-btn" id="espelhoNao" onclick="toggleEspelho('nao')">Não</button>
+          </div>
+          <input class="form-control" id="espelhoDesc" placeholder="Descreva onde e como..." style="display:none;margin-top:4px">
+        </div>
+
+        <!-- Puxador -->
+        <div class="form-row">
+          <label class="form-label">Cor do Puxador</label>
+          <input class="form-control" id="puxador" placeholder="Ex: Preto fosco, Inox...">
+        </div>
+
+        <!-- Rodapé -->
+        <div class="form-row">
+          <label class="form-label">Altura do Rodapé</label>
+          <input class="form-control" id="rodape" placeholder="Ex: 10 cm">
+        </div>
+
+        <!-- Pedra -->
+        <div class="form-row">
+          <label class="form-label">Cor da Pedra</label>
+          <input class="form-control" id="pedra" placeholder="Ex: Branco polar, Cinza...">
+        </div>
+
+        <!-- Pé direito -->
+        <div class="form-row">
+          <label class="form-label">Altura do Pé Direito</label>
+          <input class="form-control" id="peDireito" placeholder="Ex: 2,70m">
+        </div>
+
+        <!-- Fotos do local -->
+        <div class="form-row">
+          <label class="form-label">Fotos do Local</label>
+          <div class="foto-area" onclick="document.getElementById('fotosLocalInput').click()">
+            📷 Tirar foto ou escolher da galeria
+          </div>
+          <input type="file" id="fotosLocalInput" accept="image/*" multiple capture="environment" style="display:none" onchange="adicionarFotos(event,'fotosLocalThumbs','fotosLocalData')">
+          <div class="foto-thumbs" id="fotosLocalThumbs"></div>
+        </div>
+
       </div>
-      <div class="extra-fields" id="residenciaCampos">
-        <div class="form-row"><label class="form-label">Ambientes</label><textarea class="form-control" id="resAmbientes" placeholder="Liste os ambientes..."></textarea></div>
-      </div>
-      <div class="extra-fields" id="comercialCampos">
-        <div class="form-row"><label class="form-label">Tipo do Comércio</label><input class="form-control" id="comTipo" placeholder="Ex: Restaurante"></div>
-        <div class="form-row"><label class="form-label">Ambientes</label><textarea class="form-control" id="comAmbientes" placeholder="Liste os ambientes..."></textarea></div>
-      </div>
+
       <div class="form-row"><label class="form-label">Data de Início</label><input class="form-control" type="date" id="dataInicio"></div>
       <div class="form-row"><label class="form-label">Duração (dias)</label><input class="form-control" type="number" id="duracao" placeholder="Ex: 30" min="1"></div>
       <div class="form-row"><label class="form-label">Valor (R$)</label><input class="form-control" type="number" id="valor" placeholder="Ex: 5000" min="0"></div>
@@ -451,6 +533,12 @@ textarea.form-control{resize:vertical;min-height:64px;}
       <button class="btn-primary" style="flex:1" onclick="salvarAdmin()">☁️ Salvar código online</button>
     </div>
     <div id="adminMsg" style="font-size:12px;margin-top:10px;min-height:16px;color:#4ade80"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <b style="font-size:13px;color:var(--accent2)">👥 Usuários cadastrados</b>
+      <button onclick="carregarUsuarios()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif">🔄 Atualizar</button>
+    </div>
+    <div id="adminUsuarios" style="max-height:220px;overflow-y:auto;font-size:12px"></div>
   </div>
 </div>
 
@@ -740,18 +828,114 @@ function toggleVerCodigo(){
 // ── SERVIÇOS ──
 let servicos=[];
 function salvarServicos(){LSJ('servicos_agenda',servicos);driveAutoSave();}
-function mostrarCampos(){['apartamentoCampos','residenciaCampos','comercialCampos'].forEach(id=>document.getElementById(id).classList.remove('visible'));const t=document.getElementById('tipo').value;if(t)document.getElementById(t+'Campos').classList.add('visible');}
+function mostrarCampos(){
+  const t=document.getElementById('tipo').value;
+  const cc=document.getElementById('camposComuns');
+  const tcRow=document.getElementById('tipoComercialRow');
+  if(t){cc.classList.add('visible');}else{cc.classList.remove('visible');}
+  if(tcRow) tcRow.style.display=(t==='comercial')?'block':'none';
+}
+
+// MDF
+let _mdfList=[];
+function addMDF(){
+  const id=Date.now();
+  _mdfList.push({id,cor:'',fotos:[]});
+  renderMDF();
+}
+function removeMDF(id){_mdfList=_mdfList.filter(m=>m.id!==id);renderMDF();}
+function renderMDF(){
+  const el=document.getElementById('mdfLista');
+  el.innerHTML='';
+  _mdfList.forEach((m,i)=>{
+    el.innerHTML+=`<div class="mdf-item" id="mdf_${m.id}">
+      <button class="mdf-remove" onclick="removeMDF(${m.id})">✕</button>
+      <div class="form-label" style="margin-bottom:4px">MDF ${i+1}</div>
+      <input class="form-control" placeholder="Cor do MDF (Ex: Branco TX)" style="margin-bottom:6px" value="${m.cor}" oninput="atualizarMDFCor(${m.id},this.value)">
+      <div class="foto-area" onclick="document.getElementById('mdfFoto_${m.id}').click()">📷 Foto do MDF</div>
+      <input type="file" id="mdfFoto_${m.id}" accept="image/*" multiple capture="environment" style="display:none" onchange="adicionarFotosMDF(event,${m.id})">
+      <div class="foto-thumbs" id="mdfThumbs_${m.id}"></div>
+    </div>`;
+  });
+  _mdfList.forEach(m=>{
+    m.fotos.forEach((f,fi)=>{
+      const tb=document.getElementById('mdfThumbs_'+m.id);
+      if(tb){tb.innerHTML+=`<div class="foto-thumb"><img src="${f}"><button class="foto-thumb-del" onclick="removeFotoMDF(${m.id},${fi})">✕</button></div>`;}
+    });
+  });
+}
+function atualizarMDFCor(id,val){const m=_mdfList.find(m=>m.id===id);if(m)m.cor=val;}
+function adicionarFotosMDF(e,id){
+  const m=_mdfList.find(m=>m.id===id);if(!m)return;
+  const files=Array.from(e.target.files);
+  files.forEach(f=>{const r=new FileReader();r.onload=ev=>{m.fotos.push(ev.target.result);renderMDF();};r.readAsDataURL(f);});
+  e.target.value='';
+}
+function removeFotoMDF(mdfId,fi){const m=_mdfList.find(m=>m.id===mdfId);if(m){m.fotos.splice(fi,1);renderMDF();}}
+
+// Fotos do local
+let _fotosLocal=[];
+function adicionarFotos(e,thumbsId,dataId){
+  const files=Array.from(e.target.files);
+  files.forEach(f=>{const r=new FileReader();r.onload=ev=>{_fotosLocal.push(ev.target.result);renderFotosLocal();};r.readAsDataURL(f);});
+  e.target.value='';
+}
+function renderFotosLocal(){
+  const tb=document.getElementById('fotosLocalThumbs');
+  tb.innerHTML='';
+  _fotosLocal.forEach((f,i)=>{tb.innerHTML+=`<div class="foto-thumb"><img src="${f}"><button class="foto-thumb-del" onclick="removeFotoLocal(${i})">✕</button></div>`;});
+}
+function removeFotoLocal(i){_fotosLocal.splice(i,1);renderFotosLocal();}
+
+// Espelho
+let _espelho='nao';
+function toggleEspelho(v){
+  _espelho=v;
+  document.getElementById('espelhoSim').classList.toggle('active',v==='sim');
+  document.getElementById('espelhoNao').classList.toggle('active',v==='nao');
+  document.getElementById('espelhoDesc').style.display=v==='sim'?'block':'none';
+}
 function addServico(){
-  const tipo=document.getElementById('tipo').value,cliente=document.getElementById('cliente').value.trim(),dataInicio=document.getElementById('dataInicio').value,duracao=+document.getElementById('duracao').value,valor=+document.getElementById('valor').value;
+  const tipo=document.getElementById('tipo').value;
+  const cliente=document.getElementById('cliente').value.trim();
+  const dataInicio=document.getElementById('dataInicio').value;
+  const duracao=+document.getElementById('duracao').value;
+  const valor=+document.getElementById('valor').value;
   if(!cliente||!tipo||!dataInicio||!duracao){toast('⚠️ Preencha todos os campos obrigatórios');return;}
-  let extra={};
-  if(tipo==='apartamento')extra={ambientes:document.getElementById('apAmbientes').value,puxador:document.getElementById('apPuxador').value,rodape:document.getElementById('apRodape').value,pedra:document.getElementById('apPedra').value};
-  if(tipo==='residencia')extra={ambientes:document.getElementById('resAmbientes').value};
-  if(tipo==='comercial')extra={tipoComercial:document.getElementById('comTipo').value,ambientes:document.getElementById('comAmbientes').value};
+
+  // Ambientes checkboxes
+  const cbs=Array.from(document.querySelectorAll('#ambientesGrid input:checked')).map(c=>c.value);
+  const outros=document.getElementById('ambientesOutros').value.trim();
+  if(outros)cbs.push(...outros.split(',').map(s=>s.trim()).filter(Boolean));
+  const ambientes=cbs.join(', ');
+
+  const extra={
+    ambientes,
+    tipoComercial: tipo==='comercial'?(document.getElementById('comTipo').value||''):'',
+    mdf: _mdfList.map(m=>({cor:m.cor,fotos:m.fotos})),
+    espelho: _espelho,
+    espelhoDesc: _espelho==='sim'?document.getElementById('espelhoDesc').value:'',
+    puxador: document.getElementById('puxador').value,
+    rodape: document.getElementById('rodape').value,
+    pedra: document.getElementById('pedra').value,
+    peDireito: document.getElementById('peDireito').value,
+    fotosLocal: _fotosLocal
+  };
+
   servicos.push({id:Date.now(),cliente,tipo,dataInicio,duracao,valor,...extra});
   salvarServicos();render();
-  ['cliente','apAmbientes','apPuxador','apRodape','apPedra','resAmbientes','comTipo','comAmbientes','valor'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('tipo').value='';mostrarCampos();toast('✅ Serviço cadastrado!');
+
+  // Limpar form
+  ['cliente','ambientesOutros','comTipo','puxador','rodape','pedra','peDireito','espelhoDesc','valor'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('#ambientesGrid input').forEach(c=>c.checked=false);
+  document.getElementById('tipo').value='';
+  _mdfList=[];_fotosLocal=[];_espelho='nao';
+  renderMDF();renderFotosLocal();
+  document.getElementById('espelhoSim').classList.remove('active');
+  document.getElementById('espelhoNao').classList.remove('active');
+  document.getElementById('espelhoDesc').style.display='none';
+  mostrarCampos();
+  toast('✅ Serviço cadastrado!');
 }
 function excluir(id){if(!confirm('Remover este serviço?'))return;servicos=servicos.filter(s=>s.id!==id);salvarServicos();render();toast('🗑️ Serviço removido');}
 function render(){
@@ -760,13 +944,21 @@ function render(){
   servicos.forEach(s=>{
     total+=s.valor||0;const dias=diasRestantes(s),c=cor(s),pct=progresso(s);
     if(c==='green')ng++;else if(c==='yellow')ny++;else nr++;
-    let det='';
-    if(s.tipo==='apartamento')det=[s.ambientes,s.puxador&&`Puxador: ${s.puxador}`,s.rodape&&`Rodapé: ${s.rodape}`,s.pedra&&`Pedra: ${s.pedra}`].filter(Boolean).join(' · ');
-    if(s.tipo==='residencia')det=(s.ambientes||'').replace(/\n/g,' · ');
-    if(s.tipo==='comercial')det=[s.tipoComercial,s.ambientes].filter(Boolean).join(' — ');
     const tl={apartamento:'🏢 Apartamento',residencia:'🏠 Residência',comercial:'🏪 Comercial'}[s.tipo]||s.tipo;
     const dl=dias<=0?'⚠️ Vencido':`${dias} dia${dias!==1?'s':''} rest.`;
-    lista.innerHTML+=`<div class="service-card ${c}"><div class="card-top"><span class="card-name">${s.cliente}</span><span class="card-badge">${dl}</span></div><div class="card-meta">${tl}<br>Início: ${new Date(s.dataInicio+'T00:00:00').toLocaleDateString('pt-BR')} · ${s.duracao} dias<br>${det?det+'<br>':''}</div><div class="card-valor">${formatBRL(s.valor)}</div><div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div><div class="card-actions"><button class="btn-del" onclick="excluir(${s.id})">🗑️ Remover</button></div></div>`;
+    const ambStr=s.ambientes?`<b>Ambientes:</b> ${s.ambientes}<br>`:'';
+    const comStr=s.tipoComercial?`<b>Comércio:</b> ${s.tipoComercial}<br>`:'';
+    const mdfStr=s.mdf&&s.mdf.length?`<b>MDF:</b> ${s.mdf.map(m=>m.cor||'—').join(', ')}<br>`:'';
+    const espStr=s.espelho==='sim'?`<b>Espelho/Vidro:</b> Sim${s.espelhoDesc?' — '+s.espelhoDesc:''}<br>`:'';
+    const puxStr=s.puxador?`<b>Puxador:</b> ${s.puxador}<br>`:'';
+    const rodStr=s.rodape?`<b>Rodapé:</b> ${s.rodape}<br>`:'';
+    const pedStr=s.pedra?`<b>Pedra:</b> ${s.pedra}<br>`:'';
+    const peStr=s.peDireito?`<b>Pé direito:</b> ${s.peDireito}<br>`:'';
+    const fotosCount=(s.fotosLocal&&s.fotosLocal.length)?`<b>Fotos:</b> ${s.fotosLocal.length} foto(s) do local<br>`:'';
+    const mdfFotosCount=s.mdf?s.mdf.reduce((a,m)=>a+(m.fotos?m.fotos.length:0),0):0;
+    const mdfFotosStr=mdfFotosCount?`<b>Fotos MDF:</b> ${mdfFotosCount} foto(s)<br>`:'';
+    const det=ambStr+comStr+mdfStr+espStr+puxStr+rodStr+pedStr+peStr+fotosCount+mdfFotosStr;
+    lista.innerHTML+=`<div class="service-card ${c}"><div class="card-top"><span class="card-name">${s.cliente}</span><span class="card-badge">${dl}</span></div><div class="card-meta">${tl}<br>Início: ${new Date(s.dataInicio+'T00:00:00').toLocaleDateString('pt-BR')} · ${s.duracao} dias<br>${det}</div><div class="card-valor">${formatBRL(s.valor)}</div><div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div><div class="card-actions"><button class="btn-del" onclick="excluir(${s.id})">🗑️ Remover</button></div></div>`;
     if(dias>=0&&dias<=3)notificar(s.cliente+' — prazo em '+dias+' dias!');
   });
   document.getElementById('caixaBadge').textContent='💰 '+formatBRL(total);
@@ -917,11 +1109,30 @@ async function jbSet(data) {
   } catch(e) { return false; }
 }
 
-function licencaIniciar() {
+async function licencaIniciar() {
   if (!LS('licenca_inicio')) {
     LS('licenca_inicio', Date.now().toString());
+    // Registrar usuário no JSONBin
+    await registrarUsuario();
     // Primeira vez — mostrar tela de boas-vindas com trial
     setTimeout(() => mostrarBoasVindas(), 400);
+  }
+}
+
+async function registrarUsuario() {
+  const conta = LSJ('conta');
+  if (!conta) return;
+  const rec = await jbGet() || {};
+  if (!rec.usuarios) rec.usuarios = [];
+  const jaExiste = rec.usuarios.find(u => u.email === conta.email);
+  if (!jaExiste) {
+    rec.usuarios.push({
+      nome: conta.user || conta.email,
+      email: conta.email,
+      inicio: new Date().toISOString().slice(0,10),
+      diasTrial: 7
+    });
+    await jbSet(rec);
   }
 }
 
@@ -977,15 +1188,21 @@ async function confirmarPagamento() {
 
 // ── PAINEL ADMIN (só para o dono) ──
 async function abrirAdminLicenca() {
+  // Só o dono (gmail stylodesignprojetos) pode ver
+  const conta = LSJ('conta');
+  const emailAdmin = 'stylodesignprojetos@gmail.com';
+  if (!conta || conta.email !== emailAdmin) { toast('⛔ Acesso restrito ao administrador.'); return; }
   const id  = LS('jb_id')  || '';
   const key = LS('jb_key') || '';
   document.getElementById('adminJbId').value  = id;
   document.getElementById('adminJbKey').value = key;
   document.getElementById('adminCodigo').value = '';
   document.getElementById('adminMsg').textContent = '';
+  document.getElementById('adminUsuarios').innerHTML = '';
   if (id && key) {
     const rec = await jbGet();
     if (rec && rec.codigo) document.getElementById('adminCodigo').value = rec.codigo;
+    carregarUsuarios();
   }
   abrirModal('modalAdmin');
 }
@@ -1006,10 +1223,39 @@ async function salvarAdmin() {
   if (ok) {
     msg.style.color = '#4ade80';
     msg.textContent = '✅ Código salvo! Todos os clientes usarão este código.';
+    carregarUsuarios();
   } else {
     msg.style.color = '#f87171';
     msg.textContent = '❌ Erro ao salvar. Verifique o ID e Key do JSONBin.';
   }
+}
+
+async function carregarUsuarios() {
+  const el = document.getElementById('adminUsuarios');
+  if (!el) return;
+  el.innerHTML = '<span style="color:var(--muted)">🔄 Carregando...</span>';
+  const rec = await jbGet();
+  const usuarios = (rec && rec.usuarios) || [];
+  if (!usuarios.length) { el.innerHTML = '<span style="color:var(--muted)">Nenhum usuário registrado ainda.</span>'; return; }
+  let html = '<table style="width:100%;border-collapse:collapse">';
+  html += '<tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px"><td style="padding:4px 6px">Nome</td><td style="padding:4px 6px">E-mail</td><td style="padding:4px 6px">Início</td><td style="padding:4px 6px">Status</td></tr>';
+  usuarios.forEach(u => {
+    const inicio = new Date(u.inicio);
+    const passou = Math.floor((Date.now() - inicio.getTime()) / 86400000);
+    const restam = 7 - passou;
+    let status, cor;
+    if (restam > 2) { status = `✅ ${restam}d restantes`; cor = '#4ade80'; }
+    else if (restam > 0) { status = `⚠️ ${restam}d restantes`; cor = '#fbbf24'; }
+    else { status = '🔴 Bloqueado'; cor = '#f87171'; }
+    html += `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:5px 6px;color:var(--text)">${u.nome}</td>
+      <td style="padding:5px 6px;color:var(--muted);font-size:11px">${u.email}</td>
+      <td style="padding:5px 6px;color:var(--muted)">${inicio.toLocaleDateString('pt-BR')}</td>
+      <td style="padding:5px 6px;color:${cor};font-size:11px">${status}</td>
+    </tr>`;
+  });
+  html += '</table>';
+  el.innerHTML = html;
 }
 
 (function(){
