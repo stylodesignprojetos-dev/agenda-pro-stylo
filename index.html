@@ -646,11 +646,652 @@ textarea.form-control{resize:vertical;min-height:64px;}
     <p style="margin-bottom:20px">Assine por <b style="color:#4ade80">R$ 30,00/mês</b> para continuar usando todos os recursos.</p>
     <a href="https://mpago.li/2ax46gC" target="_blank" class="btn-primary" style="display:block;text-decoration:none;margin-bottom:12px;font-size:16px;padding:14px">💳 Renovar agora — R$ 30,00</a>
     <p style="font-size:11px;color:var(--muted)">Após o pagamento, clique em "Já paguei" para liberar o acesso.</p>
-    <button class="btn-cancel" style="width:100%;margin-top:8px" onclick="confirmarPagamento()">✅ Já paguei</button>
+    <button class="btn-cancel" style="width:100%;margin-top:8px" onclick="confirmarPagamento()">✅ Já paguei (tenho código)</button>
     <a href="https://wa.me/5517991992589" target="_blank" style="display:block;margin-top:8px;color:var(--accent);font-size:12px;text-decoration:none;text-align:center">💬 Falar com suporte</a>
+    <!-- Botão admin: só aparece para o dono -->
+    <div id="btnLiberarDiretoWrap" style="display:none;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <p style="font-size:11px;color:var(--muted);margin-bottom:8px">👑 Acesso do administrador</p>
+      <div style="display:flex;gap:8px">
+        <button onclick="liberarAcessoDireto(30)" style="flex:1;padding:9px;background:rgba(22,163,74,.15);border:1px solid #16a34a;color:#4ade80;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">🔓 +30 dias</button>
+        <button onclick="liberarAcessoDireto(90)" style="flex:1;padding:9px;background:rgba(22,163,74,.15);border:1px solid #16a34a;color:#4ade80;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">🔓 +90 dias</button>
+        <button onclick="liberarAcessoDireto(365)" style="flex:1;padding:9px;background:rgba(59,130,246,.15);border:1px solid #3b82f6;color:#60a5fa;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">⭐ +1 ano</button>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- ══ TELA: ORÇAMENTO ══ -->
+<div id="screenOrcamento" class="screen" style="flex-direction:column">
+  <header class="header">
+    <div class="header-brand">
+      <span style="font-size:22px">📐</span>
+      <h2 style="font-family:'Playfair Display',serif;font-size:17px;color:var(--accent2)">Orçamento · Plano de Corte</h2>
+    </div>
+    <div class="header-right">
+      <button class="btn-sm" onclick="fecharOrcamento()">← Voltar</button>
+    </div>
+  </header>
+
+  <div style="flex:1;padding:20px 22px;overflow-y:auto;max-width:1160px;width:100%;margin:0 auto">
+
+    <!-- TABS -->
+    <div class="orc-tabs">
+      <button class="orc-tab active" onclick="orcTab('guarda')">🚪 Guarda-Roupa</button>
+      <button class="orc-tab" onclick="orcTab('cozinha')">🍳 Cozinha</button>
+      <button class="orc-tab" onclick="orcTab('banheiro')">🚿 Banheiro</button>
+      <button class="orc-tab" onclick="orcTab('painel')">🛏️ Painel/Cama</button>
+      <button class="orc-tab" onclick="orcTab('criado')">🪟 Criado Mudo</button>
+      <button class="orc-tab" onclick="orcTab('revestimento')">🧱 Revestimento</button>
+      <button class="orc-tab" onclick="orcTab('nicho')">📦 Nicho</button>
+      <button class="orc-tab" onclick="orcTab('precos')">💰 Preços</button>
+    </div>
+
+    <!-- ═══ GUARDA-ROUPA ═══ -->
+    <div id="orcGuarda">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🚪 Guarda-Roupa / Cristaleira</div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Largura total (cm)</label><input class="form-control" id="grLarg" type="number" placeholder="200"></div>
+          <div class="form-row"><label class="form-label">Altura total (cm)</label><input class="form-control" id="grAlt" type="number" placeholder="240" oninput="grCalcAuto()"></div>
+          <div class="form-row"><label class="form-label">Profundidade lateral (cm) — porta correr: 52cm</label><input class="form-control" id="grProf" type="number" placeholder="60" value="60"></div>
+        </div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Nº módulos/vãos</label><input class="form-control" id="grModulos" type="number" placeholder="2" min="1" value="2"></div>
+          <div class="form-row"><label class="form-label">Tipo de porta</label>
+            <select class="form-control" id="grTipoPorta" onchange="grCalcAuto()">
+              <option value="giro">Giro (18mm)</option>
+              <option value="correr">Correr (18mm) — prof. 520mm / máx 2720mm</option>
+              <option value="sem">Sem portas</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-label">Nº de portas</label><input class="form-control" id="grPortas" type="number" placeholder="4" min="0"></div>
+        </div>
+
+        <!-- Rodapé / Rodateto / Base -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Base · Rodateto · Altura interna</div>
+          <div class="orc-grid-3">
+            <div class="form-row">
+              <label class="form-label">Base (2× sarrafo 15mm = 30mm) — material</label>
+              <select class="form-control" id="grBaseMat">
+                <option value="mdf_branco">MDF Branco</option>
+                <option value="mdf_cor">MDF na cor</option>
+                <option value="mdf_cru">MDF Cru</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Altura da base (mm) — padrão 30mm</label>
+              <input class="form-control" id="grBaseAlt" type="number" placeholder="30" value="30" oninput="grCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Rodateto (mm) — mín. 5mm</label>
+              <input class="form-control" id="grRodateto" type="number" placeholder="5" value="5" oninput="grCalcAuto()">
+            </div>
+          </div>
+          <div id="grAltInternaInfo" style="font-size:12px;color:#4ade80;margin-top:6px;padding:6px 8px;background:rgba(22,163,74,.08);border-radius:6px;display:none"></div>
+        </div>
+
+        <!-- Interior -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Interior da Caixa</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Material interior (caixa)</label>
+              <select class="form-control" id="grInterior">
+                <option value="branco">Branco TX (15mm)</option>
+                <option value="madeirado">Madeirado (15mm)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Divisórias internas (qtd)</label>
+              <input class="form-control" id="grDivisorias" type="number" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Gavetas (4=80cm / 5=1m altura)</label>
+              <input class="form-control" id="grGavetas" type="number" placeholder="0" min="0" oninput="calcGrAlturaBlocos()">
+            </div>
+            <div class="form-row"><label class="form-label">Sapateiras (4=80cm / 5=1m)</label>
+              <input class="form-control" id="grSapateiras" type="number" placeholder="0" min="0" oninput="calcGrAlturaBlocos()">
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Cabideiros</label>
+              <input class="form-control" id="grCabid" type="number" placeholder="1" min="0">
+            </div>
+            <div class="form-row"><label class="form-label">Prateleiras internas</label>
+              <input class="form-control" id="grPrat" type="number" placeholder="4" min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Maleiro (prateleira a 195cm da base interna)?</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn active" id="grMaleiroSimBtn" onclick="toggleOrc('grMaleiro','sim')">Sim</button>
+              <button type="button" class="toggle-btn" id="grMaleiroNaoBtn" onclick="toggleOrc('grMaleiro','nao')">Não</button>
+            </div>
+          </div>
+          <div id="grAlturaInfo" style="font-size:11px;color:#fbbf24;margin-top:4px;display:none"></div>
+        </div>
+
+        <!-- Fundo -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Fundo (6mm)</div>
+          <div class="form-row">
+            <select class="form-control" id="grFundo">
+              <option value="rasgado">Rasgado — recuado 15mm, deslizante, sem parafuso</option>
+              <option value="parafusado">Parafusado — faceado externo</option>
+              <option value="sem">Sem fundo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Guarnições GR -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Guarnições — mesma cor do cliente</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Lado parede: 2× sarrafo 15mm (1× prof. 50mm + 1× prof. 130mm). Lado vista: 18mm = 1 peça 600mm; 30mm = 1× 130mm + 1× 600mm</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Lado vista</label>
+              <select class="form-control" id="grGarnVista">
+                <option value="0">Nenhuma</option>
+                <option value="18">18mm (1 peça 600mm)</option>
+                <option value="30">30mm (130mm + 600mm)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Lado parede (130mm prof.)</label>
+              <select class="form-control" id="grGarnParede">
+                <option value="0">Nenhuma</option>
+                <option value="sim">Sim — 2× sarrafo 15mm</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Qtd laterais c/ guarnição</label>
+              <input class="form-control" id="grGarnQtd" type="number" placeholder="2" min="0" value="2">
+            </div>
+          </div>
+        </div>
+
+        <!-- LED -->
+        <div class="form-row">
+          <label class="form-label">Iluminação LED interna?</label>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn" id="grIlumSimBtn" onclick="toggleOrc('grIlum','sim')">Sim</button>
+            <button type="button" class="toggle-btn active" id="grIlumNaoBtn" onclick="toggleOrc('grIlum','nao')">Não</button>
+          </div>
+        </div>
+
+        <button class="btn-cadastrar" onclick="calcularGuardaRoupa()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resGuarda"></div>
+      </div>
+    </div>
+
+    <!-- ═══ COZINHA ═══ -->
+    <div id="orcCozinha" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🍳 Cozinha Planejada</div>
+
+        <!-- Cores -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores (portas, tamponagem, guarnição)</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor principal (portas/frentes)</label>
+              <input class="form-control" id="czCor1" placeholder="Ex: Branco Soft, Grafite...">
+            </div>
+            <div class="form-row"><label class="form-label">Cor 2 (opcional)</label>
+              <input class="form-control" id="czCor2" placeholder="Ex: Madeirado Freijó...">
+            </div>
+            <div class="form-row"><label class="form-label">Cor 3 (opcional)</label>
+              <input class="form-control" id="czCor3" placeholder="Ex: Verde Oliva...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Pé direito / altura geral -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📏 Ambiente</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura total da cozinha (cm)</label>
+              <input class="form-control" id="czLarg" type="number" placeholder="300" oninput="czCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Pé direito (cm)</label>
+              <select class="form-control" id="czPeDireito" onchange="czCalcAuto()">
+                <option value="240">240cm</option>
+                <option value="250">250cm</option>
+                <option value="270" selected>270cm</option>
+                <option value="custom">Outro...</option>
+              </select>
+            </div>
+            <div class="form-row" id="czPeDireitoCustomRow" style="display:none">
+              <label class="form-label">Pé direito personalizado (cm)</label>
+              <input class="form-control" id="czPeDireitoCustom" type="number" placeholder="260" oninput="czCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Altura rodateto (mm)</label>
+              <input class="form-control" id="czRodateto" type="number" placeholder="70" value="70" oninput="czCalcAuto()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Gabinete inferior (sob a pedra) -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🗄️ Gabinete Inferior (sob a pedra)</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Pedra 600mm prof × 400mm larg. Desconto automático: pingadeira 15mm + porta 23mm + tamponagem + guarnição</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura da pedra (mm)</label>
+              <input class="form-control" id="czPedraLarg" type="number" placeholder="400" value="400" oninput="czCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Profundidade da pedra (mm)</label>
+              <input class="form-control" id="czPedraProf" type="number" placeholder="600" value="600" oninput="czCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Altura chão → pedra (mm)</label>
+              <input class="form-control" id="czAltPedra" type="number" placeholder="850" value="850" oninput="czCalcAuto()">
+            </div>
+          </div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Rodapé inf. (mm) — padrão 150mm</label>
+              <input class="form-control" id="czRodape" type="number" placeholder="150" value="150" oninput="czCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Tamponagem lado vista</label>
+              <select class="form-control" id="czTampVista" onchange="czCalcAuto()">
+                <option value="0">Nenhuma</option>
+                <option value="18">18mm</option>
+                <option value="30">30mm</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Guarnição lado parede (30mm fixo)</label>
+              <select class="form-control" id="czGarnParede">
+                <option value="sim">Sim — 2× sarrafo 15mm (30mm + 70mm+)</option>
+                <option value="nao">Não</option>
+              </select>
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Fundo do gabinete inferior</label>
+              <select class="form-control" id="czFundoInf">
+                <option value="sem">Sem fundo (padrão — tem piso na parede)</option>
+                <option value="6mm">Com fundo 6mm (ilha ou sem piso)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Interior da caixa</label>
+              <select class="form-control" id="czInteriorInf">
+                <option value="branco">Branco TX (padrão)</option>
+                <option value="madeirado">Madeirado</option>
+              </select>
+            </div>
+          </div>
+          <div id="czGabInfo" style="font-size:12px;color:#4ade80;margin-top:6px;padding:6px 8px;background:rgba(22,163,74,.08);border-radius:6px;display:none"></div>
+          <div class="orc-grid-3" style="margin-top:8px">
+            <div class="form-row"><label class="form-label">Portas inferiores</label>
+              <input class="form-control" id="czPortasInf" type="number" placeholder="2" min="0">
+            </div>
+            <div class="form-row"><label class="form-label">Gavetas inferiores</label>
+              <input class="form-control" id="czGavetas" type="number" placeholder="0" min="0">
+            </div>
+            <div class="form-row"><label class="form-label">Módulos inferiores</label>
+              <input class="form-control" id="czModInf" type="number" placeholder="1" value="1" min="1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Armários aéreos -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🗄️ Armários Aéreos (começa a 150cm do chão)</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Prof. padrão 400mm. Altura calculada automaticamente pelo pé direito e rodateto.</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura total aéreos (cm)</label>
+              <input class="form-control" id="czLargSup" type="number" placeholder="300" oninput="czCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Profundidade aéreos (mm) — padrão 400</label>
+              <input class="form-control" id="czProfSup" type="number" placeholder="400" value="400">
+            </div>
+            <div class="form-row"><label class="form-label">Módulos aéreos</label>
+              <input class="form-control" id="czModSup" type="number" placeholder="4" value="4">
+            </div>
+          </div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Portas aéreos</label>
+              <input class="form-control" id="czPortasSup" type="number" placeholder="4" min="0">
+            </div>
+            <div class="form-row"><label class="form-label">Fundo aéreos (6mm)</label>
+              <select class="form-control" id="czFundoSup">
+                <option value="rasgado">Rasgado (recuado 15mm)</option>
+                <option value="parafusado">Parafusado (faceado)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Prateleiras internas aéreos</label>
+              <input class="form-control" id="czPratSup" type="number" placeholder="8" value="8">
+            </div>
+          </div>
+          <!-- Nicho microondas -->
+          <div class="form-row" style="margin-top:6px">
+            <label class="form-label">Nicho para microondas?</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn" id="czNichoMicroSimBtn" onclick="toggleOrc('czNichoMicro','sim');czCalcAuto()">Sim</button>
+              <button type="button" class="toggle-btn active" id="czNichoMicroNaoBtn" onclick="toggleOrc('czNichoMicro','nao');czCalcAuto()">Não</button>
+            </div>
+          </div>
+          <div id="czNichoMicroOpts" style="display:none;margin-top:8px">
+            <div class="orc-grid">
+              <div class="form-row"><label class="form-label">Profundidade do nicho micro (mm)</label>
+                <select class="form-control" id="czNichoMicroProf">
+                  <option value="450">450mm (padrão)</option>
+                  <option value="400">400mm (tudo reto 400mm)</option>
+                </select>
+              </div>
+              <div class="form-row"><label class="form-label">Cor do nicho microondas</label>
+                <select class="form-control" id="czNichoMicroCor">
+                  <option value="cozinha">Na cor da cozinha</option>
+                  <option value="madeirado">Madeirado</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">Basculante para alinhar?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="czBasculanteSimBtn" onclick="toggleOrc('czBasculante','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="czBasculanteNaoBtn" onclick="toggleOrc('czBasculante','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+          <div id="czAereoInfo" style="font-size:12px;color:#4ade80;margin-top:6px;padding:6px 8px;background:rgba(22,163,74,.08);border-radius:6px;display:none"></div>
+        </div>
+
+        <!-- Geladeira -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🧊 Vão da Geladeira</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura do vão</label>
+              <select class="form-control" id="czVaoGelad">
+                <option value="80">80cm</option>
+                <option value="90">90cm</option>
+                <option value="100">100cm</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Tamponagem ao lado da pia?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="czTampGeladSimBtn" onclick="toggleOrc('czTampGelad','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="czTampGeladNaoBtn" onclick="toggleOrc('czTampGelad','nao')">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">Armário acima da geladeira?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn active" id="czAreoGeladSimBtn" onclick="toggleOrc('czAreoGelad','sim')">Sim</button>
+                <button type="button" class="toggle-btn" id="czAreoGeladNaoBtn" onclick="toggleOrc('czAreoGelad','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">ℹ️ Altura do vão da geladeira = 195cm (padrão). Armário acima com mesma profundidade da pedra.</div>
+        </div>
+
+        <!-- Extras -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">➕ Opções extras</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Armário de ilha?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="czIlhaSimBtn" onclick="toggleOrc('czIlha','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="czIlhaNaoBtn" onclick="toggleOrc('czIlha','nao')">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">Torre quente?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="czTorreSimBtn" onclick="toggleOrc('czTorre','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="czTorreNaoBtn" onclick="toggleOrc('czTorre','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-cadastrar" onclick="calcularCozinha()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resCozinha"></div>
+      </div>
+    </div>
+
+    <!-- ═══ BANHEIRO ═══ -->
+    <div id="orcBanheiro" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🚿 Gabinete de Banheiro</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Mesma lógica de montagem da cozinha. Caixa branca 15mm. Portas e tamponagem na cor do cliente.</div>
+
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Largura da pedra (mm)</label>
+            <input class="form-control" id="bnPedraLarg" type="number" placeholder="600" oninput="bnCalcAuto()">
+          </div>
+          <div class="form-row"><label class="form-label">Profundidade da pedra (mm)</label>
+            <input class="form-control" id="bnPedraProf" type="number" placeholder="500" value="500" oninput="bnCalcAuto()">
+          </div>
+          <div class="form-row"><label class="form-label">Altura chão → pedra (mm)</label>
+            <input class="form-control" id="bnAltPedra" type="number" placeholder="850" value="850" oninput="bnCalcAuto()">
+          </div>
+        </div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Rodapé (mm)</label>
+            <input class="form-control" id="bnRodape" type="number" placeholder="150" value="150" oninput="bnCalcAuto()">
+          </div>
+          <div class="form-row"><label class="form-label">Tamponagem lado vista</label>
+            <select class="form-control" id="bnTampVista" onchange="bnCalcAuto()">
+              <option value="0">Nenhuma</option>
+              <option value="18">18mm</option>
+              <option value="30">30mm</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-label">Guarnição lado parede?</label>
+            <select class="form-control" id="bnGarnParede">
+              <option value="sim">Sim — 2× sarrafo 15mm</option>
+              <option value="nao">Não</option>
+            </select>
+          </div>
+        </div>
+        <div class="orc-grid">
+          <div class="form-row"><label class="form-label">Portas inferiores</label>
+            <input class="form-control" id="bnPortas" type="number" placeholder="2" min="0">
+          </div>
+          <div class="form-row"><label class="form-label">Gavetas</label>
+            <input class="form-control" id="bnGavetas" type="number" placeholder="0" min="0">
+          </div>
+        </div>
+        <div id="bnGabInfo" style="font-size:12px;color:#4ade80;margin-top:6px;padding:6px 8px;background:rgba(22,163,74,.08);border-radius:6px;display:none"></div>
+
+        <!-- Espelho / aéreo -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🪞 Espelho / Aéreo (80cm altura)</div>
+          <div class="form-row"><label class="form-label">Tipo de espelho/aéreo</label>
+            <select class="form-control" id="bnEspelhoTipo" onchange="bnCalcAuto()">
+              <option value="espelho_simples">Só espelho (sem caixa)</option>
+              <option value="caixa_espelho">Caixa com portas de espelho — altura 143mm c/ portas / 120mm sem</option>
+            </select>
+          </div>
+          <div id="bnEspelhoInfo" style="font-size:12px;color:#60a5fa;margin-top:6px;padding:6px 8px;background:rgba(59,130,246,.08);border-radius:6px;display:none"></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">ℹ️ Pedra 60cm → 2 portas | 120cm → 3 portas | 160cm → 4 portas</div>
+        </div>
+
+        <button class="btn-cadastrar" onclick="calcularBanheiro()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resBanheiro"></div>
+      </div>
+    </div>
+
+    <!-- ═══ PAINEL/CAMA ═══ -->
+    <div id="orcPainel" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🛏️ Painel de Cama / Cabeceira</div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Largura da parede (cm)</label>
+            <input class="form-control" id="pbLargParede" type="number" placeholder="300" oninput="pbCalcAuto()">
+          </div>
+          <div class="form-row"><label class="form-label">Altura (cm)</label>
+            <input class="form-control" id="pbAlt" type="number" placeholder="240">
+          </div>
+          <div class="form-row"><label class="form-label">Profundidade (mm)</label>
+            <input class="form-control" id="pbProf" type="number" placeholder="40" value="40">
+          </div>
+        </div>
+        <div class="orc-grid">
+          <div class="form-row"><label class="form-label">Largura da cama</label>
+            <select class="form-control" id="pbLargCama" onchange="pbCalcAuto()">
+              <option value="0">Sem cama (painel ocupa parede inteira)</option>
+              <option value="140">140cm (casal)</option>
+              <option value="160">160cm (queen)</option>
+              <option value="180">180cm (king)</option>
+              <option value="190">190cm (super king)</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-label">Tipo de painel</label>
+            <select class="form-control" id="pbTipo" onchange="pbCalcAuto()">
+              <option value="liso">Liso</option>
+              <option value="ripado">Ripado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Painel liso -->
+        <div id="pbLisoOpts">
+          <div class="form-row"><label class="form-label">Frisos verticais no painel liso?</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn" id="pbFrisosSimBtn" onclick="toggleOrc('pbFrisos','sim')">Sim — 2 frisos verticais</button>
+              <button type="button" class="toggle-btn active" id="pbFrisosNaoBtn" onclick="toggleOrc('pbFrisos','nao')">Não</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Painel ripado -->
+        <div id="pbRipadoOpts" style="display:none">
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura das ripas (mm)</label>
+              <select class="form-control" id="pbRipaLarg" onchange="pbCalcAuto()">
+                <option value="20">20mm</option>
+                <option value="30">30mm</option>
+                <option value="40">40mm</option>
+                <option value="50">50mm</option>
+                <option value="custom">Outro...</option>
+              </select>
+            </div>
+            <div class="form-row" id="pbRipaLargCustomRow" style="display:none">
+              <label class="form-label">Largura personalizada (mm)</label>
+              <input class="form-control" id="pbRipaLargCustom" type="number" placeholder="35" oninput="pbCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Vão entre ripas (mm) — padrão 10mm</label>
+              <input class="form-control" id="pbRipaVao" type="number" placeholder="10" value="10" oninput="pbCalcAuto()">
+            </div>
+          </div>
+        </div>
+
+        <div id="pbInfo" style="font-size:12px;color:#4ade80;margin-top:6px;padding:6px 8px;background:rgba(22,163,74,.08);border-radius:6px;display:none"></div>
+        <button class="btn-cadastrar" onclick="calcularPainelCama()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resPainelCama"></div>
+      </div>
+    </div>
+
+    <!-- ═══ CRIADO MUDO ═══ -->
+    <div id="orcCriado" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🪟 Criado Mudo</div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Largura (cm)</label><input class="form-control" id="cmLarg" type="number" placeholder="50"></div>
+          <div class="form-row"><label class="form-label">Altura (cm)</label><input class="form-control" id="cmAlt" type="number" placeholder="55"></div>
+          <div class="form-row"><label class="form-label">Profundidade (cm)</label><input class="form-control" id="cmProf" type="number" placeholder="40"></div>
+        </div>
+        <div class="orc-grid">
+          <div class="form-row"><label class="form-label">Tipo de base</label>
+            <select class="form-control" id="cmBase">
+              <option value="suspenso">Suspenso (sem base)</option>
+              <option value="rodizio">Com rodízio</option>
+              <option value="pe">Com pé fixo</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-label">Interior</label>
+            <select class="form-control" id="cmInterior">
+              <option value="so_gavetas">Só gavetas</option>
+              <option value="gavetas_nicho">Gavetas + 1 nicho</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row"><label class="form-label">Nº de gavetas</label>
+          <input class="form-control" id="cmGavetas" type="number" placeholder="2" min="1" value="2">
+        </div>
+        <button class="btn-cadastrar" onclick="calcularCriadoMudo()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resCriado"></div>
+      </div>
+    </div>
+
+    <!-- ═══ REVESTIMENTO DE PAREDE ═══ -->
+    <div id="orcRevestimento" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🧱 Revestimento de Parede (Liso ou Ripado)</div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Largura da parede (cm)</label>
+            <input class="form-control" id="rvLarg" type="number" placeholder="300" oninput="rvCalcAuto()">
+          </div>
+          <div class="form-row"><label class="form-label">Altura (cm)</label>
+            <input class="form-control" id="rvAlt" type="number" placeholder="240" oninput="rvCalcAuto()">
+          </div>
+          <div class="form-row"><label class="form-label">Tipo de revestimento</label>
+            <select class="form-control" id="rvTipo" onchange="rvCalcAuto()">
+              <option value="liso">Liso (chapa 15mm)</option>
+              <option value="ripado">Ripado (ripas sobre base)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ripado -->
+        <div id="rvRipadoOpts">
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura das ripas (mm)</label>
+              <select class="form-control" id="rvRipaLarg" onchange="rvCalcAuto()">
+                <option value="20">20mm</option>
+                <option value="30">30mm</option>
+                <option value="40">40mm</option>
+                <option value="50">50mm</option>
+                <option value="custom">Outro...</option>
+              </select>
+            </div>
+            <div class="form-row" id="rvRipaCustomRow" style="display:none">
+              <label class="form-label">Largura personalizada (mm)</label>
+              <input class="form-control" id="rvRipaLargCustom" type="number" placeholder="35" oninput="rvCalcAuto()">
+            </div>
+            <div class="form-row"><label class="form-label">Vão entre ripas (mm) — padrão 10mm</label>
+              <input class="form-control" id="rvRipaVao" type="number" placeholder="10" value="10" oninput="rvCalcAuto()">
+            </div>
+          </div>
+        </div>
+
+        <div id="rvInfo" style="font-size:12px;color:#4ade80;margin-top:6px;padding:6px 8px;background:rgba(22,163,74,.08);border-radius:6px;display:none"></div>
+        <button class="btn-cadastrar" onclick="calcularRevestimento()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resRevestimento"></div>
+      </div>
+    </div>
+
+    <!-- ═══ NICHO ═══ -->
+    <div id="orcNicho" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">📦 Nichos</div>
+        <div class="orc-grid">
+          <div class="form-row"><label class="form-label">Largura (cm)</label><input class="form-control" id="nichLarg" type="number" placeholder="40"></div>
+          <div class="form-row"><label class="form-label">Altura (cm)</label><input class="form-control" id="nichAlt" type="number" placeholder="30"></div>
+          <div class="form-row"><label class="form-label">Profundidade (cm)</label><input class="form-control" id="nichProf" type="number" placeholder="20"></div>
+          <div class="form-row"><label class="form-label">Quantidade</label><input class="form-control" id="nichQtd" type="number" placeholder="3" min="1"></div>
+        </div>
+        <div class="form-row"><label class="form-label">Fundo 6mm?</label>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn active" id="nichFundoSimBtn" onclick="toggleOrc('nichFundo','sim')">Sim</button>
+            <button type="button" class="toggle-btn" id="nichFundoNaoBtn" onclick="toggleOrc('nichFundo','nao')">Não</button>
+          </div>
+        </div>
+        <button class="btn-cadastrar" onclick="calcularNicho()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resNicho"></div>
+      </div>
+    </div>
+
+    <!-- ═══ PREÇOS ═══ -->
+    <div id="orcPrecos" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">
+          💰 Tabela de Preços
+          <button class="btn-cadastrar" onclick="salvarPrecos()" style="margin:0;padding:6px 16px;font-size:12px">💾 Salvar</button>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Preencha os preços para calcular valores automaticamente.</p>
+        <div style="overflow-x:auto">
+          <table class="preco-table">
+            <thead><tr><th>Material</th><th>Unidade</th><th>Preço (R$)</th></tr></thead>
+            <tbody id="precosTabela"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -848,280 +1489,840 @@ function toggleVerCodigo(){
   else{inp.type='password';btn.textContent='👁';}
 }
 
-
-// ── ORÇAMENTO ──
+// ══════════════════════════════════════════
+// ORÇAMENTO v3 — AgendaPRO Stylo
+// ══════════════════════════════════════════
 const _orcToggles = {};
 function toggleOrc(key, val) {
   _orcToggles[key] = val;
-  document.getElementById(key+'Sim').classList.toggle('active', val==='sim');
-  document.getElementById(key+'Nao').classList.toggle('active', val==='nao');
+  const s = document.getElementById(key+'SimBtn');
+  const n = document.getElementById(key+'NaoBtn');
+  if(s) s.classList.toggle('active', val==='sim');
+  if(n) n.classList.toggle('active', val==='nao');
 }
 function getToggle(key, def='nao') { return _orcToggles[key] || def; }
 
 function abrirOrcamento() {
   irPara('screenOrcamento');
   iniciarPrecos();
+  toggleOrc('grMaleiro','sim');
+  toggleOrc('grIlum','nao');
+  toggleOrc('nichFundo','sim');
+  toggleOrc('czNichoMicro','nao');
+  toggleOrc('czBasculante','nao');
+  toggleOrc('czTampGelad','nao');
+  toggleOrc('czAreoGelad','sim');
+  toggleOrc('czIlha','nao');
+  toggleOrc('czTorre','nao');
+  toggleOrc('pbFrisos','nao');
+  document.getElementById('pbRipadoOpts').style.display='none';
+  document.getElementById('pbLisoOpts').style.display='block';
+  document.getElementById('rvRipadoOpts').style.display='block';
 }
 function fecharOrcamento() { irPara('app'); }
 
 function orcTab(tab) {
-  ['armario','cozinha','closet','nicho','painel','precos'].forEach(t => {
+  const tabs = ['guarda','cozinha','banheiro','painel','criado','revestimento','nicho','precos'];
+  tabs.forEach(t => {
     const el = document.getElementById('orc'+t.charAt(0).toUpperCase()+t.slice(1));
-    if (el) el.style.display = t===tab ? 'block' : 'none';
+    if(el) el.style.display = t===tab ? 'block' : 'none';
   });
-  document.querySelectorAll('.orc-tab').forEach((btn,i) => {
-    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(tab) || (tab==='precos' && btn.textContent.includes('Preços')));
+  document.querySelectorAll('.orc-tab').forEach(btn => {
+    const lbl = btn.textContent.toLowerCase().replace(/[^a-záéíóúãõâêîôûç]/g,'');
+    btn.classList.toggle('active', lbl.includes(tab) || btn.getAttribute('onclick')?.includes("'"+tab+"'"));
   });
 }
 
-// Materiais padrão
+// ──────────────────────────────────────────
+// MATERIAIS E PREÇOS
+// ──────────────────────────────────────────
 const MATERIAIS = [
-  {id:'chapa_mdf', nome:'Chapa MDF', unidade:'chapa (2750x1830mm)'},
-  {id:'fita_borda', nome:'Fita de borda', unidade:'metro'},
-  {id:'dobradiça', nome:'Dobradiça', unidade:'par'},
-  {id:'corrediça', nome:'Corrediça gaveta', unidade:'par'},
-  {id:'parafuso', nome:'Parafuso (cx 100un)', unidade:'caixa'},
-  {id:'cam_lock', nome:'Cam lock (minifix)', unidade:'un'},
-  {id:'fundo_chapa', nome:'Fundo chapa 3mm', unidade:'m²'},
-  {id:'puxador', nome:'Puxador', unidade:'un'},
-  {id:'iluminacao', nome:'Fita LED 5m', unidade:'rolo'},
-  {id:'vidro', nome:'Vidro/espelho', unidade:'m²'},
-  {id:'cabideiro', nome:'Cabideiro', unidade:'un'},
-  {id:'mo_obra', nome:'Mão de obra', unidade:'verba'},
+  {id:'chapa15_branco',  nome:'Chapa MDF 15mm Branco TX (caixa)',        unidade:'chapa (2750×1830mm)'},
+  {id:'chapa15_mad',     nome:'Chapa MDF 15mm Madeirado (caixa/ripa)',   unidade:'chapa (2750×1830mm)'},
+  {id:'chapa18_branco',  nome:'Chapa MDF 18mm Branco TX (porta/frente)', unidade:'chapa (2750×1830mm)'},
+  {id:'chapa18_mad',     nome:'Chapa MDF 18mm Madeirado (porta/frente)', unidade:'chapa (2750×1830mm)'},
+  {id:'chapa6_branco',   nome:'Chapa HDF 6mm Branco (fundo)',            unidade:'chapa (2750×1830mm)'},
+  {id:'fita_branco',     nome:'Fita de borda 22mm Branco TX',            unidade:'metro'},
+  {id:'fita_cor',        nome:'Fita de borda 22mm (cor do cliente)',     unidade:'metro'},
+  {id:'dobradica',       nome:'Dobradiça 35mm caneco',                   unidade:'par'},
+  {id:'corredica',       nome:'Corrediça telescópica gaveta',            unidade:'par'},
+  {id:'cam_lock',        nome:'Cam lock / minifix',                      unidade:'un'},
+  {id:'parafuso',        nome:'Parafuso chipboard (cx 100un)',           unidade:'caixa'},
+  {id:'puxador',         nome:'Puxador',                                 unidade:'un'},
+  {id:'cabideiro',       nome:'Cabideiro tubular',                       unidade:'un'},
+  {id:'led',             nome:'Fita LED 5m',                             unidade:'rolo'},
+  {id:'espelho',         nome:'Vidro espelho (m²)',                      unidade:'m²'},
+  {id:'mo_obra',         nome:'Mão de obra (montagem)',                  unidade:'verba'},
 ];
 
 function iniciarPrecos() {
   const precos = LSJ('orc_precos') || {};
   const tb = document.getElementById('precosTabela');
-  if (!tb) return;
+  if(!tb) return;
   tb.innerHTML = MATERIAIS.map(m => `
     <tr>
       <td>${m.nome}</td>
       <td style="color:var(--muted)">${m.unidade}</td>
-      <td><input type="number" min="0" step="0.01" placeholder="0,00" value="${precos[m.id]||''}" id="preco_${m.id}"></td>
+      <td><input type="number" min="0" step="0.01" placeholder="0,00"
+          value="${precos[m.id]||''}" id="preco_${m.id}" onchange="salvarPrecosAuto()"></td>
     </tr>`).join('');
 }
+function salvarPrecosAuto() {
+  const p={};
+  MATERIAIS.forEach(m=>{const v=document.getElementById('preco_'+m.id);if(v&&v.value)p[m.id]=parseFloat(v.value);});
+  LSJ('orc_precos',p);
+}
+function salvarPrecos(){salvarPrecosAuto();toast('✅ Preços salvos!');}
+function getPreco(id){return(LSJ('orc_precos')||{})[id]||0;}
 
-function salvarPrecos() {
-  const precos = {};
-  MATERIAIS.forEach(m => {
-    const v = document.getElementById('preco_'+m.id);
-    if (v && v.value) precos[m.id] = parseFloat(v.value);
+// ──────────────────────────────────────────
+// PLANO DE CORTE (bin-packing)
+// ──────────────────────────────────────────
+const CHAPA_L=2750, CHAPA_A=1830;
+
+function chapasNecessarias(pecas) {
+  const grupos={'15b':[],'15m':[],'18':[],'6':[]};
+  pecas.forEach(p=>{
+    const arr=grupos[p.tipo];
+    if(arr) for(let i=0;i<(p.qty||1);i++) arr.push({l:p.l,a:p.a,nome:p.nome});
   });
-  LSJ('orc_precos', precos);
-  toast('✅ Preços salvos!');
+  const result={};
+  Object.keys(grupos).forEach(t=>{ result[t]=planoCorteTipo(grupos[t]); });
+  return result;
 }
 
-function getPreco(id) { return (LSJ('orc_precos')||{})[id] || 0; }
-
-function chapasNecessarias(areaTotal, esp=18) {
-  // Chapa padrão 2750x1830mm = 5.0325 m²
-  return Math.ceil(areaTotal / 5.03);
-}
-
-function renderResultado(containerId, itens, cliente, tipoMovel) {
-  const precos = LSJ('orc_precos') || {};
-  let total = 0;
-  let html = '<div class="orc-resultado">';
-  html += '<h4>📋 Lista de Materiais</h4>';
-  itens.forEach(it => {
-    const p = getPreco(it.id);
-    const subtotal = p * it.qty;
-    total += subtotal;
-    html += `<div class="orc-item">
-      <span class="orc-item-nome">${it.nome}</span>
-      <span style="display:flex;gap:16px;align-items:center">
-        <span class="orc-item-qty">${it.qty} ${it.un}</span>
-        ${p ? `<span style="color:var(--muted);font-size:11px">${formatBRL(subtotal)}</span>` : ''}
-      </span>
-    </div>`;
-  });
-  if (total > 0) {
-    html += `<div class="orc-total"><span>Total estimado</span><span>${formatBRL(total)}</span></div>`;
+function planoCorteTipo(pecas) {
+  if(!pecas.length) return [];
+  const chapas=[];
+  const sorted=[...pecas].sort((a,b)=>b.l*b.a-a.l*a.a);
+  for(const peca of sorted){
+    let placed=false;
+    for(const ch of chapas){if(tentarColocar(ch,peca)){placed=true;break;}}
+    if(!placed){
+      const nova={usada:[],livre:[{x:0,y:0,l:CHAPA_L,a:CHAPA_A}]};
+      tentarColocar(nova,peca);
+      chapas.push(nova);
+    }
   }
-  html += `<div style="display:flex;gap:8px;margin-top:12px">
-    <button onclick="gerarPDF('${tipoMovel}')" class="btn-cadastrar" style="flex:1;margin-top:0">📄 Gerar PDF do Orçamento</button>
-  </div>`;
-  html += '</div>';
-  document.getElementById(containerId).innerHTML = html;
-  // Salvar último resultado para o PDF
-  window._ultimoOrc = { itens, tipoMovel, total };
+  return chapas;
 }
 
-// ── CÁLCULOS ──
-function calcularArmario() {
-  const L=+document.getElementById('armLarg').value;
-  const A=+document.getElementById('armAlt').value;
-  const P=+document.getElementById('armProf').value;
-  const portas=+document.getElementById('armPortas').value||2;
-  const gavetas=+document.getElementById('armGavetas').value||0;
-  const prateleiras=+document.getElementById('armPrateleiras').value||2;
-  const esp=+document.getElementById('armEsp').value;
-  const espelho=getToggle('armEsp')==='sim';
-  const ilum=getToggle('armIlum')==='sim';
-  if (!L||!A||!P) { toast('⚠️ Preencha largura, altura e profundidade'); return; }
+function tentarColocar(chapa,peca){
+  const GAP=4;
+  for(let rot=0;rot<2;rot++){
+    const cl=(rot===0?peca.l:peca.a)+GAP;
+    const ca=(rot===0?peca.a:peca.l)+GAP;
+    for(let i=0;i<chapa.livre.length;i++){
+      const esp=chapa.livre[i];
+      if(esp.l>=cl&&esp.a>=ca){
+        const rx=rot===0?peca.l:peca.a, ry=rot===0?peca.a:peca.l;
+        chapa.usada.push({x:esp.x,y:esp.y,l:rx,a:ry,nome:peca.nome});
+        const novas=[];
+        if(esp.l-cl>20) novas.push({x:esp.x+cl,y:esp.y,l:esp.l-cl,a:ca});
+        if(esp.a-ca>20) novas.push({x:esp.x,y:esp.y+ca,l:esp.l,a:esp.a-ca});
+        chapa.livre.splice(i,1,...novas);
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
-  // Áreas em m²
-  const areaLateral = 2 * (A/100 * P/100);
-  const areaFundo = A/100 * L/100;
-  const areaTampo = 2 * (L/100 * P/100); // tampo + base
-  const areaPrateleiras = prateleiras * (L/100 * P/100);
-  const areaPortas = portas * ((A/100) * (L/100/portas));
-  const areaTotal = areaLateral + areaFundo + areaTampo + areaPrateleiras + areaPortas;
-  const chapas = chapasNecessarias(areaTotal, esp);
-  const fitaBorda = Math.ceil((2*(A+P) + 2*(L+P) + prateleiras*2*(L+P) + portas*(2*(A/portas+L/portas))) / 100) + 5;
-  const camLock = (prateleiras * 4) + 8;
-  const parafusos = Math.ceil(areaTotal * 8);
+function renderResultado(containerId, pecas, extraItens, tipoMovel, obs) {
+  const plano=chapasNecessarias(pecas);
+  const cnt15b=plano['15b'].length, cnt15m=plano['15m'].length;
+  const cnt18=plano['18'].length,   cnt6=plano['6'].length;
 
-  const itens = [
-    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
-    {id:'fita_borda', nome:'Fita de borda', qty:fitaBorda, un:'metros'},
-    {id:'dobradiça', nome:'Dobradiças', qty:portas*2, un:'pares'},
-    {id:'cam_lock', nome:'Cam lock (minifix)', qty:camLock, un:'un'},
-    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(parafusos/100), un:'caixas'},
-    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(A/100*L/100).toFixed(2), un:'m²'},
-    {id:'puxador', nome:'Puxadores', qty:portas+gavetas, un:'un'},
-    ...(gavetas>0?[{id:'corrediça', nome:'Corrediças gaveta', qty:gavetas, un:'pares'}]:[]),
-    ...(espelho?[{id:'vidro', nome:'Espelho para portas', qty:+(areaPortas).toFixed(2), un:'m²'}]:[]),
-    ...(ilum?[{id:'iluminacao', nome:'Fita LED', qty:Math.ceil(L/250), un:'rolos'}]:[]),
-    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  const itensMat=[];
+  if(cnt15b) itensMat.push({id:'chapa15_branco',nome:'Chapa MDF 15mm Branco TX (caixa)',qty:cnt15b,un:'chapas'});
+  if(cnt15m) itensMat.push({id:'chapa15_mad',   nome:'Chapa MDF 15mm Madeirado',        qty:cnt15m,un:'chapas'});
+  if(cnt18)  itensMat.push({id:'chapa18_branco',nome:'Chapa MDF 18mm (portas/frentes)', qty:cnt18, un:'chapas'});
+  if(cnt6)   itensMat.push({id:'chapa6_branco', nome:'Chapa HDF 6mm (fundos)',          qty:cnt6,  un:'chapas'});
+  const itens=[...itensMat,...extraItens];
+
+  let total=0;
+  let html='<div class="orc-resultado"><h4>📋 Lista de Materiais</h4>';
+  itens.forEach(it=>{
+    const p=getPreco(it.id), sub=p*it.qty;
+    total+=sub;
+    html+=`<div class="orc-item">
+      <span class="orc-item-nome">${it.nome}</span>
+      <span style="display:flex;gap:12px;align-items:center">
+        <span class="orc-item-qty">${it.qty} ${it.un}</span>
+        ${p?`<span style="color:var(--muted);font-size:11px">${formatBRL(sub)}</span>`:''}
+      </span></div>`;
+  });
+  if(total>0) html+=`<div class="orc-total"><span>Total estimado</span><span>${formatBRL(total)}</span></div>`;
+  if(obs) html+=`<div style="font-size:11px;color:#fbbf24;padding:8px;background:rgba(251,191,36,.07);border-radius:6px;margin-top:8px">${obs}</div>`;
+  html+=`<div style="display:flex;gap:8px;margin-top:12px">
+    <button onclick="gerarPDFOrc('${tipoMovel}')" class="btn-cadastrar" style="flex:1;margin-top:0">📄 Gerar PDF</button>
+  </div></div>`;
+  html+=renderPlanoCorteSVG(plano,tipoMovel);
+  document.getElementById(containerId).innerHTML=html;
+  window._ultimoOrc={itens,tipoMovel,total,plano};
+}
+
+function renderPlanoCorteSVG(plano,titulo){
+  const tipos=[
+    {key:'15b',label:'MDF 15mm Branco TX (caixa)',cor:'#c9a84c'},
+    {key:'15m',label:'MDF 15mm Madeirado',cor:'#8b5e2a'},
+    {key:'18', label:'MDF 18mm (portas/frentes)',cor:'#3b82f6'},
+    {key:'6',  label:'HDF 6mm (fundo)',cor:'#16a34a'},
   ];
-  renderResultado('resArmario', itens, '', 'Armário');
+  let html=`<div style="margin-top:16px"><div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:10px">✂️ Plano de Corte — ${titulo}</div>`;
+  tipos.forEach(tipo=>{
+    const chapas=plano[tipo.key];
+    if(!chapas||!chapas.length) return;
+    html+=`<div style="margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:${tipo.cor};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${tipo.label} — ${chapas.length} chapa${chapas.length>1?'s':''}</div>`;
+    chapas.forEach((chapa,ci)=>{
+      const esc=560/CHAPA_L, svgW=Math.round(CHAPA_L*esc), svgH=Math.round(CHAPA_A*esc);
+      const cores=['#1e3a5f','#1a4a2e','#3d2a0e','#2a1a3e','#1a2a3a','#2e1a1a'];
+      html+=`<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Chapa ${ci+1}</div><div style="overflow-x:auto">
+      <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="display:block;background:#111827;border:1px solid ${tipo.cor}44;border-radius:6px;max-width:100%">
+        <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#111827"/>
+        ${chapa.usada.map((p,pi)=>{
+          const px=Math.round(p.x*esc),py=Math.round(p.y*esc);
+          const pw=Math.max(Math.round(p.l*esc)-1,2),ph=Math.max(Math.round(p.a*esc)-1,2);
+          const cor=cores[pi%cores.length];
+          const cx=px+pw/2,cy=py+ph/2,fs=Math.min(10,Math.max(6,pw/9));
+          const ns=p.nome.length>18?p.nome.slice(0,17)+'…':p.nome;
+          return `<g>
+            <rect x="${px+1}" y="${py+1}" width="${pw-2}" height="${ph-2}" fill="${cor}" stroke="${tipo.cor}" stroke-width="1" rx="2" opacity=".92"/>
+            ${pw>40&&ph>16?`<text x="${cx}" y="${cy-fs*.3}" text-anchor="middle" dominant-baseline="middle" fill="#e8eaf0" font-size="${fs}px" font-family="DM Sans,sans-serif">${ns}</text>`:''}
+            ${pw>60&&ph>26?`<text x="${cx}" y="${cy+fs*.9}" text-anchor="middle" dominant-baseline="middle" fill="${tipo.cor}" font-size="${Math.max(fs-1,6)}px" font-family="DM Sans,sans-serif" opacity=".8">${p.l}×${p.a}mm</text>`:''}
+          </g>`;
+        }).join('')}
+        <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="none" stroke="${tipo.cor}" stroke-width="1.5" rx="3"/>
+        <text x="4" y="${svgH-4}" fill="${tipo.cor}88" font-size="9px" font-family="DM Sans,sans-serif">2750×1830mm</text>
+      </svg></div></div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
 }
 
-function calcularCozinha() {
-  const L=+document.getElementById('cozLarg').value;
-  const AltSup=+document.getElementById('cozAltSup').value||70;
-  const AltInf=+document.getElementById('cozAltInf').value||85;
-  const ProfSup=+document.getElementById('cozProfSup').value||35;
-  const ProfInf=+document.getElementById('cozProfInf').value||60;
-  const portasSup=+document.getElementById('cozPortasSup').value||0;
-  const portasInf=+document.getElementById('cozPortasInf').value||0;
-  const gavetas=+document.getElementById('cozGavetas').value||0;
-  const esp=+document.getElementById('cozEsp').value;
-  if (!L) { toast('⚠️ Preencha a largura total'); return; }
+// ──────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────
+function alturaBloco(qtd){return(!qtd||qtd<=0)?0:(qtd<=4?800:1000);}// mm
 
-  const areaSup = (L/100*AltSup/100) + (L/100*ProfSup/100) + 2*(AltSup/100*ProfSup/100) + portasSup*(L/100/Math.max(portasSup,1)*AltSup/100);
-  const areaInf = (L/100*AltInf/100) + (L/100*ProfInf/100) + 2*(AltInf/100*ProfInf/100) + portasInf*(L/100/Math.max(portasInf,1)*AltInf/100);
-  const areaTotal = areaSup + areaInf;
-  const chapas = chapasNecessarias(areaTotal, esp);
-  const totalPortas = portasSup + portasInf;
-  const camLock = 16 + totalPortas*2;
+function calcGrAlturaBlocos(){
+  const gav=+document.getElementById('grGavetas').value||0;
+  const sap=+document.getElementById('grSapateiras').value||0;
+  const aG=alturaBloco(gav)/10, aS=alturaBloco(sap)/10;
+  const info=document.getElementById('grAlturaInfo');
+  if(aG+aS>0){
+    info.style.display='block';
+    info.textContent=`ℹ️ Bloco gavetas: ${aG}cm | Bloco sapateiras: ${aS}cm | Total: ${aG+aS}cm`;
+  }else info.style.display='none';
+}
 
-  const itens = [
-    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
-    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*4)+5, un:'metros'},
-    {id:'dobradiça', nome:'Dobradiças', qty:totalPortas*2, un:'pares'},
-    {id:'cam_lock', nome:'Cam lock (minifix)', qty:camLock, un:'un'},
-    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
-    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(L/100*(AltSup+AltInf)/100).toFixed(2), un:'m²'},
-    {id:'puxador', nome:'Puxadores', qty:totalPortas+gavetas, un:'un'},
-    ...(gavetas>0?[{id:'corrediça', nome:'Corrediças gaveta', qty:gavetas, un:'pares'}]:[]),
-    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+function grCalcAuto(){
+  const A=+document.getElementById('grAlt').value||0;
+  const base=+document.getElementById('grBaseAlt').value||30;
+  const rot=+document.getElementById('grRodateto').value||5;
+  const tipo=document.getElementById('grTipoPorta')?.value||'giro';
+  const altInterna=A*10-base-rot;
+  const info=document.getElementById('grAltInternaInfo');
+  if(A>0){
+    const avisoCorrer=tipo==='correr'&&A*10>2720?'⚠️ Porta de correr: altura máx. 2720mm!' :'';
+    info.style.display='block';
+    info.innerHTML=`📏 Altura interna: <b>${altInterna}mm</b> (total ${A*10} − base ${base} − rodateto ${rot}mm) ${avisoCorrer}`;
+  }else info.style.display='none';
+}
+
+function toggleGrPortas(){}
+
+// ── COZINHA CALC AUTO ──
+function czCalcAuto(){
+  const pedL=+document.getElementById('czPedraLarg').value||400;
+  const pedP=+document.getElementById('czPedraProf').value||600;
+  const altPedra=+document.getElementById('czAltPedra').value||850;
+  const rodape=+document.getElementById('czRodape').value||150;
+  const tampV=+document.getElementById('czTampVista').value||0;
+  const garn=document.getElementById('czGarnParede').value==='sim'?30:0;
+  const peDirSel=document.getElementById('czPeDireito').value;
+  const peDirCustom=+document.getElementById('czPeDireitoCustom')?.value||0;
+  const peDireito=peDirSel==='custom'?peDirCustom*10:+peDirSel*10;
+  const rodateto=+document.getElementById('czRodateto').value||70;
+  const temMicro=getToggle('czNichoMicro')==='sim';
+  const microProf=+document.getElementById('czNichoMicroProf')?.value||450;
+
+  // Desconto pedra direita
+  const pingadeira=15, descPorta=23;
+  const cxProf=pedP-pingadeira-descPorta;           // 562mm
+  const cxLarg=pedL-pingadeira-tampV-garn;          // ex: 337mm
+  const cxAlt=altPedra-rodape-50;                   // 650mm (-50 do frontal)
+
+  // Aéreo
+  const inicioAereo=1500; // 150cm do chão
+  let altAereo=peDireito-inicioAereo-rodateto;
+  let altAereoCaixa=altAereo-18; // desconta porta
+  let altMicroCaixa=0, altRestante=altAereoCaixa;
+  if(temMicro&&microProf===450){
+    altMicroCaixa=450;
+    altRestante=altAereoCaixa-altMicroCaixa;
+  }
+
+  document.getElementById('czPeDireitoCustomRow').style.display=peDirSel==='custom'?'block':'none';
+  document.getElementById('czNichoMicroOpts').style.display=getToggle('czNichoMicro')==='sim'?'block':'none';
+
+  const gabInfo=document.getElementById('czGabInfo');
+  gabInfo.style.display='block';
+  gabInfo.innerHTML=`📐 Caixa inferior: <b>${cxProf}mm prof. × ${cxLarg}mm larg. × ${cxAlt}mm alt.</b><br>
+    <span style="font-size:10px;color:var(--muted)">Pedra(${pedP}) − pingadeira(15) − porta(23) = ${cxProf}mm prof. &nbsp;|&nbsp;
+    Pedra(${pedL}) − pingadeira(15) − tamponagem(${tampV}) − guarnição(${garn}) = ${cxLarg}mm larg.</span>`;
+
+  const aereoInfo=document.getElementById('czAereoInfo');
+  if(peDireito>0){
+    aereoInfo.style.display='block';
+    aereoInfo.innerHTML=`🗄️ Aéreo começa a 150cm. Altura total: <b>${altAereo}mm</b>. Caixa: <b>${altAereoCaixa}mm</b>
+    ${temMicro&&microProf===450?`<br>Nicho micro: <b>${altMicroCaixa}mm</b> | Restante: <b>${altRestante}mm</b>`:''}`;
+  }else aereoInfo.style.display='none';
+}
+
+function bnCalcAuto(){
+  const pedL=+document.getElementById('bnPedraLarg').value||600;
+  const pedP=+document.getElementById('bnPedraProf').value||500;
+  const altPedra=+document.getElementById('bnAltPedra').value||850;
+  const rodape=+document.getElementById('bnRodape').value||150;
+  const tampV=+document.getElementById('bnTampVista').value||0;
+  const garn=document.getElementById('bnGarnParede').value==='sim'?30:0;
+  const pingadeira=15,descPorta=23;
+  const cxProf=pedP-pingadeira-descPorta;
+  const cxLarg=pedL-pingadeira-tampV-garn;
+  const cxAlt=altPedra-rodape-50;
+  const info=document.getElementById('bnGabInfo');
+  info.style.display='block';
+  info.innerHTML=`📐 Caixa: <b>${cxProf}mm prof. × ${cxLarg}mm larg. × ${cxAlt}mm alt.</b>`;
+
+  // Espelho
+  const tipoEsp=document.getElementById('bnEspelhoTipo').value;
+  const espInfo=document.getElementById('bnEspelhoInfo');
+  if(tipoEsp==='caixa_espelho'){
+    const portas=pedL>=1600?4:pedL>=1200?3:2;
+    espInfo.style.display='block';
+    espInfo.innerHTML=`🪞 Caixa espelho: altura 143mm (c/portas) / 120mm (sem portas). Largura pedra ${pedL}mm → <b>${portas} portas</b>.`;
+  }else espInfo.style.display='none';
+}
+
+function pbCalcAuto(){
+  const larg=+document.getElementById('pbLargParede').value||0;
+  const tipo=document.getElementById('pbTipo').value;
+  const largCama=+document.getElementById('pbLargCama').value||0;
+  document.getElementById('pbLisoOpts').style.display=tipo==='liso'?'block':'none';
+  document.getElementById('pbRipadoOpts').style.display=tipo==='ripado'?'block':'none';
+
+  const rlSel=document.getElementById('pbRipaLarg').value;
+  document.getElementById('pbRipaLargCustomRow').style.display=rlSel==='custom'?'block':'none';
+
+  const info=document.getElementById('pbInfo');
+  if(larg>0&&tipo==='ripado'){
+    const ripaL=rlSel==='custom'?(+document.getElementById('pbRipaLargCustom').value||30):+rlSel;
+    const vao=+document.getElementById('pbRipaVao').value||10;
+    const passo=ripaL+vao;
+    const qtdRipas=Math.floor(larg*10/passo);
+    const largReal=qtdRipas*ripaL+(qtdRipas-1)*vao;
+    info.style.display='block';
+    info.innerHTML=`🪵 Ripas: <b>${qtdRipas} ripas</b> de ${ripaL}mm + vão ${vao}mm = ${largReal}mm (de ${larg*10}mm disponíveis)`;
+  } else if(larg>0&&tipo==='liso'&&largCama>0){
+    const painelL=largCama+100;
+    const vaoPassagem=(larg*10-painelL*10)/2/10;
+    info.style.display='block';
+    info.innerHTML=`📐 Painel liso: <b>${painelL/10}cm</b> centralizado. Vão lateral (passagem/criado): <b>${vaoPassagem}cm</b> de cada lado.`;
+  } else info.style.display='none';
+}
+
+function rvCalcAuto(){
+  const larg=+document.getElementById('rvLarg').value||0;
+  const alt=+document.getElementById('rvAlt').value||0;
+  const tipo=document.getElementById('rvTipo').value;
+  const rlSel=document.getElementById('rvRipaLarg').value;
+  document.getElementById('rvRipaCustomRow').style.display=rlSel==='custom'?'block':'none';
+  const info=document.getElementById('rvInfo');
+  if(larg>0&&alt>0&&tipo==='ripado'){
+    const ripaL=rlSel==='custom'?(+document.getElementById('rvRipaLargCustom').value||30):+rlSel;
+    const vao=+document.getElementById('rvRipaVao').value||10;
+    const passo=ripaL+vao;
+    const qtdRipas=Math.floor(larg*10/passo);
+    const ml=qtdRipas*alt/100;
+    info.style.display='block';
+    info.innerHTML=`🪵 <b>${qtdRipas} ripas</b> de ${ripaL}mm × ${alt}cm. Metragem total: <b>${ml.toFixed(1)}m lineares</b>.`;
+  } else info.style.display='none';
+}
+
+// ──────────────────────────────────────────
+// CÁLCULO: GUARDA-ROUPA
+// ──────────────────────────────────────────
+function calcularGuardaRoupa(){
+  const L=+document.getElementById('grLarg').value;
+  const A=+document.getElementById('grAlt').value;
+  const P=+document.getElementById('grProf').value||60;
+  const mod=+document.getElementById('grModulos').value||2;
+  const tipoPorta=document.getElementById('grTipoPorta').value;
+  const qtdPortas=+document.getElementById('grPortas').value||0;
+  const interior=document.getElementById('grInterior').value;
+  const gavetas=+document.getElementById('grGavetas').value||0;
+  const sapateiras=+document.getElementById('grSapateiras').value||0;
+  const cabid=+document.getElementById('grCabid').value||0;
+  const prat=+document.getElementById('grPrat').value||0;
+  const maleiro=getToggle('grMaleiro')==='sim';
+  const tipoFundo=document.getElementById('grFundo').value;
+  const divis=+document.getElementById('grDivisorias').value||0;
+  const garnVista=document.getElementById('grGarnVista').value;
+  const garnParede=document.getElementById('grGarnParede').value;
+  const garnQtd=+document.getElementById('grGarnQtd').value||2;
+  const baseAlt=+document.getElementById('grBaseAlt').value||30;
+  const rodateto=+document.getElementById('grRodateto').value||5;
+  const baseMat=document.getElementById('grBaseMat').value;
+  const ilum=getToggle('grIlum')==='sim';
+  if(!L||!A){toast('⚠️ Preencha largura e altura');return;}
+
+  const Lmm=L*10,Amm=A*10,Pmm=P*10;
+  const modL=Math.round(Lmm/mod);
+  const altInterna=Amm-baseAlt-rodateto;
+  const cxTipo=interior==='madeirado'?'15m':'15b';
+  const totalDiv=(mod-1)+divis;
+  const tampoL=Lmm-30;
+
+  const pecas=[];
+  pecas.push({tipo:cxTipo,nome:'Lateral ext.',l:altInterna,a:Pmm,qty:2});
+  pecas.push({tipo:cxTipo,nome:'Tampo',l:tampoL,a:Pmm,qty:1});
+  pecas.push({tipo:cxTipo,nome:'Base caixa',l:tampoL,a:Pmm,qty:1});
+  if(totalDiv>0) pecas.push({tipo:cxTipo,nome:'Divisória',l:altInterna-30,a:Pmm,qty:totalDiv});
+  if(prat>0) pecas.push({tipo:cxTipo,nome:'Prateleira',l:modL-15,a:Pmm,qty:prat});
+  if(maleiro) pecas.push({tipo:cxTipo,nome:'Prat.Maleiro',l:modL-15,a:Pmm,qty:mod});
+
+  // Base (2× sarrafo 15mm)
+  const baseTipo=baseMat==='mdf_mad'?'15m':baseMat==='mdf_cru'?'15b':'15b';
+  pecas.push({tipo:baseTipo,nome:'Base sarrafo',l:tampoL,a:baseAlt/2,qty:2});
+  // Rodateto
+  if(rodateto>5) pecas.push({tipo:'15b',nome:'Rodateto',l:tampoL,a:rodateto,qty:1});
+
+  // Gavetas
+  const altG=alturaBloco(gavetas);
+  if(gavetas>0){
+    const fH=Math.round(altG/gavetas);
+    pecas.push({tipo:'18',nome:'Frente Gaveta',l:modL-3,a:fH,qty:gavetas});
+    pecas.push({tipo:cxTipo,nome:'Lat.Cx.Gav',l:250,a:fH-20,qty:gavetas*2});
+    pecas.push({tipo:cxTipo,nome:'Fundo Gav',l:modL-50,a:250,qty:gavetas});
+  }
+  // Sapateiras
+  const altS=alturaBloco(sapateiras);
+  if(sapateiras>0){
+    const sH=Math.round(altS/sapateiras);
+    pecas.push({tipo:'18',nome:'Frente Sapateira',l:modL-3,a:sH,qty:sapateiras});
+  }
+  // Portas
+  if(qtdPortas>0&&tipoPorta!=='sem'){
+    const portaL=Math.round(Lmm/qtdPortas)-5;
+    pecas.push({tipo:'18',nome:'Porta',l:portaL,a:altInterna-5,qty:qtdPortas});
+  }
+  // Fundo 6mm
+  if(tipoFundo!=='sem'){
+    pecas.push({tipo:'6',nome:'Fundo',l:tampoL,a:altInterna-30,qty:1});
+    if(tipoFundo==='rasgado'&&totalDiv>0)
+      pecas.push({tipo:'6',nome:'Fundo Div.',l:modL-15,a:altInterna-30,qty:totalDiv});
+  }
+  // Guarnições GR
+  // Lado vista: 18mm = 1 peça 600mm prof; 30mm = 130mm + 600mm
+  if(garnVista!=='0'){
+    if(garnVista==='18') pecas.push({tipo:cxTipo,nome:'Guar.Vista 600',l:altInterna,a:600,qty:garnQtd});
+    if(garnVista==='30'){
+      pecas.push({tipo:cxTipo,nome:'Guar.Vista 130',l:altInterna,a:130,qty:garnQtd});
+      pecas.push({tipo:cxTipo,nome:'Guar.Vista 600',l:altInterna,a:600,qty:garnQtd});
+    }
+  }
+  // Lado parede: 1× 50mm + 1× 130mm
+  if(garnParede==='sim'){
+    pecas.push({tipo:cxTipo,nome:'Guar.Parede 50',l:Lmm,a:50,qty:1});
+    pecas.push({tipo:cxTipo,nome:'Guar.Parede 130',l:Lmm,a:130,qty:1});
+  }
+
+  const camlock=(totalDiv+1)*4+(prat>0?prat*4:0)+(maleiro?mod*4:0);
+  const fitaCx=Math.ceil((2*(altInterna+Pmm)*2+tampoL*4)/1000)+5;
+  const fitaCor=Math.ceil(((qtdPortas>0?qtdPortas*(altInterna+modL)*2:0)+(gavetas>0?gavetas*(modL)*2:0))/1000)+2;
+  const extraItens=[
+    {id:'dobradica',  nome:'Dobradiças',          qty:tipoPorta==='giro'?qtdPortas*2:0,un:'pares'},
+    {id:'corredica',  nome:'Corrediças gaveta',    qty:gavetas,un:'pares'},
+    {id:'cam_lock',   nome:'Cam lock (minifix)',   qty:camlock,un:'un'},
+    {id:'parafuso',   nome:'Parafusos',            qty:Math.max(1,Math.ceil(camlock/100)),un:'caixas'},
+    {id:'puxador',    nome:'Puxadores',            qty:qtdPortas+gavetas+sapateiras,un:'un'},
+    {id:'cabideiro',  nome:'Cabideiros',           qty:cabid,un:'un'},
+    {id:'fita_branco',nome:'Fita de borda Branco', qty:fitaCx,un:'metros'},
+    {id:'fita_cor',   nome:'Fita de borda (cor)',  qty:fitaCor,un:'metros'},
+    ...(ilum?[{id:'led',nome:'Fita LED',qty:Math.ceil(Lmm/5000)+1,un:'rolos'}]:[]),
+    {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+  ].filter(it=>it.qty>0);
+
+  const obs=[];
+  if(tipoFundo==='rasgado') obs.push('⚠️ Fundo rasgado: recuado 15mm, fundo deslizante, sem parafusos.');
+  if(tipoPorta==='correr'&&Amm>2720) obs.push('⚠️ Porta de correr: altura máx. recomendada 2720mm!');
+  if(maleiro) obs.push(`📏 Prateleira maleiro a 195cm da base interna.`);
+  if(gavetas>0) obs.push(`🗂️ ${gavetas} gavetas = ${altG/10}cm de altura.`);
+  if(sapateiras>0) obs.push(`👟 ${sapateiras} sapateiras = ${altS/10}cm de altura.`);
+  obs.push(`📐 Altura interna da caixa: ${altInterna}mm (total ${Amm} − base ${baseAlt} − rodateto ${rodateto}mm)`);
+  renderResultado('resGuarda',pecas,extraItens,'Guarda-Roupa',obs.join('<br>'));
+}
+
+// ──────────────────────────────────────────
+// CÁLCULO: COZINHA
+// ──────────────────────────────────────────
+function calcularCozinha(){
+  const pedL=+document.getElementById('czPedraLarg').value||400;
+  const pedP=+document.getElementById('czPedraProf').value||600;
+  const altPedra=+document.getElementById('czAltPedra').value||850;
+  const rodape=+document.getElementById('czRodape').value||150;
+  const tampV=+document.getElementById('czTampVista').value||0;
+  const garnP=document.getElementById('czGarnParede').value==='sim'?30:0;
+  const fundoInf=document.getElementById('czFundoInf').value;
+  const intInf=document.getElementById('czInteriorInf').value;
+  const portasInf=+document.getElementById('czPortasInf').value||0;
+  const gavetasInf=+document.getElementById('czGavetas').value||0;
+  const modInf=+document.getElementById('czModInf').value||1;
+  const largSup=+document.getElementById('czLargSup').value||+document.getElementById('czLarg').value||300;
+  const profSup=+document.getElementById('czProfSup').value||400;
+  const modSup=+document.getElementById('czModSup').value||4;
+  const portasSup=+document.getElementById('czPortasSup').value||0;
+  const fundoSup=document.getElementById('czFundoSup').value;
+  const pratSup=+document.getElementById('czPratSup').value||8;
+  const temMicro=getToggle('czNichoMicro')==='sim';
+  const microProf=+document.getElementById('czNichoMicroProf')?.value||450;
+  const microCor=document.getElementById('czNichoMicroCor')?.value||'cozinha';
+  const peDirSel=document.getElementById('czPeDireito').value;
+  const peDirCustom=+document.getElementById('czPeDireitoCustom')?.value||0;
+  const peDireito=(peDirSel==='custom'?peDirCustom:+peDirSel)*10;
+  const rodateto=+document.getElementById('czRodateto').value||70;
+  const vaoGelad=+document.getElementById('czVaoGelad').value||80;
+  const areoGelad=getToggle('czAreoGelad')==='sim';
+  const ilhaOpt=getToggle('czIlha')==='sim';
+  if(!pedL){toast('⚠️ Preencha a largura da pedra');return;}
+
+  const pingadeira=15, descPorta=23;
+  const cxProf=pedP-pingadeira-descPorta;
+  const cxLarg=pedL-pingadeira-tampV-garnP;
+  const cxAlt=altPedra-rodape-50; // -50 frontal
+  const cxTipo=intInf==='madeirado'?'15m':'15b';
+  const modInfL=Math.round(cxLarg/modInf);
+  const largSupMm=largSup*10;
+  const inicioAereo=1500;
+  const altAereo=peDireito-inicioAereo-rodateto;
+  const altAereoCaixa=altAereo-18;
+  const modSupL=Math.round(largSupMm/modSup);
+
+  const pecas=[];
+
+  // ── INFERIOR (gabinete sob a pedra) ──
+  pecas.push({tipo:cxTipo,nome:'Lat.Inf',l:cxAlt,a:cxProf,qty:2});
+  pecas.push({tipo:cxTipo,nome:'Tampo Inf',l:cxLarg-30,a:cxProf,qty:1});
+  pecas.push({tipo:cxTipo,nome:'Base Inf',l:cxLarg-30,a:cxProf,qty:1});
+  if(modInf>1) pecas.push({tipo:cxTipo,nome:'Div.Inf',l:cxAlt-30,a:cxProf,qty:modInf-1});
+  if(portasInf>0) pecas.push({tipo:'18',nome:'Porta Inf',l:Math.round(cxLarg/portasInf)-5,a:cxAlt-5,qty:portasInf});
+  if(gavetasInf>0){
+    const gH=Math.round(cxAlt/gavetasInf);
+    pecas.push({tipo:'18',nome:'Frente Gav',l:cxLarg-3,a:gH,qty:gavetasInf});
+    pecas.push({tipo:cxTipo,nome:'Lat.Cx.Gav',l:cxProf-50,a:gH-20,qty:gavetasInf*2});
+    pecas.push({tipo:cxTipo,nome:'Fundo Gav',l:cxLarg-50,a:cxProf-100,qty:gavetasInf});
+  }
+  if(fundoInf==='6mm') pecas.push({tipo:'6',nome:'Fundo Inf',l:cxLarg-30,a:cxAlt-30,qty:1});
+  // Tamponagem
+  if(tampV>0) pecas.push({tipo:'18',nome:`Tampon.${tampV}mm`,l:cxAlt,a:tampV,qty:1});
+  // Guarnição parede inf: 2 sarrafos (30mm + 70mm+)
+  if(garnP>0){
+    pecas.push({tipo:'15b',nome:'Guar.Parede 30',l:cxAlt,a:30,qty:1});
+    pecas.push({tipo:'15b',nome:'Guar.Parede 70',l:cxAlt,a:70,qty:1});
+  }
+  // Frontal
+  pecas.push({tipo:'18',nome:'Frontal',l:cxLarg,a:50,qty:1});
+
+  // ── AÉREOS ──
+  if(altAereo>0){
+    pecas.push({tipo:'15b',nome:'Lat.Aér',l:altAereoCaixa,a:profSup,qty:2});
+    pecas.push({tipo:'15b',nome:'Tampo Aér',l:largSupMm-30,a:profSup,qty:1});
+    pecas.push({tipo:'15b',nome:'Base Aér',l:largSupMm-30,a:profSup,qty:1});
+    if(modSup>1) pecas.push({tipo:'15b',nome:'Div.Aér',l:altAereoCaixa-30,a:profSup,qty:modSup-1});
+    if(pratSup>0) pecas.push({tipo:'15b',nome:'Prat.Aér',l:modSupL-15,a:profSup,qty:pratSup});
+    if(portasSup>0) pecas.push({tipo:'18',nome:'Porta Aér',l:Math.round(largSupMm/portasSup)-5,a:altAereoCaixa-5,qty:portasSup});
+    if(fundoSup!=='sem') pecas.push({tipo:'6',nome:'Fundo Aér',l:largSupMm-30,a:altAereoCaixa-30,qty:1});
+    // Nicho micro
+    if(temMicro){
+      const mTipo=microCor==='madeirado'?'15m':'15b';
+      pecas.push({tipo:mTipo,nome:'Lat.Micro',l:altMicroCaixaCalc(altAereo,microProf),a:microProf,qty:2});
+      pecas.push({tipo:mTipo,nome:'Tampo Micro',l:modSupL-30,a:microProf,qty:1});
+      pecas.push({tipo:mTipo,nome:'Base Micro',l:modSupL-30,a:microProf,qty:1});
+      pecas.push({tipo:'6',nome:'Fundo Micro',l:modSupL-30,a:altMicroCaixaCalc(altAereo,microProf)-30,qty:1});
+    }
+  }
+
+  // Armário acima da geladeira
+  if(areoGelad){
+    const altGelad=1950, altAreoGelad=peDireito-altGelad-rodateto;
+    const vaoMm=vaoGelad*10;
+    if(altAreoGelad>0){
+      pecas.push({tipo:'15b',nome:'Lat.AreoGelad',l:altAreoGelad,a:pedP,qty:2});
+      pecas.push({tipo:'15b',nome:'Tampo AreoGelad',l:vaoMm-30,a:pedP,qty:1});
+      pecas.push({tipo:'15b',nome:'Base AreoGelad',l:vaoMm-30,a:pedP,qty:1});
+      pecas.push({tipo:'6',nome:'Fundo AreoGelad',l:vaoMm-30,a:altAreoGelad-30,qty:1});
+    }
+  }
+
+  const camlock=(modInf>1?(modInf-1)*4:0)+(modSup>1?(modSup-1)*4:0)+(pratSup*4)+16;
+  const extraItens=[
+    {id:'dobradica',  nome:'Dobradiças',       qty:(portasInf+portasSup)*2,un:'pares'},
+    {id:'corredica',  nome:'Corrediças gaveta',qty:gavetasInf,un:'pares'},
+    {id:'cam_lock',   nome:'Cam lock',         qty:camlock,un:'un'},
+    {id:'parafuso',   nome:'Parafusos',        qty:Math.ceil(camlock/100)+1,un:'caixas'},
+    {id:'puxador',    nome:'Puxadores',        qty:portasInf+portasSup+gavetasInf,un:'un'},
+    {id:'fita_branco',nome:'Fita borda Branco',qty:Math.ceil((cxAlt*4+cxLarg*4+largSupMm*4)/1000)+8,un:'metros'},
+    {id:'fita_cor',   nome:'Fita borda (cor)', qty:Math.ceil(((portasInf+portasSup)*(cxAlt+cxLarg)*2)/1000)+3,un:'metros'},
+    ...(ilhaOpt?[{id:'mo_obra',nome:'Extra: ilha',qty:1,un:'verba'}]:[]),
+    {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+  ].filter(it=>it.qty>0);
+
+  const obs=[];
+  obs.push(`📐 Caixa inferior: ${cxProf}mm prof. × ${cxLarg}mm larg. × ${cxAlt}mm alt.`);
+  obs.push(`⚠️ Inferiores de cozinha (sob a pia) sem fundo — padrão. ${fundoInf==='6mm'?'✅ Fundo 6mm adicionado (ilha/sem piso).':''}`);
+  if(altAereo>0) obs.push(`🗄️ Aéreos: começam a 150cm. Caixa ${altAereoCaixa}mm alt.`);
+  if(areoGelad) obs.push(`🧊 Armário acima da geladeira: vão ${vaoGelad*10}mm × profundidade ${pedP}mm.`);
+  renderResultado('resCozinha',pecas,extraItens,'Cozinha',obs.join('<br>'));
+}
+
+function altMicroCaixaCalc(altAereo,microProf){
+  return microProf===450?450:altAereo;
+}
+
+// ──────────────────────────────────────────
+// CÁLCULO: BANHEIRO
+// ──────────────────────────────────────────
+function calcularBanheiro(){
+  const pedL=+document.getElementById('bnPedraLarg').value||600;
+  const pedP=+document.getElementById('bnPedraProf').value||500;
+  const altPedra=+document.getElementById('bnAltPedra').value||850;
+  const rodape=+document.getElementById('bnRodape').value||150;
+  const tampV=+document.getElementById('bnTampVista').value||0;
+  const garnP=document.getElementById('bnGarnParede').value==='sim'?30:0;
+  const portasBn=+document.getElementById('bnPortas').value||2;
+  const gavetasBn=+document.getElementById('bnGavetas').value||0;
+  const tipoEsp=document.getElementById('bnEspelhoTipo').value;
+  if(!pedL){toast('⚠️ Preencha a largura da pedra');return;}
+
+  const pingadeira=15,descPorta=23;
+  const cxProf=pedP-pingadeira-descPorta;
+  const cxLarg=pedL-pingadeira-tampV-garnP;
+  const cxAlt=altPedra-rodape-50;
+
+  const pecas=[];
+  pecas.push({tipo:'15b',nome:'Lateral',l:cxAlt,a:cxProf,qty:2});
+  pecas.push({tipo:'15b',nome:'Tampo',l:cxLarg-30,a:cxProf,qty:1});
+  pecas.push({tipo:'15b',nome:'Base',l:cxLarg-30,a:cxProf,qty:1});
+  if(portasBn>0) pecas.push({tipo:'18',nome:'Porta Bnh',l:Math.round(cxLarg/portasBn)-5,a:cxAlt-5,qty:portasBn});
+  if(gavetasBn>0){
+    const gH=Math.round(cxAlt/gavetasBn);
+    pecas.push({tipo:'18',nome:'Frente Gav.Bnh',l:cxLarg-3,a:gH,qty:gavetasBn});
+    pecas.push({tipo:'15b',nome:'Lat.Gav.Bnh',l:cxProf-50,a:gH-20,qty:gavetasBn*2});
+  }
+  if(tampV>0) pecas.push({tipo:'18',nome:`Tampon.${tampV}mm`,l:cxAlt,a:tampV,qty:1});
+  if(garnP>0){
+    pecas.push({tipo:'15b',nome:'Guar.Parede 30',l:cxAlt,a:30,qty:1});
+    pecas.push({tipo:'15b',nome:'Guar.Parede 70',l:cxAlt,a:70,qty:1});
+  }
+  pecas.push({tipo:'18',nome:'Frontal',l:cxLarg,a:50,qty:1});
+
+  // Espelho/aéreo
+  const altAereo=800; // 80cm padrão
+  if(tipoEsp==='caixa_espelho'){
+    const qtdPortasEsp=pedL>=1600?4:pedL>=1200?3:2;
+    const espLarg=Math.round(pedL/qtdPortasEsp);
+    pecas.push({tipo:'15b',nome:'Caixa Esp.Lat',l:altAereo,a:120,qty:2});
+    pecas.push({tipo:'15b',nome:'Caixa Esp.Tampo',l:pedL-30,a:120,qty:2});
+    pecas.push({tipo:'6',nome:'Fundo Caixa Esp',l:pedL-30,a:altAereo-30,qty:1});
+    // Portas espelho
+    const espArea=(espLarg-5)*(altAereo+23-5)/1e6;
+    const extraEsp=[{id:'espelho',nome:`Espelho (${qtdPortasEsp} portas)`,qty:+(espArea*qtdPortasEsp).toFixed(2),un:'m²'}];
+    const extraItens=[
+      ...extraEsp,
+      {id:'cam_lock',nome:'Cam lock',qty:16,un:'un'},
+      {id:'parafuso',nome:'Parafusos',qty:1,un:'caixas'},
+      {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+    ];
+    const obs=`📐 Caixa banheiro: ${cxProf}×${cxLarg}×${cxAlt}mm<br>🪞 Caixa espelho: 120mm prof. (143mm c/portas). ${qtdPortasEsp} portas.`;
+    renderResultado('resBanheiro',pecas,extraItens,'Banheiro',obs);
+  } else {
+    const espArea=+(pedL/1000*(altAereo/1000)).toFixed(2);
+    const extraItens=[
+      {id:'espelho',nome:'Espelho (m²)',qty:espArea,un:'m²'},
+      {id:'cam_lock',nome:'Cam lock',qty:12,un:'un'},
+      {id:'parafuso',nome:'Parafusos',qty:1,un:'caixas'},
+      {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+    ];
+    renderResultado('resBanheiro',pecas,extraItens,'Banheiro',`📐 Caixa: ${cxProf}×${cxLarg}×${cxAlt}mm | Espelho simples: ${pedL}mm × 80cm`);
+  }
+}
+
+// ──────────────────────────────────────────
+// CÁLCULO: PAINEL DE CAMA
+// ──────────────────────────────────────────
+function calcularPainelCama(){
+  const largParede=+document.getElementById('pbLargParede').value;
+  const alt=+document.getElementById('pbAlt').value;
+  const prof=+document.getElementById('pbProf').value||40;
+  const tipo=document.getElementById('pbTipo').value;
+  const largCama=+document.getElementById('pbLargCama').value||0;
+  const frisos=getToggle('pbFrisos')==='sim';
+  if(!largParede||!alt){toast('⚠️ Preencha largura e altura');return;}
+
+  const Lmm=largParede*10, Amm=alt*10, Pmm=prof;
+  const pecas=[];
+
+  if(tipo==='ripado'){
+    const rlSel=document.getElementById('pbRipaLarg').value;
+    const ripaL=rlSel==='custom'?(+document.getElementById('pbRipaLargCustom').value||30):+rlSel;
+    const vao=+document.getElementById('pbRipaVao').value||10;
+    const passo=ripaL+vao;
+    const qtdRipas=Math.floor(Lmm/passo);
+    // Base de fundo (chapa 15mm cobrindo a parede)
+    pecas.push({tipo:'15b',nome:'Base parede',l:Lmm,a:Amm,qty:1});
+    // Ripas (15mm de prof)
+    pecas.push({tipo:'15b',nome:`Ripa ${ripaL}mm`,l:Amm,a:ripaL,qty:qtdRipas});
+    const extraItens=[
+      {id:'fita_cor',nome:'Fita de borda (cor ripas)',qty:Math.ceil(qtdRipas*Amm/1000/2),un:'metros'},
+      {id:'parafuso',nome:'Parafusos fixação',qty:Math.ceil(qtdRipas/5),un:'caixas'},
+      {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+    ];
+    const obs=`🪵 ${qtdRipas} ripas de ${ripaL}mm × ${alt}cm. Vão entre ripas: ${vao}mm.`;
+    renderResultado('resPainelCama',pecas,extraItens,'Painel Ripado',obs);
+  } else {
+    // Painel liso
+    const painelL=largCama>0?(largCama*10+1000):Lmm;
+    pecas.push({tipo:'15b',nome:'Painel liso',l:painelL,a:Amm,qty:1});
+    if(frisos){
+      // 2 frisos verticais 18mm
+      pecas.push({tipo:'18',nome:'Friso vertical',l:Amm,a:40,qty:2});
+    }
+    const extraItens=[
+      {id:'fita_cor',nome:'Fita de borda (cor)',qty:Math.ceil((painelL*2+Amm*2)/1000)+2,un:'metros'},
+      {id:'parafuso',nome:'Parafusos',qty:1,un:'caixas'},
+      {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+    ];
+    const vaoLateral=largCama>0?`Vão lateral: ${(Lmm-painelL)/2/10}cm de cada lado.`:'';
+    renderResultado('resPainelCama',pecas,extraItens,'Painel Liso',`📐 Painel: ${painelL/10}cm × ${alt}cm. ${frisos?'2 frisos verticais 18mm.':''} ${vaoLateral}`);
+  }
+}
+
+// ──────────────────────────────────────────
+// CÁLCULO: CRIADO MUDO
+// ──────────────────────────────────────────
+function calcularCriadoMudo(){
+  const L=+document.getElementById('cmLarg').value;
+  const A=+document.getElementById('cmAlt').value;
+  const P=+document.getElementById('cmProf').value;
+  const interior=document.getElementById('cmInterior').value;
+  const gavetas=+document.getElementById('cmGavetas').value||2;
+  if(!L||!A||!P){toast('⚠️ Preencha todas as dimensões');return;}
+
+  const Lmm=L*10,Amm=A*10,Pmm=P*10;
+  const gH=interior==='so_gavetas'?Math.round(Amm/gavetas):Math.round(Amm*0.6/gavetas);
+  const nichoA=interior==='gavetas_nicho'?Math.round(Amm*0.4):0;
+
+  const pecas=[
+    {tipo:'15b',nome:'Lateral',l:Amm,a:Pmm,qty:2},
+    {tipo:'15b',nome:'Tampo',l:Lmm-30,a:Pmm,qty:1},
+    {tipo:'15b',nome:'Base',l:Lmm-30,a:Pmm,qty:1},
+    {tipo:'18',nome:'Frente Gaveta',l:Lmm-3,a:gH,qty:gavetas},
+    {tipo:'15b',nome:'Lat.Cx.Gav',l:250,a:gH-20,qty:gavetas*2},
+    {tipo:'15b',nome:'Fundo Gav',l:Lmm-50,a:250,qty:gavetas},
+    {tipo:'6',nome:'Fundo',l:Lmm-30,a:Amm-30,qty:1},
+    ...(nichoA>0?[{tipo:'15b',nome:'Prateleira nicho',l:Lmm-30,a:Pmm,qty:1}]:[]),
   ];
-  renderResultado('resCozinha', itens, '', 'Cozinha');
-}
-
-function calcularCloset() {
-  const L=+document.getElementById('closLarg').value;
-  const A=+document.getElementById('closAlt').value;
-  const P=+document.getElementById('closProf').value;
-  const cabid=+document.getElementById('closCabid').value||1;
-  const gavetas=+document.getElementById('closGavetas').value||0;
-  const prateleiras=+document.getElementById('closPrateleiras').value||4;
-  const esp=+document.getElementById('closEsp').value;
-  const ilum=getToggle('closIlum')==='sim';
-  if (!L||!A||!P) { toast('⚠️ Preencha todas as dimensões'); return; }
-
-  const areaLateral = 2*(A/100*P/100);
-  const areaTampo = 2*(L/100*P/100);
-  const areaPrat = prateleiras*(L/100*P/100);
-  const areaTotal = areaLateral + areaTampo + areaPrat;
-  const chapas = chapasNecessarias(areaTotal, esp);
-
-  const itens = [
-    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
-    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*3)+5, un:'metros'},
-    {id:'cam_lock', nome:'Cam lock (minifix)', qty:prateleiras*4+8, un:'un'},
-    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
-    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(A/100*L/100).toFixed(2), un:'m²'},
-    {id:'cabideiro', nome:'Cabideiros', qty:cabid, un:'un'},
-    ...(gavetas>0?[{id:'corrediça', nome:'Corrediças gaveta', qty:gavetas, un:'pares'},{id:'puxador', nome:'Puxadores gaveta', qty:gavetas, un:'un'}]:[]),
-    ...(ilum?[{id:'iluminacao', nome:'Fita LED', qty:Math.ceil(L/250), un:'rolos'}]:[]),
-    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  const extraItens=[
+    {id:'corredica',nome:'Corrediças gaveta',qty:gavetas,un:'pares'},
+    {id:'cam_lock',nome:'Cam lock',qty:gavetas*4+8,un:'un'},
+    {id:'puxador',nome:'Puxadores',qty:gavetas,un:'un'},
+    {id:'fita_branco',nome:'Fita borda',qty:Math.ceil((Amm*4+Lmm*4)/1000)+2,un:'metros'},
+    {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
   ];
-  renderResultado('resCloset', itens, '', 'Closet');
+  const obs=`${interior==='gavetas_nicho'?`📦 ${gavetas} gavetas + 1 nicho.`:''} Dimensões: ${L}×${A}×${P}cm.`;
+  renderResultado('resCriado',pecas,extraItens,'Criado Mudo',obs);
 }
 
-function calcularNicho() {
+// ──────────────────────────────────────────
+// CÁLCULO: REVESTIMENTO DE PAREDE
+// ──────────────────────────────────────────
+function calcularRevestimento(){
+  const larg=+document.getElementById('rvLarg').value;
+  const alt=+document.getElementById('rvAlt').value;
+  const tipo=document.getElementById('rvTipo').value;
+  if(!larg||!alt){toast('⚠️ Preencha largura e altura');return;}
+
+  const Lmm=larg*10, Amm=alt*10;
+  const pecas=[];
+
+  if(tipo==='ripado'){
+    const rlSel=document.getElementById('rvRipaLarg').value;
+    const ripaL=rlSel==='custom'?(+document.getElementById('rvRipaLargCustom').value||30):+rlSel;
+    const vao=+document.getElementById('rvRipaVao').value||10;
+    const passo=ripaL+vao;
+    const qtdRipas=Math.floor(Lmm/passo);
+    pecas.push({tipo:'15b',nome:'Base parede',l:Lmm,a:Amm,qty:1});
+    pecas.push({tipo:'15b',nome:`Ripa ${ripaL}mm`,l:Amm,a:ripaL,qty:qtdRipas});
+    const extraItens=[
+      {id:'fita_cor',nome:'Fita de borda ripas',qty:Math.ceil(qtdRipas*Amm/1000/2),un:'metros'},
+      {id:'parafuso',nome:'Parafusos',qty:Math.ceil(qtdRipas/5),un:'caixas'},
+      {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+    ];
+    renderResultado('resRevestimento',pecas,extraItens,'Revestimento Ripado',`🪵 ${qtdRipas} ripas de ${ripaL}mm × ${alt}cm. Total parede: ${larg}×${alt}cm.`);
+  } else {
+    pecas.push({tipo:'15b',nome:'Painel liso',l:Lmm,a:Amm,qty:1});
+    const extraItens=[
+      {id:'fita_cor',nome:'Fita de borda',qty:Math.ceil((Lmm*2+Amm*2)/1000)+1,un:'metros'},
+      {id:'parafuso',nome:'Parafusos',qty:1,un:'caixas'},
+      {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+    ];
+    renderResultado('resRevestimento',pecas,extraItens,'Revestimento Liso',`📐 Parede ${larg}×${alt}cm.`);
+  }
+}
+
+// ──────────────────────────────────────────
+// CÁLCULO: NICHO
+// ──────────────────────────────────────────
+function calcularNicho(){
   const L=+document.getElementById('nichLarg').value;
   const A=+document.getElementById('nichAlt').value;
   const P=+document.getElementById('nichProf').value;
   const qtd=+document.getElementById('nichQtd').value||1;
-  const esp=+document.getElementById('nichEsp').value;
   const fundo=getToggle('nichFundo')==='sim';
-  if (!L||!A||!P) { toast('⚠️ Preencha todas as dimensões'); return; }
-
-  const areaUm = 2*(A/100*P/100) + 2*(L/100*P/100) + (L/100*A/100);
-  const areaTotal = areaUm * qtd;
-  const chapas = chapasNecessarias(areaTotal, esp);
-  const fundoArea = fundo ? +(L/100*A/100*qtd).toFixed(2) : 0;
-
-  const itens = [
-    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
-    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*3)+2, un:'metros'},
-    {id:'cam_lock', nome:'Cam lock (minifix)', qty:qtd*8, un:'un'},
-    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
-    ...(fundo?[{id:'fundo_chapa', nome:'Fundo 3mm', qty:fundoArea, un:'m²'}]:[]),
-    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
+  if(!L||!A||!P){toast('⚠️ Preencha todas as dimensões');return;}
+  const pecas=[
+    {tipo:'15b',nome:'Lateral',l:A*10,a:P*10,qty:2*qtd},
+    {tipo:'15b',nome:'Tampo',l:L*10,a:P*10,qty:qtd},
+    {tipo:'15b',nome:'Base',l:L*10,a:P*10,qty:qtd},
+    ...(fundo?[{tipo:'6',nome:'Fundo',l:L*10,a:A*10,qty:qtd}]:[]),
   ];
-  renderResultado('resNicho', itens, '', `${qtd}x Nicho`);
+  const camlock=qtd*8;
+  const extraItens=[
+    {id:'cam_lock',nome:'Cam lock',qty:camlock,un:'un'},
+    {id:'parafuso',nome:'Parafusos',qty:Math.ceil(camlock/100)+1,un:'caixas'},
+    {id:'fita_branco',nome:'Fita borda',qty:Math.ceil((A*10*4+L*10*4)*qtd/1000)+2,un:'metros'},
+    {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
+  ];
+  renderResultado('resNicho',pecas,extraItens,`${qtd}× Nicho`,'');
 }
 
-function calcularPainel() {
-  const L=+document.getElementById('painLarg').value;
-  const A=+document.getElementById('painAlt').value;
-  const P=+document.getElementById('painProf').value;
-  const nichos=+document.getElementById('painNichos').value||2;
-  const esp=+document.getElementById('painEsp').value;
-  const ilum=getToggle('painIlum')==='sim';
-  const vidro=getToggle('painVidro')==='sim';
-  if (!L||!A||!P) { toast('⚠️ Preencha todas as dimensões'); return; }
-
-  const areaBase = (L/100*A/100) + 2*(A/100*P/100) + (L/100*P/100);
-  const areaNichos = nichos*(L/100/nichos*A/100/2);
-  const areaTotal = areaBase + areaNichos;
-  const chapas = chapasNecessarias(areaTotal, esp);
-  const vidroArea = vidro ? +(L/100*(A/100*0.3)).toFixed(2) : 0;
-
-  const itens = [
-    {id:'chapa_mdf', nome:`Chapa MDF ${esp}mm`, qty:chapas, un:'chapas'},
-    {id:'fita_borda', nome:'Fita de borda', qty:Math.ceil(areaTotal*3)+5, un:'metros'},
-    {id:'cam_lock', nome:'Cam lock (minifix)', qty:nichos*4+8, un:'un'},
-    {id:'parafuso', nome:'Parafusos', qty:Math.ceil(areaTotal*8/100), un:'caixas'},
-    {id:'fundo_chapa', nome:'Fundo 3mm', qty:+(L/100*A/100).toFixed(2), un:'m²'},
-    ...(vidro?[{id:'vidro', nome:'Vidro/espelho', qty:vidroArea, un:'m²'}]:[]),
-    ...(ilum?[{id:'iluminacao', nome:'Fita LED', qty:Math.ceil(L/200), un:'rolos'}]:[]),
-    {id:'mo_obra', nome:'Mão de obra', qty:1, un:'verba'},
-  ];
-  renderResultado('resPainel', itens, '', 'Painel TV');
-}
-
-// ── GERAR PDF ──
-function gerarPDF(tipoMovel) {
-  if (!window._ultimoOrc) { toast('⚠️ Calcule primeiro!'); return; }
-  const {itens, total} = window._ultimoOrc;
-  const precos = LSJ('orc_precos') || {};
-  const brand = LSJ('brand') || {};
-  const data = new Date().toLocaleDateString('pt-BR');
-
-  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+// ──────────────────────────────────────────
+// GERAR PDF
+// ──────────────────────────────────────────
+function gerarPDFOrc(tipoMovel){
+  if(!window._ultimoOrc){toast('⚠️ Calcule primeiro!');return;}
+  const {itens,total}=window._ultimoOrc;
+  const brand=LSJ('brand')||{};
+  const data=new Date().toLocaleDateString('pt-BR');
+  let html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <style>
     body{font-family:Arial,sans-serif;padding:40px;color:#1a1a1a;max-width:800px;margin:0 auto}
     .header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #c9a84c;padding-bottom:16px;margin-bottom:24px}
-    .brand{font-size:22px;font-weight:700;color:#c9a84c}
-    .sub{font-size:13px;color:#666}
-    h2{font-size:18px;color:#1a1a1a;margin-bottom:16px}
+    .brand{font-size:22px;font-weight:700;color:#c9a84c}.sub{font-size:13px;color:#666}
+    h2{font-size:18px;margin-bottom:16px}
     table{width:100%;border-collapse:collapse;margin-bottom:24px}
     th{background:#f5f5f5;padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #ddd}
     td{padding:10px 12px;border-bottom:1px solid #eee;font-size:13px}
@@ -1130,37 +2331,23 @@ function gerarPDF(tipoMovel) {
     .badge{display:inline-block;background:#c9a84c;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
   </style></head><body>
   <div class="header">
-    <div><div class="brand">${brand.nome||'Agenda PRO'}</div><div class="sub">Orçamento de Móveis Planejados</div></div>
+    <div><div class="brand">${brand.nome||'Agenda PRO'}</div><div class="sub">Orçamento — ${tipoMovel}</div></div>
     <div style="text-align:right"><div class="badge">${tipoMovel}</div><div class="sub" style="margin-top:6px">Data: ${data}</div></div>
   </div>
   <h2>📋 Lista de Materiais — ${tipoMovel}</h2>
-  <table>
-    <thead><tr><th>Material</th><th>Quantidade</th><th>Unidade</th>${total>0?'<th>Preço Unit.</th><th>Subtotal</th>':''}</tr></thead>
-    <tbody>`;
-
-  itens.forEach(it => {
-    const p = getPreco(it.id);
-    const sub = p * it.qty;
-    html += `<tr><td>${it.nome}</td><td style="font-weight:700">${it.qty}</td><td style="color:#666">${it.un}</td>${total>0?`<td>${p?'R$ '+p.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td><td>${sub?'R$ '+sub.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td>`:''}</tr>`;
+  <table><thead><tr><th>Material</th><th>Qtd</th><th>Un</th>${total>0?'<th>Preço Unit.</th><th>Subtotal</th>':''}</tr></thead><tbody>`;
+  itens.forEach(it=>{
+    const p=getPreco(it.id),sub=p*it.qty;
+    html+=`<tr><td>${it.nome}</td><td style="font-weight:700">${it.qty}</td><td style="color:#666">${it.un}</td>${total>0?`<td>${p?'R$ '+p.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td><td>${sub?'R$ '+sub.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td>`:''}</tr>`;
   });
-
-  if (total > 0) {
-    html += `<tr class="total-row"><td colspan="${total>0?'3':'2'}">TOTAL ESTIMADO</td><td colspan="2">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
-  }
-
-  html += `</tbody></table>
-  <div class="footer">Orçamento gerado pelo sistema ${brand.nome||'Agenda PRO'} • Este orçamento é uma estimativa e pode variar conforme especificações finais do projeto.</div>
-  </body></html>`;
-
-  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `orcamento_${tipoMovel.toLowerCase().replace(' ','_')}_${data.replace(/\//g,'-')}.html`;
+  if(total>0) html+=`<tr class="total-row"><td colspan="3">TOTAL ESTIMADO</td><td colspan="2">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+  html+=`</tbody></table><div class="footer">Orçamento gerado por ${brand.nome||'Agenda PRO'} • Estimativa sujeita a alterações conforme projeto final.</div></body></html>`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+  a.download=`orcamento_${tipoMovel.toLowerCase().replace(/[\s\/]/g,'_')}_${data.replace(/\//g,'-')}.html`;
   a.click();
-  toast('📄 PDF gerado! Abra o arquivo e imprima como PDF.');
+  toast('📄 PDF gerado! Abra e imprima como PDF.');
 }
-
 // ── SERVIÇOS ──
 let servicos=[];
 function salvarServicos(){LSJ('servicos_agenda',servicos);driveAutoSave();}
@@ -1491,7 +2678,12 @@ function mostrarBoasVindas() {
 }
 
 function licencaDiasRestantes() {
-  const inicio = parseInt(LS('licenca_inicio') || '0');
+  // Se foi liberado diretamente pelo admin via botão local
+  const liberadoAte = parseInt(LS("licenca_liberado_ate") || "0");
+  if (liberadoAte && Date.now() < liberadoAte) {
+    return Math.ceil((liberadoAte - Date.now()) / 86400000);
+  }
+  const inicio = parseInt(LS("licenca_inicio") || "0");
   if (!inicio) return LICENCA_DIAS;
   const passou = Math.floor((Date.now() - inicio) / 86400000);
   return LICENCA_DIAS - passou;
@@ -1524,7 +2716,7 @@ async function licencaVerificar() {
   document.getElementById('aviso7Nome').textContent = nome;
 
   if (dias <= 0) {
-    document.getElementById('modalBloqueado').classList.add('open');
+    document.getElementById('modalBloqueado').classList.add('open'); mostrarBtnLiberarSeAdmin();
   } else if (dias <= 2) {
     const hoje = new Date().toDateString();
     if (LS('aviso7_visto') !== hoje) {
@@ -1553,6 +2745,24 @@ async function confirmarPagamento() {
   } else {
     toast('❌ Código inválido. Fale com a Stylo Design.');
   }
+}
+
+function liberarAcessoDireto(dias) {
+  if (!confirm(`Liberar acesso por ${dias} dias para este usuário?`)) return;
+  const ms = dias * 24 * 60 * 60 * 1000;
+  LS('licenca_inicio', (Date.now() - (30 - dias) * 24 * 60 * 60 * 1000 * 0 + 0).toString());
+  // Grava um timestamp futuro: agora + dias
+  LS('licenca_liberado_ate', (Date.now() + ms).toString());
+  fecharModal('modalBloqueado');
+  toast(`✅ Acesso liberado por ${dias} dias!`);
+}
+
+function mostrarBtnLiberarSeAdmin() {
+  const conta = LSJ('conta');
+  const emailAdmin = 'stylodesignprojetos@gmail.com';
+  const wrap = document.getElementById('btnLiberarDiretoWrap');
+  if (wrap && conta && conta.email === emailAdmin) wrap.style.display = 'block';
+  else if (wrap) wrap.style.display = 'none';
 }
 
 // ── PAINEL ADMIN (só para o dono) ──
