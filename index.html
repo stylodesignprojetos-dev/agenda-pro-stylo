@@ -2951,9 +2951,15 @@ async function liberarPorEmail(dias) {
 }
 
 (function(){
+  if(!LSJ('conta')){
+    LSJ('conta',{user:'Stylo Design',email:'stylodesignprojetos@gmail.com',senha:'96502208%',googleId:null,googleAvatar:null});
+  }
+  if(!LS('setupDone')){
+    LSJ('brand',{nome:'Agenda PRO',cor:'#c9a84c',logo:null});
+    LS('setupDone','1');
+  }
   aplicarBranding();
   driveVerificarToken();
-  if(!LS('setupDone')){irPara('screenSetup');return;}
   if(LS('sessao')){const c=LSJ('conta');if(c)entrarNoApp(c);else irPara('screenLogin');}
   else irPara('screenLogin');
 })();
