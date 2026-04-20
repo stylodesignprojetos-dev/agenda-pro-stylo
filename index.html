@@ -560,6 +560,18 @@ textarea.form-control{resize:vertical;min-height:64px;}
       <button onclick="carregarUsuarios()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif">🔄 Atualizar</button>
     </div>
     <div id="adminUsuarios" style="max-height:220px;overflow-y:auto;font-size:12px"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+    <div style="margin-bottom:8px">
+      <b style="font-size:13px;color:#4ade80">⚡ Liberar Acesso Imediato</b>
+      <p style="font-size:11px;color:var(--muted);margin-top:4px">Digite o e-mail do cliente que acabou de pagar e clique no prazo desejado.</p>
+    </div>
+    <div class="form-row"><input class="form-control" id="adminEmailLiberar" placeholder="email@cliente.com" type="email"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="liberarPorEmail(30)" style="flex:1;padding:9px;background:rgba(22,163,74,.15);border:1px solid #16a34a;color:#4ade80;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">🔓 30 dias</button>
+      <button onclick="liberarPorEmail(90)" style="flex:1;padding:9px;background:rgba(22,163,74,.15);border:1px solid #16a34a;color:#4ade80;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">🔓 90 dias</button>
+      <button onclick="liberarPorEmail(365)" style="flex:1;padding:9px;background:rgba(59,130,246,.15);border:1px solid #3b82f6;color:#60a5fa;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">⭐ 1 ano</button>
+    </div>
+    <div id="adminLibMsg" style="font-size:12px;margin-top:8px;min-height:16px;color:#4ade80"></div>
   </div>
 </div>
 
@@ -1090,7 +1102,7 @@ textarea.form-control{resize:vertical;min-height:64px;}
           <div class="form-row"><label class="form-label">Tipo de espelho/aéreo</label>
             <select class="form-control" id="bnEspelhoTipo" onchange="bnCalcAuto()">
               <option value="espelho_simples">Só espelho (sem caixa)</option>
-              <option value="caixa_espelho">Caixa com portas de espelho — altura 143mm c/ portas / 120mm sem</option>
+              <option value="caixa_espelho">Caixa com portas de espelho — prof. 143mm (c/portas) / 120mm (sem portas) · altura 800mm</option>
             </select>
           </div>
           <div id="bnEspelhoInfo" style="font-size:12px;color:#60a5fa;margin-top:6px;padding:6px 8px;background:rgba(59,130,246,.08);border-radius:6px;display:none"></div>
@@ -1803,7 +1815,7 @@ function bnCalcAuto(){
   if(tipoEsp==='caixa_espelho'){
     const portas=pedL>=1600?4:pedL>=1200?3:2;
     espInfo.style.display='block';
-    espInfo.innerHTML=`🪞 Caixa espelho: altura 143mm (c/portas) / 120mm (sem portas). Largura pedra ${pedL}mm → <b>${portas} portas</b>.`;
+    espInfo.innerHTML=`🪞 Caixa espelho: profundidade 143mm (c/portas) / 120mm (sem portas) · altura 800mm. Largura pedra ${pedL}mm → <b>${portas} portas</b>.`;
   }else espInfo.style.display='none';
 }
 
@@ -2134,9 +2146,9 @@ function calcularBanheiro(){
   if(tipoEsp==='caixa_espelho'){
     const qtdPortasEsp=pedL>=1600?4:pedL>=1200?3:2;
     const espLarg=Math.round(pedL/qtdPortasEsp);
-    pecas.push({tipo:'15b',nome:'Caixa Esp.Lat',l:altAereo,a:120,qty:2});
-    pecas.push({tipo:'15b',nome:'Caixa Esp.Tampo',l:pedL-30,a:120,qty:2});
-    pecas.push({tipo:'6',nome:'Fundo Caixa Esp',l:pedL-30,a:altAereo-30,qty:1});
+    pecas.push({tipo:'15b',nome:'Lat.Caixa Esp.',l:800,a:120,qty:2});
+    pecas.push({tipo:'15b',nome:'Tampo/Base Caixa Esp.',l:pedL-30,a:120,qty:2});
+    pecas.push({tipo:'6',nome:'Fundo Caixa Esp.',l:pedL-30,a:770,qty:1});
     // Portas espelho
     const espArea=(espLarg-5)*(altAereo+23-5)/1e6;
     const extraEsp=[{id:'espelho',nome:`Espelho (${qtdPortasEsp} portas)`,qty:+(espArea*qtdPortasEsp).toFixed(2),un:'m²'}];
@@ -2146,7 +2158,7 @@ function calcularBanheiro(){
       {id:'parafuso',nome:'Parafusos',qty:1,un:'caixas'},
       {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
     ];
-    const obs=`📐 Caixa banheiro: ${cxProf}×${cxLarg}×${cxAlt}mm<br>🪞 Caixa espelho: 120mm prof. (143mm c/portas). ${qtdPortasEsp} portas.`;
+    const obs=`📐 Caixa banheiro: ${cxProf}×${cxLarg}×${cxAlt}mm<br>🪞 Caixa espelho: prof. 120mm sem portas / 143mm c/portas · altura 800mm. ${qtdPortasEsp} portas.`;
     renderResultado('resBanheiro',pecas,extraItens,'Banheiro',obs);
   } else {
     const espArea=+(pedL/1000*(altAereo/1000)).toFixed(2);
@@ -2879,6 +2891,41 @@ async function liberarUsuario(email) {
   const ok = await jbSet(rec);
   if (ok) { toast('✅ ' + email + ' liberado por 30 dias!'); carregarUsuarios(); }
   else toast('❌ Erro ao salvar.');
+}
+
+async function liberarPorEmail(dias) {
+  const email = document.getElementById('adminEmailLiberar').value.trim();
+  const msg = document.getElementById('adminLibMsg');
+  if (!email) { msg.style.color='#f87171'; msg.textContent='⚠️ Digite o e-mail do cliente.'; return; }
+  msg.style.color='#fbbf24'; msg.textContent='🔄 Buscando cliente...'; 
+  const rec = await jbGet();
+  if (!rec) { msg.style.color='#f87171'; msg.textContent='❌ Erro ao conectar. Verifique JSONBin.'; return; }
+  if (!rec.usuarios) rec.usuarios = [];
+  if (!rec.liberacoes) rec.liberacoes = {};
+  const hoje = new Date();
+  const ate = new Date(hoje); ate.setDate(ate.getDate() + dias);
+  const expiraStr = ate.toISOString().slice(0,10);
+  const ateStr = ate.toLocaleDateString('pt-BR');
+  let idx = rec.usuarios.findIndex(u => u.email === email);
+  if (idx === -1) {
+    rec.usuarios.push({ nome: email, email, inicio: hoje.toISOString().slice(0,10), diasRestantes: dias, ultimoAcesso: hoje.toISOString().slice(0,10), liberadoManual: true, liberadoAte: ateStr });
+  } else {
+    rec.usuarios[idx].diasRestantes = dias;
+    rec.usuarios[idx].liberadoManual = true;
+    rec.usuarios[idx].liberadoAte = ateStr;
+    rec.usuarios[idx].inicio = hoje.toISOString().slice(0,10);
+  }
+  rec.liberacoes[email] = { dias, expira: expiraStr };
+  const ok = await jbSet(rec);
+  if (ok) {
+    msg.style.color='#4ade80';
+    msg.textContent=`✅ ${email} liberado por ${dias} dias! (até ${ateStr})`;
+    document.getElementById('adminEmailLiberar').value='';
+    carregarUsuarios();
+  } else {
+    msg.style.color='#f87171';
+    msg.textContent='❌ Erro ao salvar. Verifique JSONBin.';
+  }
 }
 
 (function(){
