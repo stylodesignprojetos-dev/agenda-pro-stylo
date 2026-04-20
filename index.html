@@ -1430,9 +1430,31 @@ async function enviarCodigo(){
   err.textContent='';ok.textContent='';
   if(!email){err.textContent='⚠️ Informe seu e-mail';return;}
   const conta=LSJ('conta');
-  if(!conta||conta.email!==email){err.textContent='❌ E-mail não encontrado.';return;}
+  // Se não tem conta local, cria uma entrada temporária para permitir redefinir
+  if(!conta){
+    _codRec='RESET';_emailRec=email;
+    ok.textContent='✅ Conta não encontrada localmente. Defina uma nova senha.';
+    document.getElementById('recEmailLabel').textContent=email;
+    document.getElementById('recStep1').style.display='none';
+    document.getElementById('recStep2').style.display='block';
+    // Preenche o campo de código automaticamente
+    document.getElementById('recCodigo').value='RESET';
+    return;
+  }
+  // Email diferente do cadastrado: ainda permite resetar (mostra aviso)
+  if(conta.email!==email){
+    err.textContent='⚠️ E-mail diferente do cadastrado. Use: '+conta.email;return;
+  }
   const svc=LS('ejs_s'),tpl=LS('ejs_t'),key=LS('ejs_k');
-  if(!svc||!tpl||!key){document.getElementById('ejsBox').style.display='block';err.textContent='⚠️ Configure o EmailJS abaixo primeiro.';return;}
+  if(!svc||!tpl||!key){
+    // Sem EmailJS configurado: gera código e mostra na tela
+    _codRec=Math.floor(100000+Math.random()*900000).toString();_emailRec=email;
+    ok.textContent='✅ Código gerado (EmailJS não configurado): '+_codRec;
+    document.getElementById('recEmailLabel').textContent=email;
+    document.getElementById('recStep1').style.display='none';
+    document.getElementById('recStep2').style.display='block';
+    return;
+  }
   _codRec=Math.floor(100000+Math.random()*900000).toString();_emailRec=email;
   try{
     emailjs.init(key);
@@ -1451,7 +1473,7 @@ function confirmarCodigo(){
   if(cod!==_codRec){err.textContent='❌ Código incorreto.';return;}
   if(!ns||ns.length<4){err.textContent='⚠️ Senha: mínimo 4 caracteres.';return;}
   if(ns!==nc){err.textContent='⚠️ As senhas não coincidem.';return;}
-  const conta=LSJ('conta');conta.senha=ns;LSJ('conta',conta);_codRec=null;
+  let conta=LSJ("conta");if(!conta){conta={user:_emailRec,email:_emailRec,senha:ns,googleId:null,googleAvatar:null};}else{conta.senha=ns;}LSJ("conta",conta);_codRec=null;
   toast('✅ Senha redefinida! Faça login.');
   irPara('screenLogin');
   document.getElementById('recStep1').style.display='block';
