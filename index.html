@@ -2070,8 +2070,8 @@ textarea.form-control{resize:vertical;min-height:64px;}
 <script>
 // ── UTILS ──
 function irPara(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function abrirModal(id){document.getElementById(id).classList.add('open');}
-function fecharModal(id){document.getElementById(id).classList.remove('open');}
+function abrirModal(id){const el=document.getElementById(id);el.style.display='';el.classList.add('open');}
+function fecharModal(id){const el=document.getElementById(id);el.classList.remove('open');el.style.display='none';}
 function toast(msg,dur=3200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function formatBRL(v){return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2});}
 function LS(k,v){if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}
@@ -2871,6 +2871,8 @@ function calcularGuardaRoupa(){
     const sH=Math.round(altS/sapateiras);
     // sapateira: mesma lógica de gaveta mas abertura é de 15mm
     pecas.push({tipo:cxTipo,nome:'Frente Sapateira(15mm)',l:modL-3-descCol,a:sH,qty:sapateiras});
+    const sProf=Math.min(Pmm-50, 500);
+    pecas.push({tipo:'6',nome:'Fundo Sapateira(6mm)',l:modL-3-descCol-30,a:sProf-30,qty:sapateiras});
   }
   // Portas
   if(qtdPortas>0&&tipoPorta!=='sem'){
