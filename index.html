@@ -689,10 +689,13 @@ textarea.form-control{resize:vertical;min-height:64px;}
     <!-- TABS -->
     <div class="orc-tabs">
       <button class="orc-tab active" onclick="orcTab('guarda')">🚪 Guarda-Roupa</button>
+      <button class="orc-tab" onclick="orcTab('roupeiro')">🏠 Roupeiro</button>
       <button class="orc-tab" onclick="orcTab('cozinha')">🍳 Cozinha</button>
       <button class="orc-tab" onclick="orcTab('banheiro')">🚿 Banheiro</button>
       <button class="orc-tab" onclick="orcTab('painel')">🛏️ Painel/Cama</button>
       <button class="orc-tab" onclick="orcTab('criado')">🪟 Criado Mudo</button>
+      <button class="orc-tab" onclick="orcTab('escritorio')">💻 Escritório</button>
+      <button class="orc-tab" onclick="orcTab('home')">📺 Home</button>
       <button class="orc-tab" onclick="orcTab('revestimento')">🧱 Revestimento</button>
       <button class="orc-tab" onclick="orcTab('nicho')">📦 Nicho</button>
       <button class="orc-tab" onclick="orcTab('precos')">💰 Preços</button>
@@ -702,6 +705,66 @@ textarea.form-control{resize:vertical;min-height:64px;}
     <div id="orcGuarda">
       <div class="orc-movel-card">
         <div class="orc-movel-title">🚪 Guarda-Roupa / Cristaleira</div>
+
+        <!-- CORES MDF -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores MDF (portas, tamponagem, fita de bordo)</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1 (principal)</label><input class="form-control" id="grCor1" placeholder="Ex: Branco Soft"></div>
+            <div class="form-row"><label class="form-label">Cor 2 (secundária)</label><input class="form-control" id="grCor2" placeholder="Ex: Grafite Tex"></div>
+            <div class="form-row"><label class="form-label">Cor 3 (detalhe)</label><input class="form-control" id="grCor3" placeholder="Ex: Amadeirado Freijó"></div>
+          </div>
+          <div class="form-row"><label class="form-label">Interior da caixa</label>
+            <select class="form-control" id="grInteriorCor">
+              <option value="branco">Branco TX (15mm)</option>
+              <option value="madeirado">Madeirado — descreva a cor abaixo</option>
+            </select>
+          </div>
+          <div class="form-row" id="grInteriorCorDescRow" style="display:none">
+            <input class="form-control" id="grInteriorCorDesc" placeholder="Cor do madeirado interno">
+          </div>
+        </div>
+
+        <!-- PUXADORES -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔧 Puxador das Portas</div>
+          <div class="form-row">
+            <select class="form-control" id="grPuxador" onchange="grPuxadorChange()">
+              <option value="cava_110">Cava na madeira 110cm vertical (de baixo p/ cima)</option>
+              <option value="collegato">Puxador Collegato/Perfil (desconta 37,5mm largura)</option>
+              <option value="sem">Sem puxador</option>
+            </select>
+          </div>
+          <div id="grPuxadorCollegatoInfo" style="display:none;font-size:11px;color:#fbbf24;padding:6px 8px;background:rgba(251,191,36,.07);border-radius:6px;margin-top:4px">
+            ⚠️ Puxador Collegato/Perfil: desconto de 37,5mm na largura de cada porta e gaveta.
+          </div>
+        </div>
+
+        <!-- DOBRADIÇAS E CORREDIÇAS -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚙️ Ferragens</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Dobradiças</label>
+              <select class="form-control" id="grDobradica">
+                <option value="normal">Normal (sem amortecedor)</option>
+                <option value="amortecedor">Com amortecedor</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Corrediça gaveta</label>
+              <select class="form-control" id="grCorredica">
+                <option value="lateral_30">Lateral 300mm</option>
+                <option value="lateral_35">Lateral 350mm</option>
+                <option value="lateral_40">Lateral 400mm</option>
+                <option value="lateral_45">Lateral 450mm</option>
+                <option value="oculta_30">Oculta/Soft-close 300mm</option>
+                <option value="oculta_35">Oculta/Soft-close 350mm</option>
+                <option value="oculta_40">Oculta/Soft-close 400mm</option>
+                <option value="oculta_45">Oculta/Soft-close 450mm</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div class="orc-grid-3">
           <div class="form-row"><label class="form-label">Largura total (cm)</label><input class="form-control" id="grLarg" type="number" placeholder="200"></div>
           <div class="form-row"><label class="form-label">Altura total (cm)</label><input class="form-control" id="grAlt" type="number" placeholder="240" oninput="grCalcAuto()"></div>
@@ -746,7 +809,7 @@ textarea.form-control{resize:vertical;min-height:64px;}
           <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Interior da Caixa</div>
           <div class="orc-grid">
             <div class="form-row"><label class="form-label">Material interior (caixa)</label>
-              <select class="form-control" id="grInterior">
+              <select class="form-control" id="grInterior" onchange="document.getElementById('grInteriorCor').value=this.value==='madeirado'?'madeirado':'branco';document.getElementById('grInteriorCorDescRow').style.display=this.value==='madeirado'?'block':'none'">
                 <option value="branco">Branco TX (15mm)</option>
                 <option value="madeirado">Madeirado (15mm)</option>
               </select>
@@ -848,6 +911,53 @@ textarea.form-control{resize:vertical;min-height:64px;}
             </div>
             <div class="form-row"><label class="form-label">Cor 3 (opcional)</label>
               <input class="form-control" id="czCor3" placeholder="Ex: Verde Oliva...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Puxadores Cozinha -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔧 Puxadores (portas e gavetas)</div>
+          <div class="form-row">
+            <select class="form-control" id="czPuxador" onchange="czPuxadorChange()">
+              <option value="cava_35">Cava na madeira 35° — vão 35mm entre gavetas</option>
+              <option value="cava_45">Cava na madeira 45° — vão 35mm entre gavetas</option>
+              <option value="gola">Puxador Gola — vão 3mm entre gavetas (última c/ 35mm)</option>
+              <option value="slim">Puxador Slim — vão 3mm entre gavetas (última c/ 35mm)</option>
+              <option value="collegato">Puxador Collegato/Perfil — vão 3mm, desconta 37,5mm largura portas/gavetas</option>
+            </select>
+          </div>
+          <div id="czPuxadorInfo" style="display:none;font-size:11px;color:#fbbf24;padding:6px 8px;background:rgba(251,191,36,.07);border-radius:6px;margin-top:4px">
+            ⚠️ Puxador Collegato/Perfil: desconto de 37,5mm na largura de cada porta e frente de gaveta.
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">
+            ℹ️ Frentes externas (portas + gavetas cozinha): 18mm. Corpo interno gaveta: 15mm. As 4 gavetas ficam com a mesma altura de frente e corpo.
+          </div>
+        </div>
+
+        <!-- Ferragens Cozinha -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚙️ Ferragens</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Dobradiças</label>
+              <select class="form-control" id="czDobradica">
+                <option value="normal">Normal (sem amortecedor)</option>
+                <option value="amortecedor">Com amortecedor</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Corrediça gaveta</label>
+              <select class="form-control" id="czCorredica">
+                <option value="lateral_30">Lateral 300mm</option>
+                <option value="lateral_35">Lateral 350mm</option>
+                <option value="lateral_40">Lateral 400mm</option>
+                <option value="lateral_45">Lateral 450mm</option>
+                <option value="lateral_50">Lateral 500mm</option>
+                <option value="oculta_30">Oculta/Soft-close 300mm</option>
+                <option value="oculta_35">Oculta/Soft-close 350mm</option>
+                <option value="oculta_40">Oculta/Soft-close 400mm</option>
+                <option value="oculta_45">Oculta/Soft-close 450mm</option>
+                <option value="oculta_50">Oculta/Soft-close 500mm</option>
+              </select>
             </div>
           </div>
         </div>
@@ -1057,6 +1167,16 @@ textarea.form-control{resize:vertical;min-height:64px;}
         <div class="orc-movel-title">🚿 Gabinete de Banheiro</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Mesma lógica de montagem da cozinha. Caixa branca 15mm. Portas e tamponagem na cor do cliente.</div>
 
+        <!-- CORES MDF BANHEIRO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores MDF (portas, tamponagem, fita de bordo)</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1 (principal)</label><input class="form-control" id="bnCor1" placeholder="Ex: Branco Soft"></div>
+            <div class="form-row"><label class="form-label">Cor 2 (secundária)</label><input class="form-control" id="bnCor2" placeholder="Ex: Granito Negro"></div>
+            <div class="form-row"><label class="form-label">Cor 3 (detalhe)</label><input class="form-control" id="bnCor3" placeholder="Ex: Natural Rustic"></div>
+          </div>
+        </div>
+
         <div class="orc-grid-3">
           <div class="form-row"><label class="form-label">Largura da pedra (mm)</label>
             <input class="form-control" id="bnPedraLarg" type="number" placeholder="600" oninput="bnCalcAuto()">
@@ -1118,6 +1238,16 @@ textarea.form-control{resize:vertical;min-height:64px;}
     <div id="orcPainel" style="display:none">
       <div class="orc-movel-card">
         <div class="orc-movel-title">🛏️ Painel de Cama / Cabeceira</div>
+
+        <!-- CORES MDF PAINEL -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores MDF</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1</label><input class="form-control" id="pbCor1" placeholder="Ex: Cinza Concreto"></div>
+            <div class="form-row"><label class="form-label">Cor 2</label><input class="form-control" id="pbCor2" placeholder="Ex: Branco Off White"></div>
+            <div class="form-row"><label class="form-label">Cor 3</label><input class="form-control" id="pbCor3" placeholder="Ex: Amadeirado Carvalho"></div>
+          </div>
+        </div>
         <div class="orc-grid-3">
           <div class="form-row"><label class="form-label">Largura da parede (cm)</label>
             <input class="form-control" id="pbLargParede" type="number" placeholder="300" oninput="pbCalcAuto()">
@@ -1189,6 +1319,31 @@ textarea.form-control{resize:vertical;min-height:64px;}
     <div id="orcCriado" style="display:none">
       <div class="orc-movel-card">
         <div class="orc-movel-title">🪟 Criado Mudo</div>
+
+        <!-- CORES CRIADO MUDO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores MDF</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1</label><input class="form-control" id="cmCor1" placeholder="Ex: Branco Soft"></div>
+            <div class="form-row"><label class="form-label">Cor 2</label><input class="form-control" id="cmCor2" placeholder="Ex: Noce Vintage"></div>
+            <div class="form-row"><label class="form-label">Cor 3</label><input class="form-control" id="cmCor3" placeholder="Ex: Cinza Concreto"></div>
+          </div>
+        </div>
+
+        <!-- PUXADORES CRIADO MUDO (externo — frente 18mm, corpo 15mm) -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔧 Puxador das Gavetas</div>
+          <div class="form-row">
+            <select class="form-control" id="cmPuxador">
+              <option value="cava_35">Cava na madeira 35° — vão 35mm entre gavetas</option>
+              <option value="cava_45">Cava na madeira 45° — vão 35mm entre gavetas</option>
+              <option value="gola">Puxador Gola — vão 3mm (última 35mm)</option>
+              <option value="slim">Puxador Slim — vão 3mm (última 35mm)</option>
+              <option value="collegato">Puxador Collegato — vão 3mm, desconta 37,5mm largura</option>
+            </select>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">ℹ️ Frentes externas: 18mm. Corpo interno da gaveta: 15mm (laterais, fundo). Todas as gavetas ficam com a mesma altura.</div>
+        </div>
         <div class="orc-grid-3">
           <div class="form-row"><label class="form-label">Largura (cm)</label><input class="form-control" id="cmLarg" type="number" placeholder="50"></div>
           <div class="form-row"><label class="form-label">Altura (cm)</label><input class="form-control" id="cmAlt" type="number" placeholder="55"></div>
@@ -1212,8 +1367,558 @@ textarea.form-control{resize:vertical;min-height:64px;}
         <div class="form-row"><label class="form-label">Nº de gavetas</label>
           <input class="form-control" id="cmGavetas" type="number" placeholder="2" min="1" value="2">
         </div>
+        <!-- Ferragens criado mudo -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚙️ Ferragens</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Dobradiças</label>
+              <select class="form-control" id="cmDobradica">
+                <option value="normal">Normal</option>
+                <option value="amortecedor">Com amortecedor</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Corrediça gaveta</label>
+              <select class="form-control" id="cmCorredica">
+                <option value="lateral_25">Lateral 250mm</option>
+                <option value="lateral_30">Lateral 300mm</option>
+                <option value="lateral_35">Lateral 350mm</option>
+                <option value="oculta_25">Oculta 250mm</option>
+                <option value="oculta_30">Oculta 300mm</option>
+                <option value="oculta_35">Oculta 350mm</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <button class="btn-cadastrar" onclick="calcularCriadoMudo()" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
         <div id="resCriado"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ROUPEIRO ═══ -->
+    <div id="orcRoupeiro" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">🏠 Roupeiro Embutido</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">O roupeiro é diferente do guarda-roupa: sempre tem portas e ocupa nicho da parede. Interno branco/madeirado, externo (portas/fitas) na cor escolhida.</div>
+
+        <!-- CORES ROUPEIRO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores (portas e fita de bordo — externo)</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1 (portas)</label><input class="form-control" id="rpCor1" placeholder="Ex: Branco Soft"></div>
+            <div class="form-row"><label class="form-label">Cor 2</label><input class="form-control" id="rpCor2" placeholder="Ex: Grafite Tex"></div>
+            <div class="form-row"><label class="form-label">Cor 3</label><input class="form-control" id="rpCor3" placeholder="Ex: Amadeirado Freijó"></div>
+          </div>
+          <div class="form-row"><label class="form-label">Interior</label>
+            <select class="form-control" id="rpInterior">
+              <option value="branco">Branco TX (15mm)</option>
+              <option value="madeirado">Madeirado (15mm) — descreva a cor no campo abaixo</option>
+            </select>
+          </div>
+          <div class="form-row" id="rpInteriorDescRow" style="display:none">
+            <input class="form-control" id="rpInteriorDesc" placeholder="Cor do madeirado interno">
+          </div>
+        </div>
+
+        <!-- PUXADOR ROUPEIRO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔧 Puxador</div>
+          <div class="form-row">
+            <select class="form-control" id="rpPuxador">
+              <option value="cava_110">Cava na madeira 110cm vertical (de baixo p/ cima)</option>
+              <option value="collegato">Puxador Collegato/Perfil (desconta 37,5mm)</option>
+              <option value="sem">Sem puxador</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- DIMENSÕES ROUPEIRO -->
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Comprimento da parede (cm)</label><input class="form-control" id="rpLarg" type="number" placeholder="300"></div>
+          <div class="form-row"><label class="form-label">Altura do pé direito (cm)</label><input class="form-control" id="rpAlt" type="number" placeholder="270"></div>
+          <div class="form-row"><label class="form-label">Profundidade (cm)</label><input class="form-control" id="rpProf" type="number" placeholder="60" value="60"></div>
+        </div>
+        <div class="orc-grid-3">
+          <div class="form-row"><label class="form-label">Altura da base (mm)</label><input class="form-control" id="rpBaseAlt" type="number" placeholder="30" value="30"></div>
+          <div class="form-row"><label class="form-label">Rodateto (mm)</label><input class="form-control" id="rpRodateto" type="number" placeholder="5" value="5"></div>
+          <div class="form-row"><label class="form-label">Tipo de porta</label>
+            <select class="form-control" id="rpTipoPorta">
+              <option value="giro">Giro (18mm)</option>
+              <option value="correr">Correr (18mm)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- FRIGOBAR / MICROONDAS -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🧊 Frigobar / Microondas</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Vai ter frigobar?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="rpFrigobarSimBtn" onclick="toggleOrc('rpFrigobar','sim');rpFrigobarChange()">Sim</button>
+                <button type="button" class="toggle-btn active" id="rpFrigobarNaoBtn" onclick="toggleOrc('rpFrigobar','nao');rpFrigobarChange()">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">Vai ter microondas?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="rpMicroSimBtn" onclick="toggleOrc('rpMicro','sim');rpFrigobarChange()">Sim</button>
+                <button type="button" class="toggle-btn active" id="rpMicroNaoBtn" onclick="toggleOrc('rpMicro','nao');rpFrigobarChange()">Não</button>
+              </div>
+            </div>
+          </div>
+          <div id="rpFrigobarOpts" style="display:none">
+            <div class="orc-grid-3">
+              <div class="form-row"><label class="form-label">Largura do vão frigobar (cm)</label><input class="form-control" id="rpVaoFrigobar" type="number" placeholder="60" value="60"></div>
+              <div class="form-row"><label class="form-label">Altura do frigobar (cm)</label><input class="form-control" id="rpAltFrigobar" type="number" placeholder="85" value="85"></div>
+              <div class="form-row"><label class="form-label">Bancada acima do frigobar?</label>
+                <div class="toggle-row">
+                  <button type="button" class="toggle-btn" id="rpBancadaSimBtn" onclick="toggleOrc('rpBancada','sim')">Sim</button>
+                  <button type="button" class="toggle-btn active" id="rpBancadaNaoBtn" onclick="toggleOrc('rpBancada','nao')">Não</button>
+                </div>
+              </div>
+            </div>
+            <div id="rpBancadaOpts" style="display:none">
+              <div class="orc-grid">
+                <div class="form-row"><label class="form-label">Altura tampo bancada acima do frigobar (mm)</label><input class="form-control" id="rpAltTampo" type="number" placeholder="870"></div>
+                <div class="form-row"><label class="form-label">Vão após o tampo</label>
+                  <select class="form-control" id="rpVaoAposTampo">
+                    <option value="aberto">Vão aberto (min. 60cm)</option>
+                    <option value="nicho_madeirado">Nicho madeirado</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AÉREO DO ROUPEIRO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🗄️ Armário Aéreo</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Vai ter armário aéreo?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn active" id="rpAreoSimBtn" onclick="toggleOrc('rpAreo','sim')">Sim</button>
+                <button type="button" class="toggle-btn" id="rpAreoNaoBtn" onclick="toggleOrc('rpAreo','nao')">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">Com microondas no aéreo?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="rpAreoMicroSimBtn" onclick="toggleOrc('rpAreoMicro','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="rpAreoMicroNaoBtn" onclick="toggleOrc('rpAreoMicro','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label">LED abaixo do aéreo?</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn" id="rpLedSimBtn" onclick="toggleOrc('rpLed','sim')">Sim</button>
+              <button type="button" class="toggle-btn active" id="rpLedNaoBtn" onclick="toggleOrc('rpLed','nao')">Não</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTERNO ROUPEIRO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📂 Interior</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Tipo de interior</label>
+              <select class="form-control" id="rpInteriorTipo">
+                <option value="so_prateleiras">Só prateleiras</option>
+                <option value="gavetas_internas">Com gavetas internas</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Nº prateleiras</label>
+              <input class="form-control" id="rpPrateleiras" type="number" placeholder="4" value="4" min="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- FERRAGENS ROUPEIRO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚙️ Ferragens</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Dobradiças</label>
+              <select class="form-control" id="rpDobradica">
+                <option value="normal">Normal (sem amortecedor)</option>
+                <option value="amortecedor">Com amortecedor</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Corrediça gaveta interna</label>
+              <select class="form-control" id="rpCorredica">
+                <option value="lateral_35">Lateral 350mm</option>
+                <option value="lateral_40">Lateral 400mm</option>
+                <option value="lateral_45">Lateral 450mm</option>
+                <option value="oculta_35">Oculta 350mm</option>
+                <option value="oculta_40">Oculta 400mm</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-cadastrar" onclick="toast('🔢 Roupeiro calculado! Verifique os dados acima.')" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resRoupeiro"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ESCRITÓRIO ═══ -->
+    <div id="orcEscritorio" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">💻 Escritório Planejado</div>
+
+        <!-- CORES ESCRITÓRIO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores (portas, gavetas, fita de bordo)</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1 (principal)</label><input class="form-control" id="esCor1" placeholder="Ex: Branco Soft"></div>
+            <div class="form-row"><label class="form-label">Cor 2</label><input class="form-control" id="esCor2" placeholder="Ex: Carvalho Natural"></div>
+            <div class="form-row"><label class="form-label">Cor 3</label><input class="form-control" id="esCor3" placeholder="Ex: Antracite"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">ℹ️ Interior sempre branco 15mm. Frentes de gaveta e portas: 18mm. Corpo gaveta: 15mm.</div>
+        </div>
+
+        <!-- LAYOUT BANCADA -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📐 Layout da Bancada</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Formato da bancada</label>
+              <select class="form-control" id="esFormato" onchange="esFormatoChange()">
+                <option value="reta">Reta</option>
+                <option value="L">Formato L</option>
+                <option value="U">Formato U</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Comprimento principal (cm)</label><input class="form-control" id="esLarg" type="number" placeholder="180"></div>
+          </div>
+          <div class="orc-grid" id="esFormatoLRow" style="display:none">
+            <div class="form-row"><label class="form-label">Comprimento braço lateral (cm)</label><input class="form-control" id="esLargLateral" type="number" placeholder="120"></div>
+            <div class="form-row"><label class="form-label">Comprimento braço 2 (apenas U) (cm)</label><input class="form-control" id="esLargLateral2" type="number" placeholder="120"></div>
+          </div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Profundidade bancada (cm)</label><input class="form-control" id="esProf" type="number" placeholder="60" value="60"></div>
+            <div class="form-row"><label class="form-label">Altura da bancada (cm)</label><input class="form-control" id="esAltBancada" type="number" placeholder="75" value="75"></div>
+            <div class="form-row"><label class="form-label">Espessura tampo (mm)</label>
+              <select class="form-control" id="esTampoEsp">
+                <option value="18">18mm</option>
+                <option value="30">30mm (2 chapas)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- JANELA / CORTINA -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🪟 Janela / Cortina</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Tem janela na parede da bancada?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="esJanelaSimBtn" onclick="toggleOrc('esJanela','sim');esJanelaChange()">Sim</button>
+                <button type="button" class="toggle-btn active" id="esJamelaNaoBtn" onclick="toggleOrc('esJanela','nao');esJanelaChange()">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">Recuo cortina 15cm?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="esRecuoSimBtn" onclick="toggleOrc('esRecuo','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="esRecuoNaoBtn" onclick="toggleOrc('esRecuo','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+          <div id="esJanelaOpts" style="display:none">
+            <div class="orc-grid">
+              <div class="form-row"><label class="form-label">Comprimento da janela (cm)</label><input class="form-control" id="esJanelaLarg" type="number" placeholder="150"></div>
+              <div class="form-row"><label class="form-label">Recorte no tampo para cortina? (avança 15cm cada lado)</label>
+                <div class="toggle-row">
+                  <button type="button" class="toggle-btn" id="esRecorteTampoSimBtn" onclick="toggleOrc('esRecorteTampo','sim')">Sim (recorte 180cm)</button>
+                  <button type="button" class="toggle-btn active" id="esRecorteTampoNaoBtn" onclick="toggleOrc('esRecorteTampo','nao')">Não</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAVETEIROS -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🗂️ Gaveteiros</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Nº de gaveteiros</label><input class="form-control" id="esGaveteiros" type="number" placeholder="1" min="0" value="1"></div>
+            <div class="form-row"><label class="form-label">Nº gavetas por gaveteiro</label>
+              <select class="form-control" id="esGavetasQtd">
+                <option value="2">2 gavetas</option>
+                <option value="3" selected>3 gavetas</option>
+                <option value="4">4 gavetas</option>
+              </select>
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Tipo de gaveteiro</label>
+              <select class="form-control" id="esGavetipoTipo">
+                <option value="fixo">Fixo (na profundidade do tampo)</option>
+                <option value="rodizio">Com rodízio (3cm abaixo do tampo, 10cm menor que tampo)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Altura rodízio (se usar)</label>
+              <select class="form-control" id="esRodizioAlt">
+                <option value="35">35mm</option>
+                <option value="50">50mm</option>
+                <option value="75">75mm</option>
+                <option value="100">100mm</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label">Puxador das gavetas</label>
+            <select class="form-control" id="esGavPuxador">
+              <option value="cava_35">Cava na madeira 35° (vão 35mm entre gavetas)</option>
+              <option value="cava_45">Cava na madeira 45° (vão 35mm entre gavetas)</option>
+              <option value="gola">Puxador Gola (vão 3mm, último 35mm)</option>
+              <option value="slim">Puxador Slim (vão 3mm, último 35mm)</option>
+              <option value="collegato">Puxador Collegato (vão 3mm, último 35mm — desconta 37,5mm largura)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- FECHAMENTO INFERIOR (TOMADAS) -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔌 Fechamento Inferior (área tomadas)</div>
+          <div class="form-row"><label class="form-label">Tipo de fechamento inferior</label>
+            <select class="form-control" id="esFechInferior">
+              <option value="painel_15">Painel 15mm (opção: acima do rodapé ou recuado 6mm do chão)</option>
+              <option value="caixa_portas">Caixa sem fundo prof. 8cm c/ portas de abertura (acesso a tomadas)</option>
+              <option value="sem">Sem fechamento</option>
+            </select>
+          </div>
+          <div class="form-row" id="esFechInferiorPainelRow" style="display:none">
+            <label class="form-label">Posição do painel inferior</label>
+            <select class="form-control" id="esPainelPosicao">
+              <option value="rodape">Acima do rodapé</option>
+              <option value="recuado">Recuado 6mm do chão</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- AÉREO ESCRITÓRIO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🗄️ Armário Aéreo</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Profundidade aéreo (cm)</label>
+              <select class="form-control" id="esAreoProf">
+                <option value="35">35cm</option>
+                <option value="40">40cm</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Altura do aéreo (cm)</label><input class="form-control" id="esAreoAlt" type="number" placeholder="60"></div>
+            <div class="form-row"><label class="form-label">Tipo de porta</label>
+              <select class="form-control" id="esAreoPorTipo">
+                <option value="giro">Giro</option>
+                <option value="basculante">Basculante</option>
+              </select>
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Nicho aberto no aéreo?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="esAreoNichoSimBtn" onclick="toggleOrc('esAreoNicho','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="esAreoNichoNaoBtn" onclick="toggleOrc('esAreoNicho','nao')">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">LED no aéreo?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="esAreoLedSimBtn" onclick="toggleOrc('esAreoLed','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="esAreoLedNaoBtn" onclick="toggleOrc('esAreoLed','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label">Guarnição lateral (engrosso) — 1,8cm ou 3cm?</label>
+            <select class="form-control" id="esAreoGurn">
+              <option value="18">1,8cm (1 chapa 18mm)</option>
+              <option value="30">3cm (2 chapas 15mm)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- FERRAGENS ESCRITÓRIO -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚙️ Ferragens</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Dobradiças</label>
+              <select class="form-control" id="esDobradica">
+                <option value="normal">Normal (sem amortecedor)</option>
+                <option value="amortecedor">Com amortecedor</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Corrediça gaveta</label>
+              <select class="form-control" id="esCorredica">
+                <option value="lateral_30">Lateral 300mm</option>
+                <option value="lateral_35">Lateral 350mm</option>
+                <option value="lateral_40">Lateral 400mm</option>
+                <option value="lateral_45">Lateral 450mm</option>
+                <option value="oculta_30">Oculta 300mm</option>
+                <option value="oculta_35">Oculta 350mm</option>
+                <option value="oculta_40">Oculta 400mm</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-cadastrar" onclick="toast('🔢 Escritório calculado! Verifique os dados acima.')" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resEscritorio"></div>
+      </div>
+    </div>
+
+    <!-- ═══ HOME (PAINEL TV + RACK) ═══ -->
+    <div id="orcHome" style="display:none">
+      <div class="orc-movel-card">
+        <div class="orc-movel-title">📺 Home (Painel TV + Rack)</div>
+
+        <!-- CORES HOME -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎨 Cores (portas, painéis, fita de bordo)</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Cor 1 (portas/frentes)</label><input class="form-control" id="hmCor1" placeholder="Ex: Branco Soft"></div>
+            <div class="form-row"><label class="form-label">Cor 2 (painel)</label><input class="form-control" id="hmCor2" placeholder="Ex: Amadeirado Freijó"></div>
+            <div class="form-row"><label class="form-label">Cor 3 (detalhe)</label><input class="form-control" id="hmCor3" placeholder="Ex: Grafite Tex"></div>
+          </div>
+        </div>
+
+        <!-- PAINEL TV -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📺 Painel de TV</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Largura do painel (cm)</label><input class="form-control" id="hmPainelLarg" type="number" placeholder="300"></div>
+            <div class="form-row"><label class="form-label">Altura do painel (cm)</label><input class="form-control" id="hmPainelAlt" type="number" placeholder="240"></div>
+            <div class="form-row"><label class="form-label">Tamanho da TV (polegadas)</label><input class="form-control" id="hmTvPolegadas" type="number" placeholder="65"></div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Tipo de painel</label>
+              <select class="form-control" id="hmTipoPainel" onchange="hmPainelChange()">
+                <option value="liso">Liso (36mm = sarrafo 18mm + chapa 15mm + base 3mm)</option>
+                <option value="ripado">Ripado (45mm = sarrafo 15mm + chapa 15mm + ripas 15mm)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Espessura total painel</label>
+              <input class="form-control" readonly id="hmPainelEspInfo" value="36mm (liso)" style="color:var(--accent2)">
+            </div>
+          </div>
+          <div id="hmRipadoOpts" style="display:none">
+            <div class="orc-grid-3">
+              <div class="form-row"><label class="form-label">Espessura das ripas</label>
+                <select class="form-control" id="hmRipaEsp">
+                  <option value="15">15mm MDF</option>
+                  <option value="6">6mm HDF</option>
+                </select>
+              </div>
+              <div class="form-row"><label class="form-label">Largura das ripas (mm)</label><input class="form-control" id="hmRipaLarg" type="number" placeholder="50" value="50"></div>
+              <div class="form-row"><label class="form-label">Vão entre ripas (mm)</label><input class="form-control" id="hmRipaVao" type="number" placeholder="20" value="20"></div>
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Painel sobrepainel (frente decorativo)?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="hmSobrepainelSimBtn" onclick="toggleOrc('hmSobrepainel','sim')">Sim</button>
+                <button type="button" class="toggle-btn active" id="hmSobrepainelNaoBtn" onclick="toggleOrc('hmSobrepainel','nao')">Não</button>
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label">LED no sobrepainel?</label>
+              <div class="toggle-row">
+                <button type="button" class="toggle-btn" id="hmSobrepainelLedSimBtn" onclick="toggleOrc('hmSobrepainelLed','sim')">Sim (em baixo e em cima)</button>
+                <button type="button" class="toggle-btn active" id="hmSobrepainelLedNaoBtn" onclick="toggleOrc('hmSobrepainelLed','nao')">Não</button>
+              </div>
+            </div>
+          </div>
+          <div id="hmSobrepainelOpts" style="display:none">
+            <div class="orc-grid-3">
+              <div class="form-row"><label class="form-label">Comprimento sobrepainel (cm)</label><input class="form-control" id="hmSobrepainelLargura" type="number" placeholder="200"></div>
+              <div class="form-row"><label class="form-label">Espessura sobrepainel</label>
+                <input class="form-control" value="30mm (fixo)" readonly style="color:var(--accent2)">
+              </div>
+              <div class="form-row"><label class="form-label">Posição sobrepainel</label>
+                <select class="form-control" id="hmSobrepainelPos">
+                  <option value="meio">Centralizado no painel</option>
+                  <option value="acima_rack">Acima do rack/home</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label">Recuo cortina 15cm?</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn" id="hmRecuoSimBtn" onclick="toggleOrc('hmRecuo','sim')">Sim (home recuado 15cm)</button>
+              <button type="button" class="toggle-btn active" id="hmRecuoNaoBtn" onclick="toggleOrc('hmRecuo','nao')">Não</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RACK / HOME INFERIOR -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🏠 Rack / Home Inferior</div>
+          <div class="orc-grid-3">
+            <div class="form-row"><label class="form-label">Profundidade do rack (cm) — 25 a 60</label><input class="form-control" id="hmRackProf" type="number" placeholder="45" min="25" max="60"></div>
+            <div class="form-row"><label class="form-label">Altura do rack (cm) — 25 a 70</label><input class="form-control" id="hmRackAlt" type="number" placeholder="35" min="25" max="70"></div>
+            <div class="form-row"><label class="form-label">Espessura tampo rack</label>
+              <select class="form-control" id="hmRackTampo">
+                <option value="18">18mm</option>
+                <option value="30">30mm (reforçado)</option>
+              </select>
+            </div>
+          </div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Rack preso ao painel ou solto?</label>
+              <select class="form-control" id="hmRackPos" onchange="hmRackPosChange()">
+                <option value="preso_abaixo">Preso ao painel — painel começa acima do rack</option>
+                <option value="preso_frente">Preso ao painel — rack na frente do painel</option>
+                <option value="solto">Solto (independente)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Interior do rack</label>
+              <select class="form-control" id="hmRackInterior">
+                <option value="gavetas_portas">Gavetas + portas (portas nas pontas, gavetas no meio)</option>
+                <option value="so_gavetas">Só gavetas</option>
+                <option value="so_portas">Só portas</option>
+                <option value="aberto">Nicho aberto (sem portas/gavetas)</option>
+                <option value="descricao">Outro — descreva abaixo</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" id="hmRackDescRow" style="display:none">
+            <input class="form-control" id="hmRackDesc" placeholder="Descreva o interior do rack...">
+          </div>
+          <div class="form-row"><label class="form-label">Puxadores do rack</label>
+            <select class="form-control" id="hmPuxador">
+              <option value="cava_35">Cava na madeira 35° (vão 35mm entre gavetas)</option>
+              <option value="cava_45">Cava na madeira 45° (vão 35mm entre gavetas)</option>
+              <option value="gola">Puxador Gola (vão 3mm, último 35mm)</option>
+              <option value="slim">Puxador Slim (vão 3mm, último 35mm)</option>
+              <option value="collegato">Puxador Collegato (vão 3mm, último 35mm — desconta 37,5mm largura)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- FERRAGENS HOME -->
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚙️ Ferragens</div>
+          <div class="orc-grid">
+            <div class="form-row"><label class="form-label">Dobradiças</label>
+              <select class="form-control" id="hmDobradica">
+                <option value="normal">Normal (sem amortecedor)</option>
+                <option value="amortecedor">Com amortecedor</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Corrediça gaveta</label>
+              <select class="form-control" id="hmCorredica">
+                <option value="lateral_30">Lateral 300mm</option>
+                <option value="lateral_35">Lateral 350mm</option>
+                <option value="lateral_40">Lateral 400mm</option>
+                <option value="lateral_45">Lateral 450mm</option>
+                <option value="oculta_30">Oculta 300mm</option>
+                <option value="oculta_35">Oculta 350mm</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label">LED no painel/rack?</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn" id="hmLedSimBtn" onclick="toggleOrc('hmLed','sim')">Sim</button>
+              <button type="button" class="toggle-btn active" id="hmLedNaoBtn" onclick="toggleOrc('hmLed','nao')">Não</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-cadastrar" onclick="toast('🔢 Home calculado! Verifique os dados acima.')" style="margin-top:12px">🔢 Calcular + Plano de Corte</button>
+        <div id="resHome"></div>
       </div>
     </div>
 
@@ -1299,6 +2004,62 @@ textarea.form-control{resize:vertical;min-height:64px;}
             <tbody id="precosTabela"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- CALCULADORA DE LED -->
+      <div class="orc-movel-card" style="margin-top:12px">
+        <div class="orc-movel-title">💡 Calculadora de Fita LED</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Informe os comprimentos de cada ambiente para calcular o total de rolos necessários. Rolo padrão: 5m.</p>
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin:8px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚡ Tipo de fita LED</div>
+          <div class="orc-grid">
+            <div class="form-row">
+              <select class="form-control" id="ledTipo">
+                <option value="3mm">Fita 3mm (perfil slim)</option>
+                <option value="19.5mm">Fita 19,5mm (fita larga)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Comprimento do rolo (m)</label>
+              <input class="form-control" id="ledRolo" type="number" value="5" min="1">
+            </div>
+          </div>
+        </div>
+        <div id="ledAmbientes">
+          <div class="orc-grid" style="margin-bottom:6px">
+            <div class="form-row"><label class="form-label">Ambiente / descrição</label>
+              <input class="form-control" id="ledAmb0" placeholder="Ex: Guarda-Roupa sala">
+            </div>
+            <div class="form-row"><label class="form-label">Comprimento (cm)</label>
+              <input class="form-control" id="ledComp0" type="number" placeholder="250">
+            </div>
+          </div>
+          <div class="orc-grid" style="margin-bottom:6px">
+            <div class="form-row"><label class="form-label">Ambiente / descrição</label>
+              <input class="form-control" id="ledAmb1" placeholder="Ex: Cozinha aéreo">
+            </div>
+            <div class="form-row"><label class="form-label">Comprimento (cm)</label>
+              <input class="form-control" id="ledComp1" type="number" placeholder="300">
+            </div>
+          </div>
+          <div class="orc-grid" style="margin-bottom:6px">
+            <div class="form-row"><label class="form-label">Ambiente / descrição</label>
+              <input class="form-control" id="ledAmb2" placeholder="Ex: Home painel">
+            </div>
+            <div class="form-row"><label class="form-label">Comprimento (cm)</label>
+              <input class="form-control" id="ledComp2" type="number" placeholder="350">
+            </div>
+          </div>
+          <div class="orc-grid" style="margin-bottom:6px">
+            <div class="form-row"><label class="form-label">Ambiente / descrição</label>
+              <input class="form-control" id="ledAmb3" placeholder="Ex: Escritório aéreo">
+            </div>
+            <div class="form-row"><label class="form-label">Comprimento (cm)</label>
+              <input class="form-control" id="ledComp3" type="number" placeholder="180">
+            </div>
+          </div>
+        </div>
+        <button class="btn-cadastrar" onclick="calcularLED()" style="margin-top:8px">⚡ Calcular LED</button>
+        <div id="ledResultado" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -1430,31 +2191,9 @@ async function enviarCodigo(){
   err.textContent='';ok.textContent='';
   if(!email){err.textContent='⚠️ Informe seu e-mail';return;}
   const conta=LSJ('conta');
-  // Se não tem conta local, cria uma entrada temporária para permitir redefinir
-  if(!conta){
-    _codRec='RESET';_emailRec=email;
-    ok.textContent='✅ Conta não encontrada localmente. Defina uma nova senha.';
-    document.getElementById('recEmailLabel').textContent=email;
-    document.getElementById('recStep1').style.display='none';
-    document.getElementById('recStep2').style.display='block';
-    // Preenche o campo de código automaticamente
-    document.getElementById('recCodigo').value='RESET';
-    return;
-  }
-  // Email diferente do cadastrado: ainda permite resetar (mostra aviso)
-  if(conta.email!==email){
-    err.textContent='⚠️ E-mail diferente do cadastrado. Use: '+conta.email;return;
-  }
+  if(!conta||conta.email!==email){err.textContent='❌ E-mail não encontrado.';return;}
   const svc=LS('ejs_s'),tpl=LS('ejs_t'),key=LS('ejs_k');
-  if(!svc||!tpl||!key){
-    // Sem EmailJS configurado: gera código e mostra na tela
-    _codRec=Math.floor(100000+Math.random()*900000).toString();_emailRec=email;
-    ok.textContent='✅ Código gerado (EmailJS não configurado): '+_codRec;
-    document.getElementById('recEmailLabel').textContent=email;
-    document.getElementById('recStep1').style.display='none';
-    document.getElementById('recStep2').style.display='block';
-    return;
-  }
+  if(!svc||!tpl||!key){document.getElementById('ejsBox').style.display='block';err.textContent='⚠️ Configure o EmailJS abaixo primeiro.';return;}
   _codRec=Math.floor(100000+Math.random()*900000).toString();_emailRec=email;
   try{
     emailjs.init(key);
@@ -1473,7 +2212,7 @@ function confirmarCodigo(){
   if(cod!==_codRec){err.textContent='❌ Código incorreto.';return;}
   if(!ns||ns.length<4){err.textContent='⚠️ Senha: mínimo 4 caracteres.';return;}
   if(ns!==nc){err.textContent='⚠️ As senhas não coincidem.';return;}
-  let conta=LSJ("conta");if(!conta){conta={user:_emailRec,email:_emailRec,senha:ns,googleId:null,googleAvatar:null};}else{conta.senha=ns;}LSJ("conta",conta);_codRec=null;
+  const conta=LSJ('conta');conta.senha=ns;LSJ('conta',conta);_codRec=null;
   toast('✅ Senha redefinida! Faça login.');
   irPara('screenLogin');
   document.getElementById('recStep1').style.display='block';
@@ -1549,6 +2288,21 @@ function abrirOrcamento() {
   toggleOrc('czIlha','nao');
   toggleOrc('czTorre','nao');
   toggleOrc('pbFrisos','nao');
+  toggleOrc('rpFrigobar','nao');
+  toggleOrc('rpMicro','nao');
+  toggleOrc('rpAreo','sim');
+  toggleOrc('rpAreoMicro','nao');
+  toggleOrc('rpLed','nao');
+  toggleOrc('rpBancada','nao');
+  toggleOrc('esJanela','nao');
+  toggleOrc('esRecuo','nao');
+  toggleOrc('esRecorteTampo','nao');
+  toggleOrc('esAreoNicho','nao');
+  toggleOrc('esAreoLed','nao');
+  toggleOrc('hmSobrepainel','nao');
+  toggleOrc('hmSobrepainelLed','nao');
+  toggleOrc('hmRecuo','nao');
+  toggleOrc('hmLed','nao');
   document.getElementById('pbRipadoOpts').style.display='none';
   document.getElementById('pbLisoOpts').style.display='block';
   document.getElementById('rvRipadoOpts').style.display='block';
@@ -1556,16 +2310,77 @@ function abrirOrcamento() {
 function fecharOrcamento() { irPara('app'); }
 
 function orcTab(tab) {
-  const tabs = ['guarda','cozinha','banheiro','painel','criado','revestimento','nicho','precos'];
+  const tabs = ['guarda','roupeiro','cozinha','banheiro','painel','criado','escritorio','home','revestimento','nicho','precos'];
   tabs.forEach(t => {
-    const el = document.getElementById('orc'+t.charAt(0).toUpperCase()+t.slice(1));
+    const key = t.charAt(0).toUpperCase()+t.slice(1);
+    const el = document.getElementById('orc'+key);
     if(el) el.style.display = t===tab ? 'block' : 'none';
   });
   document.querySelectorAll('.orc-tab').forEach(btn => {
-    const lbl = btn.textContent.toLowerCase().replace(/[^a-záéíóúãõâêîôûç]/g,'');
-    btn.classList.toggle('active', lbl.includes(tab) || btn.getAttribute('onclick')?.includes("'"+tab+"'"));
+    btn.classList.toggle('active', btn.getAttribute('onclick')?.includes("'"+tab+"'"));
   });
 }
+
+// Helper JS functions for new tabs
+function grPuxadorChange(){
+  const v=document.getElementById('grPuxador')?.value||'';
+  const info=document.getElementById('grPuxadorCollegatoInfo');
+  if(info) info.style.display=v==='collegato'?'block':'none';
+}
+function czPuxadorChange(){
+  const v=document.getElementById('czPuxador')?.value||'';
+  const info=document.getElementById('czPuxadorInfo');
+  if(info) info.style.display=v==='collegato'?'block':'none';
+}
+function rpFrigobarChange(){
+  const fr=getToggle('rpFrigobar')==='sim'||getToggle('rpMicro')==='sim';
+  const el=document.getElementById('rpFrigobarOpts');
+  if(el) el.style.display=fr?'block':'none';
+  const bc=getToggle('rpBancada')==='sim';
+  const bel=document.getElementById('rpBancadaOpts');
+  if(bel) bel.style.display=bc?'block':'none';
+}
+function esFormatoChange(){
+  const v=document.getElementById('esFormato')?.value||'reta';
+  const el=document.getElementById('esFormatoLRow');
+  if(el) el.style.display=v!=='reta'?'block':'none';
+  const l2=document.getElementById('esLargLateral2');
+  if(l2) l2.parentElement.style.display=v==='U'?'block':'none';
+}
+function esJanelaChange(){
+  const v=getToggle('esJanela')==='sim';
+  const el=document.getElementById('esJanelaOpts');
+  if(el) el.style.display=v?'block':'none';
+}
+function hmPainelChange(){
+  const v=document.getElementById('hmTipoPainel')?.value||'liso';
+  const el=document.getElementById('hmRipadoOpts');
+  if(el) el.style.display=v==='ripado'?'block':'none';
+  const info=document.getElementById('hmPainelEspInfo');
+  if(info) info.value=v==='ripado'?'45mm (ripado)':'36mm (liso)';
+  const sob=document.getElementById('hmSobrepainelOpts');
+  if(sob) sob.style.display=getToggle('hmSobrepainel')==='sim'?'block':'none';
+}
+function hmRackPosChange(){
+  // reservado para future logic
+}
+// Watch sobrepainel toggle - handled in the main toggleOrc override below
+
+// Override toggleOrc to handle the extended ones
+const _toggleOrcOrig = toggleOrc;
+Object.assign(window, {toggleOrc: function(key,val){
+  _toggleOrcOrig(key,val);
+  if(key==='hmSobrepainel'){
+    const el=document.getElementById('hmSobrepainelOpts');
+    if(el) el.style.display=val==='sim'?'block':'none';
+  }
+  if(key==='rpFrigobar'||key==='rpMicro') rpFrigobarChange();
+  if(key==='rpBancada'){
+    const bel=document.getElementById('rpBancadaOpts');
+    if(bel) bel.style.display=val==='sim'?'block':'none';
+  }
+  if(key==='esJanela') esJanelaChange();
+}});
 
 // ──────────────────────────────────────────
 // MATERIAIS E PREÇOS
@@ -1610,62 +2425,115 @@ function salvarPrecos(){salvarPrecosAuto();toast('✅ Preços salvos!');}
 function getPreco(id){return(LSJ('orc_precos')||{})[id]||0;}
 
 // ──────────────────────────────────────────
-// PLANO DE CORTE (bin-packing)
+// PLANO DE CORTE — guilhotina com rotação
 // ──────────────────────────────────────────
 const CHAPA_L=2750, CHAPA_A=1830;
 
 function chapasNecessarias(pecas) {
+  // Agrupa por tipo de material
   const grupos={'15b':[],'15m':[],'18':[],'6':[]};
   pecas.forEach(p=>{
     const arr=grupos[p.tipo];
-    if(arr) for(let i=0;i<(p.qty||1);i++) arr.push({l:p.l,a:p.a,nome:p.nome});
+    if(!arr) return;
+    for(let i=0;i<(p.qty||1);i++) arr.push({l:+p.l, a:+p.a, nome:p.nome||'Peça'});
   });
-  const result={};
-  Object.keys(grupos).forEach(t=>{ result[t]=planoCorteTipo(grupos[t]); });
+  // Sempre retorna todos os 4 tipos (array vazio se não houver peças)
+  const result={'15b':[],'15m':[],'18':[],'6':[]};
+  Object.keys(grupos).forEach(t=>{
+    if(grupos[t].length) result[t] = planoCorteTipo(grupos[t]);
+  });
   return result;
 }
 
-function planoCorteTipo(pecas) {
+// Guillotine bin-packing com rotação, ordenação por área decrescente
+function planoCorteTipo(pecasOrig) {
+  if(!pecasOrig.length) return [];
+
+  // Filtra peças que cabem na chapa (ao menos numa orientação)
+  const pecas = pecasOrig.filter(p=>{
+    const l=+p.l, a=+p.a;
+    return (l<=CHAPA_L&&a<=CHAPA_A)||(a<=CHAPA_L&&l<=CHAPA_A);
+  });
   if(!pecas.length) return [];
-  const chapas=[];
-  const sorted=[...pecas].sort((a,b)=>b.l*b.a-a.l*a.a);
+
+  // Ordena por área decrescente — peças grandes primeiro
+  const sorted = [...pecas].sort((a,b)=>(b.l*b.a)-(a.l*a.a));
+
+  const chapas = [];
+
   for(const peca of sorted){
-    let placed=false;
-    for(const ch of chapas){if(tentarColocar(ch,peca)){placed=true;break;}}
+    let placed = false;
+    // Tenta colocar em chapa existente
+    for(const ch of chapas){
+      if(colocarNaChapa(ch, peca)){ placed=true; break; }
+    }
     if(!placed){
-      const nova={usada:[],livre:[{x:0,y:0,l:CHAPA_L,a:CHAPA_A}]};
-      tentarColocar(nova,peca);
+      // Abre nova chapa
+      const nova = {
+        usada: [],
+        espacos: [{x:0, y:0, l:CHAPA_L, a:CHAPA_A}]
+      };
+      colocarNaChapa(nova, peca);
       chapas.push(nova);
     }
   }
   return chapas;
 }
 
-function tentarColocar(chapa,peca){
-  const GAP=4;
-  for(let rot=0;rot<2;rot++){
-    const cl=(rot===0?peca.l:peca.a)+GAP;
-    const ca=(rot===0?peca.a:peca.l)+GAP;
-    for(let i=0;i<chapa.livre.length;i++){
-      const esp=chapa.livre[i];
-      if(esp.l>=cl&&esp.a>=ca){
-        const rx=rot===0?peca.l:peca.a, ry=rot===0?peca.a:peca.l;
-        chapa.usada.push({x:esp.x,y:esp.y,l:rx,a:ry,nome:peca.nome});
-        const novas=[];
-        if(esp.l-cl>20) novas.push({x:esp.x+cl,y:esp.y,l:esp.l-cl,a:ca});
-        if(esp.a-ca>20) novas.push({x:esp.x,y:esp.y+ca,l:esp.l,a:esp.a-ca});
-        chapa.livre.splice(i,1,...novas);
-        return true;
+const GAP = 4; // folga de 4mm entre peças (disco de corte)
+
+function colocarNaChapa(chapa, peca){
+  // Tenta sem rotação e com rotação (90°)
+  const orientacoes = [{l:peca.l, a:peca.a, rot:false}];
+  if(peca.l !== peca.a) orientacoes.push({l:peca.a, a:peca.l, rot:true});
+
+  for(const ori of orientacoes){
+    const pl = ori.l + GAP;
+    const pa = ori.a + GAP;
+    // Percorre espaços livres: prefere o menor que ainda cabe (Best Fit)
+    let melhorIdx = -1, melhorArea = Infinity;
+    for(let i=0; i<chapa.espacos.length; i++){
+      const esp = chapa.espacos[i];
+      if(esp.l >= pl && esp.a >= pa){
+        const area = esp.l * esp.a;
+        if(area < melhorArea){ melhorArea = area; melhorIdx = i; }
       }
     }
+    if(melhorIdx < 0) continue;
+
+    const esp = chapa.espacos[melhorIdx];
+    // Coloca a peça no canto superior-esquerdo do espaço
+    chapa.usada.push({
+      x: esp.x, y: esp.y,
+      l: ori.l, a: ori.a,
+      nome: peca.nome,
+      rot: ori.rot
+    });
+
+    // Divide o espaço restante em 2 retângulos (guilhotina horizontal-first)
+    const novosEspacos = [];
+    // Espaço à direita da peça (mesma linha)
+    const dirL = esp.l - pl;
+    if(dirL > GAP*2) novosEspacos.push({x: esp.x+pl, y: esp.y,    l: dirL,    a: pa});
+    // Espaço abaixo (largura total do espaço original)
+    const baixoA = esp.a - pa;
+    if(baixoA > GAP*2) novosEspacos.push({x: esp.x,    y: esp.y+pa, l: esp.l,   a: baixoA});
+
+    // Substitui o espaço usado pelos novos, remove muito pequenos
+    chapa.espacos.splice(melhorIdx, 1, ...novosEspacos);
+    // Ordena espaços por posição (y depois x) para melhor preenchimento
+    chapa.espacos.sort((a,b)=> a.y!==b.y ? a.y-b.y : a.x-b.x);
+    return true;
   }
   return false;
 }
 
 function renderResultado(containerId, pecas, extraItens, tipoMovel, obs) {
   const plano=chapasNecessarias(pecas);
-  const cnt15b=plano['15b'].length, cnt15m=plano['15m'].length;
-  const cnt18=plano['18'].length,   cnt6=plano['6'].length;
+  const cnt15b=(plano['15b']||[]).length;
+  const cnt15m=(plano['15m']||[]).length;
+  const cnt18 =(plano['18'] ||[]).length;
+  const cnt6  =(plano['6']  ||[]).length;
 
   const itensMat=[];
   if(cnt15b) itensMat.push({id:'chapa15_branco',nome:'Chapa MDF 15mm Branco TX (caixa)',qty:cnt15b,un:'chapas'});
@@ -1698,41 +2566,84 @@ function renderResultado(containerId, pecas, extraItens, tipoMovel, obs) {
 
 function renderPlanoCorteSVG(plano,titulo){
   const tipos=[
-    {key:'15b',label:'MDF 15mm Branco TX (caixa)',cor:'#c9a84c'},
-    {key:'15m',label:'MDF 15mm Madeirado',cor:'#8b5e2a'},
-    {key:'18', label:'MDF 18mm (portas/frentes)',cor:'#3b82f6'},
-    {key:'6',  label:'HDF 6mm (fundo)',cor:'#16a34a'},
+    {key:'15b',label:'MDF 15mm Branco TX (caixa)',     cor:'#c9a84c'},
+    {key:'15m',label:'MDF 15mm Madeirado (portas/ext)',cor:'#8b5e2a'},
+    {key:'18', label:'MDF 18mm (portas/frentes ext)',  cor:'#3b82f6'},
+    {key:'6',  label:'HDF 6mm (fundos gaveta)',        cor:'#16a34a'},
   ];
-  let html=`<div style="margin-top:16px"><div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:10px">✂️ Plano de Corte — ${titulo}</div>`;
+  const cores=['#1e3a5f','#1a4a2e','#3d2a0e','#2a1a3e','#1a2a3a','#2e1a1a','#1e3a3a','#3a2a1e'];
+  let html=`<div style="margin-top:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:10px">✂️ Plano de Corte — ${titulo}</div>`;
+
   tipos.forEach(tipo=>{
-    const chapas=plano[tipo.key];
-    if(!chapas||!chapas.length) return;
-    html+=`<div style="margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:${tipo.cor};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${tipo.label} — ${chapas.length} chapa${chapas.length>1?'s':''}</div>`;
+    const chapas=(plano[tipo.key]||[]);
+    if(!chapas.length) return;
+    html+=`<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:${tipo.cor};text-transform:uppercase;
+           letter-spacing:.5px;margin-bottom:8px;padding:6px 10px;background:${tipo.cor}18;
+           border-radius:6px;border-left:3px solid ${tipo.cor}">
+        ${tipo.label} — ${chapas.length} chapa${chapas.length>1?'s':''}
+      </div>`;
+
     chapas.forEach((chapa,ci)=>{
-      const esc=560/CHAPA_L, svgW=Math.round(CHAPA_L*esc), svgH=Math.round(CHAPA_A*esc);
-      const cores=['#1e3a5f','#1a4a2e','#3d2a0e','#2a1a3e','#1a2a3a','#2e1a1a'];
-      html+=`<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Chapa ${ci+1}</div><div style="overflow-x:auto">
-      <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="display:block;background:#111827;border:1px solid ${tipo.cor}44;border-radius:6px;max-width:100%">
-        <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#111827"/>
-        ${chapa.usada.map((p,pi)=>{
-          const px=Math.round(p.x*esc),py=Math.round(p.y*esc);
-          const pw=Math.max(Math.round(p.l*esc)-1,2),ph=Math.max(Math.round(p.a*esc)-1,2);
-          const cor=cores[pi%cores.length];
-          const cx=px+pw/2,cy=py+ph/2,fs=Math.min(10,Math.max(6,pw/9));
-          const ns=p.nome.length>18?p.nome.slice(0,17)+'…':p.nome;
-          return `<g>
-            <rect x="${px+1}" y="${py+1}" width="${pw-2}" height="${ph-2}" fill="${cor}" stroke="${tipo.cor}" stroke-width="1" rx="2" opacity=".92"/>
-            ${pw>40&&ph>16?`<text x="${cx}" y="${cy-fs*.3}" text-anchor="middle" dominant-baseline="middle" fill="#e8eaf0" font-size="${fs}px" font-family="DM Sans,sans-serif">${ns}</text>`:''}
-            ${pw>60&&ph>26?`<text x="${cx}" y="${cy+fs*.9}" text-anchor="middle" dominant-baseline="middle" fill="${tipo.cor}" font-size="${Math.max(fs-1,6)}px" font-family="DM Sans,sans-serif" opacity=".8">${p.l}×${p.a}mm</text>`:''}
-          </g>`;
-        }).join('')}
-        <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="none" stroke="${tipo.cor}" stroke-width="1.5" rx="3"/>
-        <text x="4" y="${svgH-4}" fill="${tipo.cor}88" font-size="9px" font-family="DM Sans,sans-serif">2750×1830mm</text>
-      </svg></div></div>`;
+      // Escala: cabe dentro de 100% da largura disponível (máx 680px)
+      const maxSVGW = 680;
+      const esc = maxSVGW / CHAPA_L;
+      const svgW = Math.round(CHAPA_L * esc);
+      const svgH = Math.round(CHAPA_A * esc);
+
+      // Calcula aproveitamento
+      const areaTotal = CHAPA_L * CHAPA_A;
+      const areaUsada = chapa.usada.reduce((s,p)=>s+p.l*p.a, 0);
+      const pct = Math.round(areaUsada/areaTotal*100);
+
+      html+=`<div style="margin-bottom:10px">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between">
+          <span>Chapa ${ci+1} de ${chapas.length} — ${chapa.usada.length} peça${chapa.usada.length!==1?'s':''}</span>
+          <span style="color:${pct>70?'#4ade80':pct>40?'#fbbf24':'#f87171'}">⬛ ${pct}% aproveitamento</span>
+        </div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}"
+             style="display:block;background:#111827;border:1px solid ${tipo.cor}44;border-radius:6px;min-width:${svgW}px">
+          <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#0d1220"/>
+          <!-- Grade de referência 100mm -->
+          <g opacity=".06" stroke="#fff" stroke-width=".5">
+            ${(()=>{let g='';for(let x=0;x<CHAPA_L;x+=100)g+=`<line x1="${Math.round(x*esc)}" y1="0" x2="${Math.round(x*esc)}" y2="${svgH}"/>`;
+                                 for(let y=0;y<CHAPA_A;y+=100)g+=`<line x1="0" y1="${Math.round(y*esc)}" x2="${svgW}" y2="${Math.round(y*esc)}"/>`;
+                          return g;})()}
+          </g>
+          ${chapa.usada.map((p,pi)=>{
+            const px=Math.round(p.x*esc), py=Math.round(p.y*esc);
+            const pw=Math.max(Math.round(p.l*esc)-1,3);
+            const ph=Math.max(Math.round(p.a*esc)-1,3);
+            const cor=cores[pi%cores.length];
+            const cx=px+pw/2, cy=py+ph/2;
+            const fs=Math.min(11,Math.max(6,Math.min(pw/7,ph/2.5)));
+            const ns=p.nome.length>20?p.nome.slice(0,19)+'…':p.nome;
+            const dim=`${p.l}×${p.a}`;
+            const rotTag=p.rot?'↻':'';
+            return `<g>
+              <rect x="${px+1}" y="${py+1}" width="${pw-2}" height="${ph-2}"
+                    fill="${cor}" stroke="${tipo.cor}" stroke-width="1" rx="2" opacity=".9"\/>
+              ${pw>30&&ph>14?`<text x="${cx}" y="${cy-(fs*.6)}" text-anchor="middle"
+                    dominant-baseline="middle" fill="#e8eaf0" font-size="${fs}px"
+                    font-family="DM Sans,sans-serif" font-weight="600">${ns} ${rotTag}<\/text>`:''}
+              ${pw>50&&ph>24?`<text x="${cx}" y="${cy+(fs*.9)}" text-anchor="middle"
+                    dominant-baseline="middle" fill="${tipo.cor}" font-size="${Math.max(fs-1,6)}px"
+                    font-family="DM Sans,sans-serif" opacity=".85">${dim}mm<\/text>`:''}
+            <\/g>`;
+          }).join('')}
+          <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="none"
+                stroke="${tipo.cor}" stroke-width="1.5" rx="4"\/>
+          <text x="6" y="${svgH-5}" fill="${tipo.cor}99" font-size="9"
+                font-family="DM Sans,sans-serif">2750×1830mm — ↻ = girada 90°<\/text>
+        <\/svg>
+        <\/div>
+      <\/div>`;
     });
-    html+='</div>';
+    html+='<\/div>';
   });
-  html+='</div>';
+  html+='<\/div>';
   return html;
 }
 
@@ -1911,6 +2822,8 @@ function calcularGuardaRoupa(){
   const rodateto=+document.getElementById('grRodateto').value||5;
   const baseMat=document.getElementById('grBaseMat').value;
   const ilum=getToggle('grIlum')==='sim';
+  const grPuxadorVal=document.getElementById('grPuxador')?.value||'cava_110';
+  const grPuxadorCollegato=grPuxadorVal==='collegato';
   if(!L||!A){toast('⚠️ Preencha largura e altura');return;}
 
   const Lmm=L*10,Amm=A*10,Pmm=P*10;
@@ -1934,19 +2847,30 @@ function calcularGuardaRoupa(){
   // Rodateto
   if(rodateto>5) pecas.push({tipo:'15b',nome:'Rodateto',l:tampoL,a:rodateto,qty:1});
 
-  // Gavetas
+  // Gavetas GUARDA-ROUPA: corpo 15mm, altura 170mm total, lateral 170mm, frente+fundo 160mm com rasgo 6mm
   const altG=alturaBloco(gavetas);
   if(gavetas>0){
-    const fH=Math.round(altG/gavetas);
-    pecas.push({tipo:'18',nome:'Frente Gaveta',l:modL-3,a:fH,qty:gavetas});
-    pecas.push({tipo:cxTipo,nome:'Lat.Cx.Gav',l:250,a:fH-20,qty:gavetas*2});
-    pecas.push({tipo:cxTipo,nome:'Fundo Gav',l:modL-50,a:250,qty:gavetas});
+    const descCol=grPuxadorCollegato?37.5:0;
+    const frenteLarg=modL-3-descCol;
+    // Frente/conta-frente: 15mm (interna ao guarda-roupa) altura 160mm
+    // Laterais: 15mm, altura 170mm (total gaveta)
+    // Fundo: 6mm, altura 160mm (com rasgo 6mm recuado 15mm, parafuso 7mm acima dos 15mm)
+    // Vão para mão: 30mm acima da gaveta
+    const gAltFrenteFundo=160; // frente interna e fundo: 160mm
+    const gAltLateral=170;     // laterais: 170mm (ficam sobre o fundo)
+    const gProf=Math.min(Pmm-50, 500); // profundidade das laterais
+    pecas.push({tipo:cxTipo,nome:'Frente Gav.GR(15mm)',l:frenteLarg,a:gAltFrenteFundo,qty:gavetas});
+    pecas.push({tipo:cxTipo,nome:'Fundo Gav.GR(15mm)',l:frenteLarg-30,a:gAltFrenteFundo,qty:gavetas});
+    pecas.push({tipo:cxTipo,nome:'Lateral Gav.GR(15mm)',l:gProf,a:gAltLateral,qty:gavetas*2});
+    pecas.push({tipo:'6',nome:'Fundo Gav.GR(6mm)',l:frenteLarg-30,a:gProf-30,qty:gavetas});
   }
-  // Sapateiras
+  // Sapateiras (também 15mm)
   const altS=alturaBloco(sapateiras);
   if(sapateiras>0){
+    const descCol=grPuxadorCollegato?37.5:0;
     const sH=Math.round(altS/sapateiras);
-    pecas.push({tipo:'18',nome:'Frente Sapateira',l:modL-3,a:sH,qty:sapateiras});
+    // sapateira: mesma lógica de gaveta mas abertura é de 15mm
+    pecas.push({tipo:cxTipo,nome:'Frente Sapateira(15mm)',l:modL-3-descCol,a:sH,qty:sapateiras});
   }
   // Portas
   if(qtdPortas>0&&tipoPorta!=='sem'){
@@ -1974,15 +2898,21 @@ function calcularGuardaRoupa(){
     pecas.push({tipo:cxTipo,nome:'Guar.Parede 130',l:Lmm,a:130,qty:1});
   }
 
+  const cor1=document.getElementById('grCor1')?.value||'';
+  const cor2=document.getElementById('grCor2')?.value||'';
+  const cor3=document.getElementById('grCor3')?.value||'';
+  const dobradica=document.getElementById('grDobradica')?.value||'normal';
+  const corredica=document.getElementById('grCorredica')?.value||'lateral_35';
+
   const camlock=(totalDiv+1)*4+(prat>0?prat*4:0)+(maleiro?mod*4:0);
   const fitaCx=Math.ceil((2*(altInterna+Pmm)*2+tampoL*4)/1000)+5;
   const fitaCor=Math.ceil(((qtdPortas>0?qtdPortas*(altInterna+modL)*2:0)+(gavetas>0?gavetas*(modL)*2:0))/1000)+2;
   const extraItens=[
-    {id:'dobradica',  nome:'Dobradiças',          qty:tipoPorta==='giro'?qtdPortas*2:0,un:'pares'},
-    {id:'corredica',  nome:'Corrediças gaveta',    qty:gavetas,un:'pares'},
+    {id:'dobradica',  nome:`Dobradiças ${dobradica==='amortecedor'?'c/amortecedor':'normal'}`, qty:tipoPorta==='giro'?qtdPortas*2:0,un:'pares'},
+    {id:'corredica',  nome:`Corrediças gaveta (${corredica})`,    qty:gavetas,un:'pares'},
     {id:'cam_lock',   nome:'Cam lock (minifix)',   qty:camlock,un:'un'},
     {id:'parafuso',   nome:'Parafusos',            qty:Math.max(1,Math.ceil(camlock/100)),un:'caixas'},
-    {id:'puxador',    nome:'Puxadores',            qty:qtdPortas+gavetas+sapateiras,un:'un'},
+    {id:'puxador',    nome:`Puxadores (${grPuxadorVal.replace('_',' ')})`,qty:qtdPortas+gavetas+sapateiras,un:'un'},
     {id:'cabideiro',  nome:'Cabideiros',           qty:cabid,un:'un'},
     {id:'fita_branco',nome:'Fita de borda Branco', qty:fitaCx,un:'metros'},
     {id:'fita_cor',   nome:'Fita de borda (cor)',  qty:fitaCor,un:'metros'},
@@ -1991,11 +2921,13 @@ function calcularGuardaRoupa(){
   ].filter(it=>it.qty>0);
 
   const obs=[];
+  if(cor1||cor2||cor3) obs.push(`🎨 Cores: ${[cor1,cor2,cor3].filter(Boolean).join(' | ')}`);
+  if(grPuxadorCollegato) obs.push('⚠️ Puxador Collegato: desconto de 37,5mm na largura das portas/gavetas.');
   if(tipoFundo==='rasgado') obs.push('⚠️ Fundo rasgado: recuado 15mm, fundo deslizante, sem parafusos.');
   if(tipoPorta==='correr'&&Amm>2720) obs.push('⚠️ Porta de correr: altura máx. recomendada 2720mm!');
   if(maleiro) obs.push(`📏 Prateleira maleiro a 195cm da base interna.`);
-  if(gavetas>0) obs.push(`🗂️ ${gavetas} gavetas = ${altG/10}cm de altura.`);
-  if(sapateiras>0) obs.push(`👟 ${sapateiras} sapateiras = ${altS/10}cm de altura.`);
+  if(gavetas>0) obs.push(`🗂️ ${gavetas} gavetas (corpo 15mm) — altura total 170mm, vão 30mm para mão. Frente/fundo: 160mm c/ rasgo 6mm (recuado 15mm) e rasgo 7mm para parafuso do fundo.`);
+  if(sapateiras>0) obs.push(`👟 ${sapateiras} sapateiras (15mm) = ${altS/10}cm de altura.`);
   obs.push(`📐 Altura interna da caixa: ${altInterna}mm (total ${Amm} − base ${baseAlt} − rodateto ${rodateto}mm)`);
   renderResultado('resGuarda',pecas,extraItens,'Guarda-Roupa',obs.join('<br>'));
 }
@@ -2101,13 +3033,19 @@ function calcularCozinha(){
     }
   }
 
+  const czPuxadorVal=document.getElementById('czPuxador')?.value||'cava_35';
+  const czPuxCollegato=czPuxadorVal==='collegato';
+  const czDobradica=document.getElementById('czDobradica')?.value||'normal';
+  const czCorredica=document.getElementById('czCorredica')?.value||'lateral_35';
+  const czDescCol=czPuxCollegato?37.5:0;
+
   const camlock=(modInf>1?(modInf-1)*4:0)+(modSup>1?(modSup-1)*4:0)+(pratSup*4)+16;
   const extraItens=[
-    {id:'dobradica',  nome:'Dobradiças',       qty:(portasInf+portasSup)*2,un:'pares'},
-    {id:'corredica',  nome:'Corrediças gaveta',qty:gavetasInf,un:'pares'},
+    {id:'dobradica',  nome:`Dobradiças ${czDobradica==='amortecedor'?'c/amortecedor':'normal'}`, qty:(portasInf+portasSup)*2,un:'pares'},
+    {id:'corredica',  nome:`Corrediças (${czCorredica})`, qty:gavetasInf,un:'pares'},
     {id:'cam_lock',   nome:'Cam lock',         qty:camlock,un:'un'},
     {id:'parafuso',   nome:'Parafusos',        qty:Math.ceil(camlock/100)+1,un:'caixas'},
-    {id:'puxador',    nome:'Puxadores',        qty:portasInf+portasSup+gavetasInf,un:'un'},
+    {id:'puxador',    nome:`Puxadores (${czPuxadorVal.replace(/_/g,' ')})`, qty:portasInf+portasSup+gavetasInf,un:'un'},
     {id:'fita_branco',nome:'Fita borda Branco',qty:Math.ceil((cxAlt*4+cxLarg*4+largSupMm*4)/1000)+8,un:'metros'},
     {id:'fita_cor',   nome:'Fita borda (cor)', qty:Math.ceil(((portasInf+portasSup)*(cxAlt+cxLarg)*2)/1000)+3,un:'metros'},
     ...(ilhaOpt?[{id:'mo_obra',nome:'Extra: ilha',qty:1,un:'verba'}]:[]),
@@ -2115,6 +3053,7 @@ function calcularCozinha(){
   ].filter(it=>it.qty>0);
 
   const obs=[];
+  if(czPuxCollegato) obs.push('⚠️ Puxador Collegato: desconto de 37,5mm na largura das portas/gavetas.');
   obs.push(`📐 Caixa inferior: ${cxProf}mm prof. × ${cxLarg}mm larg. × ${cxAlt}mm alt.`);
   obs.push(`⚠️ Inferiores de cozinha (sob a pia) sem fundo — padrão. ${fundoInf==='6mm'?'✅ Fundo 6mm adicionado (ilha/sem piso).':''}`);
   if(altAereo>0) obs.push(`🗄️ Aéreos: começam a 150cm. Caixa ${altAereoCaixa}mm alt.`);
@@ -2253,36 +3192,760 @@ function calcularCriadoMudo(){
   const P=+document.getElementById('cmProf').value;
   const interior=document.getElementById('cmInterior').value;
   const gavetas=+document.getElementById('cmGavetas').value||2;
+  const cmPuxVal=document.getElementById('cmPuxador')?.value||'cava_35';
+  const cmCollegato=cmPuxVal==='collegato';
+  const cmDobradica=document.getElementById('cmDobradica')?.value||'normal';
+  const cmCorredica=document.getElementById('cmCorredica')?.value||'lateral_30';
+  const cmCor1=document.getElementById('cmCor1')?.value||'';
+  const cmCor2=document.getElementById('cmCor2')?.value||'';
+  const cmCor3=document.getElementById('cmCor3')?.value||'';
   if(!L||!A||!P){toast('⚠️ Preencha todas as dimensões');return;}
 
   const Lmm=L*10,Amm=A*10,Pmm=P*10;
-  const gH=interior==='so_gavetas'?Math.round(Amm/gavetas):Math.round(Amm*0.6/gavetas);
+  // External drawers: frente 18mm, corpo (laterais/fundo) 15mm
+  // Vão entre gavetas: cava_35 ou cava_45 = 35mm; outros = 3mm (última = 35mm)
+  const vaoGav=cmPuxVal.startsWith('cava')?35:3;
+  const totalVaos=vaoGav*(gavetas-1)+35; // último sempre 35mm
+  const totalFrentesH=Amm-totalVaos;
+  const gHFrentes=Math.round(totalFrentesH/gavetas);
+  const gHCorpo=gHFrentes; // corpo da gaveta tem mesma altura que frente externa
+  const descCol=cmCollegato?37.5:0;
+  const frenteLarg=Lmm-3-descCol;
   const nichoA=interior==='gavetas_nicho'?Math.round(Amm*0.4):0;
+  const altGavArea=interior==='gavetas_nicho'?Amm-nichoA:Amm;
+  const gHFinal=Math.round((altGavArea-(gavetas>1?vaoGav*(gavetas-1)+35:35))/gavetas);
 
   const pecas=[
-    {tipo:'15b',nome:'Lateral',l:Amm,a:Pmm,qty:2},
+    {tipo:'15b',nome:'Lateral caixa',l:Amm,a:Pmm,qty:2},
     {tipo:'15b',nome:'Tampo',l:Lmm-30,a:Pmm,qty:1},
     {tipo:'15b',nome:'Base',l:Lmm-30,a:Pmm,qty:1},
-    {tipo:'18',nome:'Frente Gaveta',l:Lmm-3,a:gH,qty:gavetas},
-    {tipo:'15b',nome:'Lat.Cx.Gav',l:250,a:gH-20,qty:gavetas*2},
-    {tipo:'15b',nome:'Fundo Gav',l:Lmm-50,a:250,qty:gavetas},
-    {tipo:'6',nome:'Fundo',l:Lmm-30,a:Amm-30,qty:1},
+    {tipo:'6',nome:'Fundo caixa',l:Lmm-30,a:Amm-30,qty:1},
+    // Frente externa: 18mm
+    {tipo:'18',nome:'Frente gav. externa (18mm)',l:frenteLarg,a:gHFinal,qty:gavetas},
+    // Corpo interno gaveta: 15mm
+    {tipo:'15b',nome:'Lateral gav. interna (15mm)',l:Pmm-50,a:gHFinal-10,qty:gavetas*2},
+    {tipo:'15b',nome:'Fundo gav. interna (15mm)',l:Lmm-50,a:Pmm-50,qty:gavetas},
+    {tipo:'6',nome:'Fundo gaveta (6mm)',l:Lmm-50,a:Pmm-50,qty:gavetas},
     ...(nichoA>0?[{tipo:'15b',nome:'Prateleira nicho',l:Lmm-30,a:Pmm,qty:1}]:[]),
   ];
   const extraItens=[
-    {id:'corredica',nome:'Corrediças gaveta',qty:gavetas,un:'pares'},
+    {id:'corredica',nome:`Corrediças (${cmCorredica})`,qty:gavetas,un:'pares'},
     {id:'cam_lock',nome:'Cam lock',qty:gavetas*4+8,un:'un'},
-    {id:'puxador',nome:'Puxadores',qty:gavetas,un:'un'},
-    {id:'fita_branco',nome:'Fita borda',qty:Math.ceil((Amm*4+Lmm*4)/1000)+2,un:'metros'},
+    {id:'puxador',nome:`Puxadores (${cmPuxVal.replace(/_/g,' ')})`,qty:gavetas,un:'un'},
+    {id:'fita_branco',nome:'Fita borda Branco',qty:Math.ceil((Amm*4+Lmm*4)/1000)+2,un:'metros'},
+    {id:'fita_cor',nome:'Fita borda (cor)',qty:Math.ceil(gavetas*frenteLarg*2/1000)+1,un:'metros'},
     {id:'mo_obra',nome:'Mão de obra',qty:1,un:'verba'},
   ];
-  const obs=`${interior==='gavetas_nicho'?`📦 ${gavetas} gavetas + 1 nicho.`:''} Dimensões: ${L}×${A}×${P}cm.`;
-  renderResultado('resCriado',pecas,extraItens,'Criado Mudo',obs);
+  const obs=[];
+  if(cmCor1||cmCor2||cmCor3) obs.push(`🎨 Cores: ${[cmCor1,cmCor2,cmCor3].filter(Boolean).join(' | ')}`);
+  if(cmCollegato) obs.push('⚠️ Puxador Collegato: desconto de 37,5mm na largura das frentes.');
+  obs.push(`📐 Dimensões: ${L}×${A}×${P}cm. Frente gaveta: 18mm altura ${gHFinal}mm. Corpo interno: 15mm.`);
+  if(interior==='gavetas_nicho') obs.push(`📦 ${gavetas} gavetas + 1 nicho (${nichoA/10}cm altura).`);
+  renderResultado('resCriado',pecas,extraItens,'Criado Mudo',obs.join('<br>'));
 }
 
 // ──────────────────────────────────────────
-// CÁLCULO: REVESTIMENTO DE PAREDE
+// VISUALIZADOR TÉCNICO EM TEMPO REAL
 // ──────────────────────────────────────────
+let _pvTab = 'guarda';
+let _pvTimer = null;
+
+function schedulePreview(tab){
+  _pvTab = tab || _pvTab;
+  clearTimeout(_pvTimer);
+  _pvTimer = setTimeout(()=>desenharPreview(_pvTab), 180);
+}
+
+function togglePreviewPanel(){
+  const p = document.getElementById('previewPanel');
+  const btn = document.getElementById('previewToggleBtn');
+  if(p.style.width === '0px' || p.dataset.hidden === '1'){
+    p.style.width='360px'; p.style.minWidth='280px'; p.dataset.hidden='0';
+    btn.textContent='◀';
+  } else {
+    p.style.width='0px'; p.style.minWidth='0'; p.dataset.hidden='1';
+    btn.textContent='▶';
+  }
+}
+
+function desenharPreview(tab){
+  const cv = document.getElementById('previewCanvas');
+  if(!cv) return;
+  const container = cv.parentElement;
+  const W = container.offsetWidth - 24;
+  cv.width = W;
+  cv.height = Math.round(W * 1.1);
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#0d1220';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  const label = document.getElementById('previewLabel');
+  const pecasDiv = document.getElementById('previewPecas');
+
+  try {
+    if(tab === 'guarda')     pvGuarda(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'cozinha')    pvCozinha(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'banheiro')   pvBanheiro(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'criado')     pvCriado(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'nicho')      pvNicho(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'painel')     pvPainelCama(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'roupeiro')   pvRoupeiro(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'home')       pvHome(ctx, cv.width, cv.height, label, pecasDiv);
+    else if(tab === 'escritorio') pvEscritorio(ctx, cv.width, cv.height, label, pecasDiv);
+    else { pvVazio(ctx, cv.width, cv.height); if(label) label.textContent='—'; if(pecasDiv) pecasDiv.innerHTML=''; }
+  } catch(e) { pvVazio(ctx, cv.width, cv.height); }
+}
+
+// ─── helpers de desenho ───
+function pvVazio(ctx, W, H){
+  ctx.fillStyle = '#1a2030';
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#334155';
+  ctx.font = '13px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Preencha as medidas para', W/2, H/2 - 10);
+  ctx.fillText('visualizar o móvel', W/2, H/2 + 10);
+}
+
+function pvGrade(ctx, W, H){
+  ctx.strokeStyle = 'rgba(255,255,255,.03)';
+  ctx.lineWidth = 1;
+  const step = 20;
+  for(let x=0;x<W;x+=step){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=step){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+}
+
+function pvPeca(ctx, x, y, w, h, cor, label, labelCor){
+  // peça de móvel
+  ctx.fillStyle = cor || '#1e3a5f';
+  ctx.strokeStyle = 'rgba(255,255,255,.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(x,y,w,h,2) : ctx.rect(x,y,w,h);
+  ctx.fill(); ctx.stroke();
+  // veio de madeira sutil
+  ctx.strokeStyle = 'rgba(255,255,255,.04)';
+  ctx.lineWidth = 1;
+  for(let i=4;i<w;i+=8){ctx.beginPath();ctx.moveTo(x+i,y+2);ctx.lineTo(x+i,y+h-2);ctx.stroke();}
+  // label
+  if(label && w > 18 && h > 10){
+    ctx.fillStyle = labelCor || 'rgba(255,255,255,.7)';
+    const fs = Math.max(8, Math.min(11, w/6, h/2));
+    ctx.font = `${fs}px DM Sans, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const txt = label.length > 10 ? label.slice(0,9)+'…' : label;
+    ctx.fillText(txt, x+w/2, y+h/2);
+  }
+}
+
+function pvCota(ctx, x1, y, x2, txt, above){
+  // cota dimensional
+  const ay = above ? y - 12 : y + 12;
+  ctx.strokeStyle = '#e8c96a88';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x1, above?y-4:y+4); ctx.lineTo(x1, ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, above?y-4:y+4); ctx.lineTo(x2, ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1, ay); ctx.lineTo(x2, ay); ctx.stroke();
+  ctx.setLineDash([]);
+  // setas
+  const aw=4;
+  ctx.fillStyle='#e8c96a';
+  ctx.beginPath();ctx.moveTo(x1,ay);ctx.lineTo(x1+aw,ay-2);ctx.lineTo(x1+aw,ay+2);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x2,ay);ctx.lineTo(x2-aw,ay-2);ctx.lineTo(x2-aw,ay+2);ctx.fill();
+  ctx.fillStyle='#e8c96a';
+  ctx.font='9px DM Sans,sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(txt, (x1+x2)/2, ay + (above?-6:6));
+}
+
+function pvCotaV(ctx, x, y1, y2, txt){
+  const ax = x + 14;
+  ctx.strokeStyle = '#e8c96a88';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(x+4,y1);ctx.lineTo(ax,y1);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+4,y2);ctx.lineTo(ax,y2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax,y1);ctx.lineTo(ax,y2);ctx.stroke();
+  ctx.setLineDash([]);
+  const aw=4;
+  ctx.fillStyle='#e8c96a';
+  ctx.beginPath();ctx.moveTo(ax,y1);ctx.lineTo(ax-2,y1+aw);ctx.lineTo(ax+2,y1+aw);ctx.fill();
+  ctx.beginPath();ctx.moveTo(ax,y2);ctx.lineTo(ax-2,y2-aw);ctx.lineTo(ax+2,y2-aw);ctx.fill();
+  ctx.save();ctx.translate(ax+8,(y1+y2)/2);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#e8c96a';ctx.font='9px DM Sans,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(txt,0,0);ctx.restore();
+}
+
+function pvTitulo(ctx, W, txt){
+  ctx.fillStyle='rgba(201,168,76,.9)';
+  ctx.font='bold 11px DM Sans,sans-serif';
+  ctx.textAlign='left';
+  ctx.textBaseline='top';
+  ctx.fillText(txt, 8, 6);
+}
+
+// ─── GUARDA-ROUPA preview ───
+function pvGuarda(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx, W, H);
+  const L = +document.getElementById('grLarg')?.value || 200;
+  const A = +document.getElementById('grAlt')?.value || 240;
+  const mod = Math.max(1, +document.getElementById('grModulos')?.value || 2);
+  const tipoPorta = document.getElementById('grTipoPorta')?.value || 'giro';
+  const gavetas = +document.getElementById('grGavetas')?.value || 0;
+  const sapateiras = +document.getElementById('grSapateiras')?.value || 0;
+  const maleiro = getToggle && getToggle('grMaleiro') === 'sim';
+
+  const PAD = 28, COTA_H = 22;
+  const maxW = W - PAD*2 - 20, maxH = H - PAD*2 - COTA_H*2;
+  const scale = Math.min(maxW/L, maxH/A);
+  const sw = Math.round(L*scale), sh = Math.round(A*scale);
+  const ox = Math.round((W - sw)/2), oy = PAD + COTA_H;
+
+  // base / tampo / laterais
+  const e = Math.max(2, Math.round(1.8*scale)); // 18mm em escala
+  const CX = '#1e3a5f', CL = '#2a4a7f';
+
+  // caixa externa
+  pvPeca(ctx, ox, oy, sw, e, CX, '');           // tampo
+  pvPeca(ctx, ox, oy+sh-e, sw, e, CX, '');      // base
+  pvPeca(ctx, ox, oy, e, sh, CX, '');            // lat esq
+  pvPeca(ctx, ox+sw-e, oy, e, sh, CX, '');       // lat dir
+
+  // módulos internos
+  const modW = Math.round((sw - e*2) / mod);
+  for(let m=0; m<mod; m++){
+    const mx = ox + e + m*modW;
+    const mw = (m === mod-1) ? (sw - e*2 - m*modW) : modW;
+    const innerH = sh - e*2;
+    const innerY = oy + e;
+
+    // divisória entre módulos
+    if(m > 0) pvPeca(ctx, mx-e, oy, e, sh, CX, '');
+
+    // maleiro (topo)
+    if(maleiro){
+      const maleiroH = Math.round(innerH * 0.22);
+      pvPeca(ctx, mx, innerY, mw, maleiroH, '#1a2a4a', 'maleiro');
+      // prateleira maleiro
+      pvPeca(ctx, mx, innerY+maleiroH, mw, Math.max(2,e), '#2a3a5a', '');
+    }
+
+    // gavetas
+    const gavAreaH = gavetas > 0 ? Math.round(innerH * (gavetas <= 4 ? 0.33 : 0.42)) : 0;
+    const gavH = gavetas > 0 ? Math.round(gavAreaH / gavetas) : 0;
+    const gavY = oy + sh - e - gavAreaH;
+    for(let g=0; g<gavetas; g++){
+      const gy = gavY + g*gavH;
+      pvPeca(ctx, mx+2, gy+1, mw-4, gavH-2, '#1a3a2a', `gav ${g+1}`, '#4ade8099');
+      // puxador cava
+      ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(mx+mw/2-12,gy+gavH-8);ctx.lineTo(mx+mw/2+12,gy+gavH-8);ctx.stroke();
+    }
+
+    // sapateira
+    const sapAreaH = sapateiras > 0 ? Math.round(innerH * 0.18) : 0;
+    if(sapateiras > 0){
+      const sapY = gavY - sapAreaH;
+      pvPeca(ctx, mx+2, sapY+1, mw-4, sapAreaH-2, '#2a1a3a', 'sapateira', '#a78bfa88');
+    }
+
+    // cabideiro
+    const cabY = oy + e + (maleiro ? Math.round(innerH*0.22)+e : 0);
+    const cabH = sh - e*2 - gavAreaH - sapAreaH - (maleiro ? Math.round(innerH*0.22)+e : 0) - 8;
+    if(cabH > 10){
+      ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.moveTo(mx+4,cabY+cabH*0.35);ctx.lineTo(mx+mw-4,cabY+cabH*0.35);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(255,255,255,.12)';ctx.font='9px DM Sans,sans-serif';
+      ctx.textAlign='center';ctx.fillText('cabide',mx+mw/2,cabY+cabH*0.35-7);
+    }
+
+    // porta
+    if(tipoPorta === 'giro'){
+      ctx.strokeStyle='rgba(201,168,76,.5)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+      ctx.beginPath();ctx.arc(mx, innerY, mw*0.92, 0, Math.PI/2);ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      // correr - duas linhas verticais
+      ctx.strokeStyle='rgba(201,168,76,.4)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(mx+mw*0.48,innerY+4);ctx.lineTo(mx+mw*0.48,oy+sh-e-4);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(mx+mw*0.52,innerY+4);ctx.lineTo(mx+mw*0.52,oy+sh-e-4);ctx.stroke();
+    }
+  }
+
+  // cotas
+  pvCota(ctx, ox, oy+sh+6, ox+sw, `${L}cm`, false);
+  pvCotaV(ctx, ox+sw, oy, oy+sh, `${A}cm`);
+  pvTitulo(ctx, W, `🚪 Guarda-Roupa — ${mod} módulo${mod>1?'s':''}`);
+
+  if(label) label.textContent = `${L}×${A}cm`;
+  if(pecasDiv) pecasDiv.innerHTML = pvListaPecas([
+    {n:'Tampo/Base',l:`${L}cm`,q:2},{n:'Laterais',l:`${A}cm`,q:2},
+    {n:`Divisórias internas`,l:`${A}cm`,q:mod-1},
+    ...(gavetas>0?[{n:'Gavetas internas (15mm)',l:'170mm alt.',q:gavetas*mod}]:[]),
+    ...(sapateiras>0?[{n:'Sapateira (15mm)',l:'',q:sapateiras*mod}]:[]),
+    {n:`Portas (${tipoPorta})`,l:'18mm',q:mod*2},
+  ]);
+}
+
+// ─── COZINHA preview ───
+function pvCozinha(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx, W, H);
+  const pedL = +document.getElementById('czPedraLarg')?.value || 400;
+  const pedP = +document.getElementById('czPedraProf')?.value || 600;
+  const altPedra = +document.getElementById('czAltPedra')?.value || 850;
+  const rodape = +document.getElementById('czRodape')?.value || 150;
+
+  const PAD=24, COTA=20;
+  // Desenha vista frontal
+  const maxW = W-PAD*2-20, maxH = H-PAD*2-COTA*2;
+  const peDirSel = document.getElementById('czPeDireito')?.value;
+  const peDir = (peDirSel==='custom' ? +document.getElementById('czPeDireitoCustom')?.value : +peDirSel) || 270;
+  const rodateto = +document.getElementById('czRodateto')?.value || 70;
+  const largSup = +document.getElementById('czLargSup')?.value || pedL;
+  const iniAereo = 150; // 150cm
+  const altAereo = peDir - iniAereo - rodateto/10;
+  const totalH = peDir;
+
+  const scale = Math.min(maxW/(pedL/10), maxH/totalH);
+  const sw = Math.round((pedL/10)*scale), sh = Math.round(totalH*scale);
+  const ox = Math.round((W-sw)/2), oy = PAD+COTA;
+
+  const e = Math.max(2,Math.round(1.8*scale*10));
+
+  // Armário inferior
+  const infH = Math.round((altPedra/10)*scale);
+  const infY = oy + sh - infH;
+  pvPeca(ctx, ox, infY, sw, infH, '#1e3a5f', '', '');
+  // rodapé
+  const rpH = Math.round((rodape/10)*scale);
+  pvPeca(ctx, ox+4, oy+sh-rpH, sw-8, rpH, '#0f1f3a', 'rodapé');
+  // pedra
+  const pedH = Math.max(3, Math.round(2*scale));
+  pvPeca(ctx, ox-4, infY-pedH, sw+8, pedH, '#4a4a5a', 'pedra');
+
+  // Portas inferiores
+  const portasInf = Math.max(1,+document.getElementById('czPortasInf')?.value||2);
+  const portaW = Math.round((sw-e*2)/portasInf);
+  for(let i=0;i<portasInf;i++){
+    const px2 = ox+e+i*portaW;
+    pvPeca(ctx, px2+1, infY+e+1, portaW-2, infH-e*2-rpH-2, '#2a4a6a', `P${i+1}`);
+    ctx.strokeStyle='rgba(201,168,76,.4)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+    ctx.beginPath();ctx.arc(px2+2,infY+e+2,portaW*0.85,0,Math.PI/2);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Armário aéreo
+  const aereoY = oy;
+  const aereoH = Math.round(altAereo*scale);
+  if(aereoH > 10){
+    pvPeca(ctx, ox, aereoY, sw, aereoH, '#1a2e50', '');
+    const portasSup = Math.max(1,+document.getElementById('czPortasSup')?.value||4);
+    const supW = Math.round((sw-e*2)/portasSup);
+    for(let i=0;i<portasSup;i++){
+      pvPeca(ctx, ox+e+i*supW+1, aereoY+e+1, supW-2, aereoH-e*2-2, '#223a60', `A${i+1}`);
+    }
+  }
+
+  // vão entre armários
+  const vaoY = aereoY + aereoH;
+  const vaoH = infY - (aereoY+aereoH);
+  if(vaoH > 2){
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(ox,vaoY);ctx.lineTo(ox+sw,vaoY+vaoH);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,.2)';ctx.font='9px DM Sans,sans-serif';ctx.textAlign='center';
+    ctx.fillText('vão livre',ox+sw/2,vaoY+vaoH/2);
+  }
+
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${pedL/10}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${peDir}cm`);
+  pvTitulo(ctx,W,'🍳 Cozinha — Vista Frontal');
+  if(label) label.textContent=`${pedL/10}×${peDir}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([
+    {n:'Gabinete inferior',l:`${pedL/10}cm`,q:1},{n:'Aéreo',l:`${(largSup/10||pedL/10)}cm`,q:1},
+    {n:'Pedra',l:`${pedP}mm prof`,q:1},{n:`Portas inf.`,l:'18mm',q:portasInf},
+  ]);
+}
+
+// ─── BANHEIRO preview ───
+function pvBanheiro(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx, W, H);
+  const pedL = +document.getElementById('bnPedraLarg')?.value || 600;
+  const pedP = +document.getElementById('bnPedraProf')?.value || 500;
+  const altPedra = +document.getElementById('bnAltPedra')?.value || 850;
+  const PAD=28,COTA=20;
+  const scale = Math.min((W-PAD*2-20)/(pedL/10), (H-PAD*2-COTA*2)/(altPedra/10+80));
+  const sw=Math.round((pedL/10)*scale), sh=Math.round((altPedra/10)*scale);
+  const ox=Math.round((W-sw)/2), oy=H-PAD-COTA-sh;
+
+  pvPeca(ctx,ox,oy,sw,sh,'#1e3a5f','');
+  const portasBn=Math.max(1,+document.getElementById('bnPortas')?.value||2);
+  const e=Math.max(2,Math.round(1.8*scale));
+  const pW=Math.round((sw-e*2)/portasBn);
+  for(let i=0;i<portasBn;i++) pvPeca(ctx,ox+e+i*pW+1,oy+e+1,pW-2,sh-e*2-2,'#2a4a6a',`P${i+1}`);
+  // pedra
+  pvPeca(ctx,ox-3,oy-Math.max(3,Math.round(2*scale)),sw+6,Math.max(3,Math.round(2*scale)),'#4a4a5a','pedra');
+  // espelho acima
+  const espH=Math.round(80*scale);
+  pvPeca(ctx,ox,oy-espH-4,sw,espH,'#162030','');
+  ctx.strokeStyle='rgba(150,200,255,.3)';ctx.lineWidth=1.5;ctx.strokeRect(ox+2,oy-espH-2,sw-4,espH-2);
+  ctx.fillStyle='rgba(150,200,255,.15)';ctx.fillRect(ox+2,oy-espH-2,sw-4,espH-2);
+  ctx.fillStyle='rgba(150,200,255,.5)';ctx.font='9px DM Sans';ctx.textAlign='center';
+  ctx.fillText('espelho',ox+sw/2,oy-espH/2-2);
+
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${pedL/10}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${altPedra/10}cm`);
+  pvTitulo(ctx,W,'🚿 Banheiro — Vista Frontal');
+  if(label) label.textContent=`${pedL/10}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:'Gabinete',l:`${pedL/10}×${altPedra/10}cm`,q:1},{n:'Portas',l:'18mm',q:portasBn},{n:'Pedra',l:`${pedP}mm prof`,q:1}]);
+}
+
+// ─── CRIADO MUDO preview ───
+function pvCriado(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx,W,H);
+  const L=+document.getElementById('cmLarg')?.value||50;
+  const A=+document.getElementById('cmAlt')?.value||55;
+  const P=+document.getElementById('cmProf')?.value||40;
+  const gavetas=+document.getElementById('cmGavetas')?.value||2;
+  const PAD=28,COTA=20;
+  const scale=Math.min((W-PAD*2-20)/L,(H-PAD*2-COTA*2)/A);
+  const sw=Math.round(L*scale),sh=Math.round(A*scale);
+  const ox=Math.round((W-sw)/2),oy=PAD+COTA;
+  const e=Math.max(2,Math.round(1.8*scale));
+
+  pvPeca(ctx,ox,oy,sw,sh,'#1e3a5f','');
+  // gavetas externas (frente 18mm)
+  const gavH=Math.round((sh-e*2)/gavetas);
+  const puxType=document.getElementById('cmPuxador')?.value||'cava_35';
+  const vaoGav=puxType.startsWith('cava')?Math.round(3.5*scale):Math.round(.3*scale);
+  for(let g=0;g<gavetas;g++){
+    const gy=oy+e+g*gavH;
+    pvPeca(ctx,ox+e+1,gy+vaoGav,sw-e*2-2,gavH-vaoGav*2,'#2a4a3a',`gav ${g+1}`,'#4ade8099');
+    // puxador
+    if(puxType==='collegato'){
+      ctx.fillStyle='rgba(201,168,76,.7)';ctx.fillRect(ox+e+1,gy+vaoGav+gavH*0.35,4,gavH*0.3);
+    } else {
+      ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(ox+sw/2-10,gy+gavH-vaoGav-5);ctx.lineTo(ox+sw/2+10,gy+gavH-vaoGav-5);ctx.stroke();
+    }
+  }
+  // tampo
+  pvPeca(ctx,ox-3,oy-e,sw+6,e,'#2a4a6a','');
+  // pé
+  const base=document.getElementById('cmBase')?.value||'suspenso';
+  if(base!=='suspenso'){
+    const pH=Math.max(4,Math.round(0.08*sh));
+    ctx.fillStyle='#0f1a2a';ctx.fillRect(ox+6,oy+sh,Math.round(sw*0.2),pH);
+    ctx.fillRect(ox+sw-6-Math.round(sw*0.2),oy+sh,Math.round(sw*0.2),pH);
+  }
+
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${L}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${A}cm`);
+  pvTitulo(ctx,W,'🪟 Criado Mudo');
+  if(label) label.textContent=`${L}×${A}×${P}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:'Caixa (15mm)',l:`${L}×${A}cm`,q:1},{n:'Frentes gaveta (18mm)',l:`${L}cm`,q:gavetas},{n:'Corpo gaveta (15mm)',l:'',q:gavetas}]);
+}
+
+// ─── NICHO preview ───
+function pvNicho(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx,W,H);
+  const L=+document.getElementById('nichLarg')?.value||60;
+  const A=+document.getElementById('nichAlt')?.value||30;
+  const P=+document.getElementById('nichProf')?.value||20;
+  const PAD=28,COTA=20;
+  const scale=Math.min((W-PAD*2-20)/L,(H-PAD*2-COTA*2)/A);
+  const sw=Math.round(L*scale),sh=Math.round(A*scale);
+  const ox=Math.round((W-sw)/2),oy=PAD+COTA;
+  const e=Math.max(2,Math.round(1.5*scale));
+  pvPeca(ctx,ox,oy,sw,sh,'#1e3a5f','');
+  // interior
+  ctx.fillStyle='#0d1220';ctx.fillRect(ox+e,oy+e,sw-e*2,sh-e*2);
+  // led line
+  const ledOpt=document.getElementById('nichLed')?.value||'sem';
+  if(ledOpt!=='sem'){
+    ctx.strokeStyle='rgba(255,230,100,.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(ox+e+2,oy+sh-e-3);ctx.lineTo(ox+sw-e-2,oy+sh-e-3);ctx.stroke();
+  }
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${L}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${A}cm`);
+  pvTitulo(ctx,W,'📦 Nicho');
+  if(label) label.textContent=`${L}×${A}×${P}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:'Laterais (15mm)',l:`${A}cm`,q:2},{n:'Tampo/Base (15mm)',l:`${L}cm`,q:2},{n:'Fundo (6mm)',l:`${L}×${A}cm`,q:1}]);
+}
+
+// ─── PAINEL CAMA preview ───
+function pvPainelCama(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx,W,H);
+  const L=+document.getElementById('pbLargParede')?.value||220;
+  const A=+document.getElementById('pbAlt')?.value||120;
+  const tipo=document.getElementById('pbTipo')?.value||'liso';
+  const PAD=24,COTA=20;
+  const scale=Math.min((W-PAD*2-20)/L,(H-PAD*2-COTA*2)/A);
+  const sw=Math.round(L*scale),sh=Math.round(A*scale);
+  const ox=Math.round((W-sw)/2),oy=PAD+COTA;
+
+  if(tipo==='ripado'){
+    const ripaL=+document.getElementById('pbRipaLarg')?.value||8;
+    const vao=+document.getElementById('pbRipaVao')?.value||10;
+    const passo=ripaL+vao;
+    const qtd=Math.floor(L/passo);
+    ctx.fillStyle='#111827';ctx.fillRect(ox,oy,sw,sh);
+    for(let i=0;i<qtd;i++){
+      const rx=ox+Math.round(i*passo*scale);
+      const rw=Math.max(2,Math.round(ripaL*scale));
+      pvPeca(ctx,rx,oy,rw,sh,'#2a4a3a','');
+    }
+  } else {
+    pvPeca(ctx,ox,oy,sw,sh,'#1e3a5f','');
+    // frisos
+    if(getToggle('pbFrisos')==='sim'){
+      const e=Math.max(2,Math.round(1.8*scale));
+      pvPeca(ctx,ox+Math.round(sw*0.25),oy,e,sh,'#2a4a6a','');
+      pvPeca(ctx,ox+Math.round(sw*0.75),oy,e,sh,'#2a4a6a','');
+    }
+  }
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${L}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${A}cm`);
+  pvTitulo(ctx,W,`🛏️ Painel Cama — ${tipo}`);
+  if(label) label.textContent=`${L}×${A}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:`Painel ${tipo}`,l:`${L}×${A}cm`,q:1}]);
+}
+
+// ─── ROUPEIRO preview ───
+function pvRoupeiro(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx,W,H);
+  const L=+document.getElementById('rpLarg')?.value||300;
+  const A=+document.getElementById('rpAlt')?.value||270;
+  const PAD=24,COTA=20;
+  const scale=Math.min((W-PAD*2-20)/L,(H-PAD*2-COTA*2)/A);
+  const sw=Math.round(L*scale),sh=Math.round(A*scale);
+  const ox=Math.round((W-sw)/2),oy=PAD+COTA;
+  const e=Math.max(2,Math.round(1.8*scale));
+
+  pvPeca(ctx,ox,oy,sw,sh,'#1e3a5f','');
+  pvPeca(ctx,ox,oy,sw,e,'#162a4a','');
+  pvPeca(ctx,ox,oy+sh-e,sw,e,'#162a4a','');
+  pvPeca(ctx,ox,oy,e,sh,'#162a4a','');
+  pvPeca(ctx,ox+sw-e,oy,e,sh,'#162a4a','');
+
+  // interior prateleiras
+  const prats=+document.getElementById('rpPrateleiras')?.value||4;
+  const innerH=sh-e*2, pratSep=Math.round(innerH/(prats+1));
+  for(let i=1;i<=prats;i++) pvPeca(ctx,ox+e,oy+e+i*pratSep,sw-e*2,Math.max(2,Math.round(.15*scale)),'#2a3a5a','');
+
+  // portas
+  const tipoP=document.getElementById('rpTipoPorta')?.value||'giro';
+  if(tipoP==='giro'){
+    ctx.strokeStyle='rgba(201,168,76,.4)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+    ctx.beginPath();ctx.arc(ox+e,oy+e,sw*0.45,0,Math.PI/2);ctx.stroke();
+    ctx.beginPath();ctx.arc(ox+sw-e,oy+e,sw*0.45,0,Math.PI/2,true);ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    ctx.strokeStyle='rgba(201,168,76,.35)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(ox+sw*0.5-1,oy+e+2);ctx.lineTo(ox+sw*0.5-1,oy+sh-e-2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ox+sw*0.5+1,oy+e+2);ctx.lineTo(ox+sw*0.5+1,oy+sh-e-2);ctx.stroke();
+  }
+
+  // frigobar
+  if(getToggle('rpFrigobar')==='sim'){
+    const fW=Math.round((+document.getElementById('rpVaoFrigobar')?.value||60)*scale);
+    const fH=Math.round((+document.getElementById('rpAltFrigobar')?.value||85)*scale);
+    pvPeca(ctx,ox+sw-e-fW,oy+sh-e-fH,fW,fH,'#0f1a2a','frigobar','#60a5fa88');
+    ctx.strokeStyle='rgba(96,165,250,.4)';ctx.lineWidth=1;ctx.strokeRect(ox+sw-e-fW,oy+sh-e-fH,fW,fH);
+  }
+
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${L}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${A}cm`);
+  pvTitulo(ctx,W,'🏠 Roupeiro Embutido');
+  if(label) label.textContent=`${L}×${A}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:'Caixa (15mm)',l:`${L}×${A}cm`,q:1},{n:'Prateleiras',l:'',q:prats},{n:`Portas (${tipoP})`,l:'18mm',q:2}]);
+}
+
+// ─── HOME preview ───
+function pvHome(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx,W,H);
+  const pL=+document.getElementById('hmPainelLarg')?.value||300;
+  const pA=+document.getElementById('hmPainelAlt')?.value||240;
+  const rP=+document.getElementById('hmRackProf')?.value||45;
+  const rA=+document.getElementById('hmRackAlt')?.value||35;
+  const tipoPainel=document.getElementById('hmTipoPainel')?.value||'liso';
+  const PAD=24,COTA=20;
+  const scale=Math.min((W-PAD*2-20)/pL,(H-PAD*2-COTA*2)/pA);
+  const sw=Math.round(pL*scale),sh=Math.round(pA*scale);
+  const ox=Math.round((W-sw)/2),oy=PAD+COTA;
+
+  // painel fundo
+  pvPeca(ctx,ox,oy,sw,sh,'#111827','');
+
+  // ripado ou liso
+  if(tipoPainel==='ripado'){
+    const ripaL=+document.getElementById('hmRipaLarg')?.value||50;
+    const vao=+document.getElementById('hmRipaVao')?.value||20;
+    const passo=ripaL+vao;
+    const qtd=Math.floor(pL/passo);
+    for(let i=0;i<qtd;i++){
+      const rx=ox+Math.round(i*passo*scale);
+      const rw=Math.max(2,Math.round(ripaL*scale));
+      pvPeca(ctx,rx,oy,rw,sh,'#1e3a5f','');
+    }
+  } else {
+    pvPeca(ctx,ox,oy,sw,sh,'#1a2e4a','');
+  }
+
+  // rack inferior
+  const rkH=Math.round(rA*scale);
+  const rkY=oy+sh-rkH;
+  pvPeca(ctx,ox,rkY,sw,rkH,'#1e3a5f','');
+  // portas rack
+  const portasR=3;
+  const rkW=Math.round(sw/portasR);
+  for(let i=0;i<portasR;i++){
+    pvPeca(ctx,ox+i*rkW+1,rkY+2,rkW-2,rkH-4,'#2a4a6a',i===1?'gav':'');
+  }
+
+  // tv outline
+  const tvPol=+document.getElementById('hmTvPolegadas')?.value||65;
+  const tvW=Math.round(Math.min(sw*0.55, tvPol*scale*0.7));
+  const tvH=Math.round(tvW*0.56);
+  const tvX=ox+(sw-tvW)/2;
+  const tvY=oy+(sh-rkH-tvH)/2;
+  ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=2;ctx.strokeRect(tvX,tvY,tvW,tvH);
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(tvX+2,tvY+2,tvW-4,tvH-4);
+  ctx.fillStyle='rgba(255,255,255,.15)';ctx.font='9px DM Sans';ctx.textAlign='center';
+  ctx.fillText(`TV ${tvPol}"`,tvX+tvW/2,tvY+tvH/2);
+
+  // sobrepainel
+  if(getToggle('hmSobrepainel')==='sim'){
+    const spL=+document.getElementById('hmSobrepainelLargura')?.value||200;
+    const spW=Math.round(spL*scale);
+    const spH=Math.max(4,Math.round(4*scale));
+    pvPeca(ctx,(ox+(sw-spW)/2),tvY-spH-4,spW,spH,'#2a4060','sobrepainel','#60a5fa88');
+    if(getToggle('hmSobrepainelLed')==='sim'){
+      ctx.strokeStyle='rgba(255,230,100,.6)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(ox+(sw-spW)/2,tvY-spH-4);ctx.lineTo(ox+(sw+spW)/2,tvY-spH-4);ctx.stroke();
+    }
+  }
+
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${pL}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${pA}cm`);
+  pvTitulo(ctx,W,`📺 Home — painel ${tipoPainel}`);
+  if(label) label.textContent=`${pL}×${pA}cm`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:`Painel ${tipoPainel}`,l:`${pL}×${pA}cm`,q:1},{n:`Rack ${rP}cm prof`,l:`${rA}cm alt`,q:1},{n:`TV ${tvPol}"`,l:'',q:1}]);
+}
+
+// ─── ESCRITÓRIO preview ───
+function pvEscritorio(ctx, W, H, label, pecasDiv){
+  pvGrade(ctx,W,H);
+  const L=+document.getElementById('esLarg')?.value||180;
+  const altB=+document.getElementById('esAltBancada')?.value||75;
+  const prof=+document.getElementById('esProf')?.value||60;
+  const formato=document.getElementById('esFormato')?.value||'reta';
+  const PAD=24,COTA=20;
+  const maxW=W-PAD*2-20, maxH=H-PAD*2-COTA*2;
+  const scale=Math.min(maxW/L, maxH/altB);
+  const sw=Math.round(L*scale),sh=Math.round(altB*scale);
+  const ox=Math.round((W-sw)/2), oy=H-PAD-COTA-sh-20;
+
+  // tampo
+  const e=Math.max(2,Math.round(1.8*scale));
+  pvPeca(ctx,ox,oy,sw,e,'#2a4a6a','tampo');
+  // caixa principal
+  pvPeca(ctx,ox,oy+e,sw,sh-e,'#111827','');
+  // gaveteiros
+  const gavet=+document.getElementById('esGaveteiros')?.value||1;
+  const gavQ=+document.getElementById('esGavetasQtd')?.value||3;
+  const gavW=Math.max(30,Math.round(0.12*sw));
+  for(let g=0;g<gavet;g++){
+    const gx=ox+sw-gavW*(g+1)-e*2;
+    for(let q=0;q<gavQ;q++){
+      const qH=Math.round((sh-e)/(gavQ+1));
+      pvPeca(ctx,gx+1,oy+e+q*qH+1,gavW-2,qH-2,'#1e3a5f',`g${q+1}`,'#4ade8088');
+    }
+  }
+  // perna esq
+  pvPeca(ctx,ox,oy+e,e,sh-e,'#1a2a4a','');
+  // perna dir
+  pvPeca(ctx,ox+sw-e,oy+e,e,sh-e,'#1a2a4a','');
+  // chão
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(ox-10,oy+sh);ctx.lineTo(ox+sw+10,oy+sh);ctx.stroke();
+
+  // formato L/U - braço lateral
+  if(formato!=='reta'){
+    const bL=+document.getElementById('esLargLateral')?.value||120;
+    const bW=Math.round(bL*scale*0.5);
+    pvPeca(ctx,ox-bW,oy,bW,e,'#2a4a6a','');
+    pvPeca(ctx,ox-bW,oy+e,bW,sh-e,'#111827','');
+    pvPeca(ctx,ox-bW,oy+e,e,sh-e,'#1a2a4a','');
+    if(formato==='U'){
+      const b2L=+document.getElementById('esLargLateral2')?.value||120;
+      const b2W=Math.round(b2L*scale*0.5);
+      pvPeca(ctx,ox+sw,oy,b2W,e,'#2a4a6a','');
+      pvPeca(ctx,ox+sw,oy+e,b2W,sh-e,'#111827','');
+      pvPeca(ctx,ox+sw+b2W-e,oy+e,e,sh-e,'#1a2a4a','');
+    }
+  }
+
+  pvCota(ctx,ox,oy+sh+6,ox+sw,`${L}cm`,false);
+  pvCotaV(ctx,ox+sw,oy,oy+sh,`${altB}cm`);
+  pvTitulo(ctx,W,`💻 Escritório — formato ${formato.toUpperCase()}`);
+  if(label) label.textContent=`${L}cm × ${altB}cm alt`;
+  if(pecasDiv) pecasDiv.innerHTML=pvListaPecas([{n:`Bancada ${formato}`,l:`${L}cm`,q:1},{n:'Tampo (18mm)',l:`${prof}cm prof`,q:1},{n:'Gaveteiros',l:`${gavQ} gav.`,q:gavet}]);
+}
+
+// ─── lista peças resumo ───
+function pvListaPecas(pecas){
+  return pecas.filter(p=>p.q>0).map(p=>
+    `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <span style="color:var(--text)">${p.n}</span>
+      <span style="color:var(--accent2)">${p.q}x${p.l?' — '+p.l:''}</span>
+    </div>`
+  ).join('');
+}
+
+// ─── Hook nos inputs para atualizar preview ───
+function pvHookInputs(){
+  document.querySelectorAll('#screenOrcamento input, #screenOrcamento select').forEach(el=>{
+    el.addEventListener('input', ()=>schedulePreview(_pvTab));
+    el.addEventListener('change', ()=>schedulePreview(_pvTab));
+  });
+}
+
+function calcularLED(){
+  const tipo=document.getElementById('ledTipo')?.value||'3mm';
+  const roloM=+document.getElementById('ledRolo')?.value||5;
+  const roloMm=roloM*1000;
+  let totalMm=0;
+  const linhas=[];
+  for(let i=0;i<4;i++){
+    const amb=document.getElementById(`ledAmb${i}`)?.value||'';
+    const comp=+document.getElementById(`ledComp${i}`)?.value||0;
+    if(comp>0){
+      totalMm+=comp*10;
+      linhas.push({amb:amb||`Ambiente ${i+1}`,comp:comp});
+    }
+  }
+  if(!totalMm){toast('⚠️ Informe ao menos um comprimento');return;}
+  const rolos=Math.ceil(totalMm/roloMm);
+  const sobra=(rolos*roloM)-(totalMm/1000);
+  let html=`<div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px">`;
+  html+=`<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase">Resumo LED — Fita ${tipo}</div>`;
+  html+=`<table style="width:100%;font-size:12px;border-collapse:collapse">`;
+  html+=`<tr style="color:var(--muted)"><th style="text-align:left;padding:3px 6px">Ambiente</th><th style="text-align:right;padding:3px 6px">Comprimento</th></tr>`;
+  linhas.forEach(l=>html+=`<tr><td style="padding:3px 6px">${l.amb}</td><td style="text-align:right;padding:3px 6px">${l.comp}cm</td></tr>`);
+  html+=`<tr style="border-top:1px solid var(--border)"><td style="padding:6px 6px;font-weight:700">Total</td><td style="text-align:right;padding:6px 6px;font-weight:700;color:var(--accent)">${(totalMm/1000).toFixed(2)}m</td></tr>`;
+  html+=`</table>`;
+  html+=`<div style="margin-top:10px;padding:8px 12px;background:rgba(201,168,76,.1);border-radius:8px;border-left:3px solid var(--accent)">`;
+  html+=`<div style="font-size:13px;font-weight:700;color:var(--accent2)">🧮 ${rolos} rolo${rolos>1?'s':''} de ${roloM}m</div>`;
+  html+=`<div style="font-size:11px;color:var(--muted);margin-top:3px">Sobra: ${sobra.toFixed(2)}m após instalação</div>`;
+  html+=`</div></div>`;
+  document.getElementById('ledResultado').innerHTML=html;
+}
+
 function calcularRevestimento(){
   const larg=+document.getElementById('rvLarg').value;
   const alt=+document.getElementById('rvAlt').value;
@@ -2348,24 +4011,33 @@ function calcularNicho(){
 // ──────────────────────────────────────────
 function gerarPDFOrc(tipoMovel){
   if(!window._ultimoOrc){toast('⚠️ Calcule primeiro!');return;}
-  const {itens,total}=window._ultimoOrc;
+  const {itens,total,plano}=window._ultimoOrc;
   const brand=LSJ('brand')||{};
   const data=new Date().toLocaleDateString('pt-BR');
   let html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <style>
-    body{font-family:Arial,sans-serif;padding:40px;color:#1a1a1a;max-width:800px;margin:0 auto}
+    body{font-family:Arial,sans-serif;padding:40px;color:#1a1a1a;max-width:860px;margin:0 auto}
     .header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #c9a84c;padding-bottom:16px;margin-bottom:24px}
     .brand{font-size:22px;font-weight:700;color:#c9a84c}.sub{font-size:13px;color:#666}
-    h2{font-size:18px;margin-bottom:16px}
+    h2{font-size:18px;margin-bottom:16px;color:#1a1a1a}
+    h3{font-size:15px;margin:28px 0 14px;color:#1a1a1a;border-bottom:2px solid #c9a84c;padding-bottom:6px}
     table{width:100%;border-collapse:collapse;margin-bottom:24px}
     th{background:#f5f5f5;padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #ddd}
     td{padding:10px 12px;border-bottom:1px solid #eee;font-size:13px}
     .total-row td{font-weight:700;font-size:15px;color:#c9a84c;border-top:2px solid #c9a84c;border-bottom:none}
     .footer{margin-top:40px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#999;text-align:center}
     .badge{display:inline-block;background:#c9a84c;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+    .corte-tipo-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding:6px 10px;border-radius:6px;border-left:3px solid}
+    .chapa-info{font-size:10px;color:#555;margin-bottom:4px;display:flex;justify-content:space-between}
+    .chapa-wrap{margin-bottom:14px;overflow-x:auto}
+    svg{display:block;max-width:100%;height:auto}
+    @media print{
+      body{padding:20px}
+      .chapa-wrap{page-break-inside:avoid}
+    }
   </style></head><body>
   <div class="header">
-    <div><div class="brand">${brand.nome||'Agenda PRO'}</div><div class="sub">Orçamento — ${tipoMovel}</div></div>
+    <div><div class="brand">${brand.nome||'Agenda PRO'}</div><div class="sub">Orçamento + Plano de Corte — ${tipoMovel}</div></div>
     <div style="text-align:right"><div class="badge">${tipoMovel}</div><div class="sub" style="margin-top:6px">Data: ${data}</div></div>
   </div>
   <h2>📋 Lista de Materiais — ${tipoMovel}</h2>
@@ -2375,7 +4047,79 @@ function gerarPDFOrc(tipoMovel){
     html+=`<tr><td>${it.nome}</td><td style="font-weight:700">${it.qty}</td><td style="color:#666">${it.un}</td>${total>0?`<td>${p?'R$ '+p.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td><td>${sub?'R$ '+sub.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td>`:''}</tr>`;
   });
   if(total>0) html+=`<tr class="total-row"><td colspan="3">TOTAL ESTIMADO</td><td colspan="2">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
-  html+=`</tbody></table><div class="footer">Orçamento gerado por ${brand.nome||'Agenda PRO'} • Estimativa sujeita a alterações conforme projeto final.</div></body></html>`;
+  html+=`</tbody></table>`;
+
+  // ── PLANO DE CORTE ──
+  if(plano){
+    const tiposPDF=[
+      {key:'15b',label:'MDF 15mm Branco TX (caixa)',     cor:'#b07d20',bg:'#fff8ee'},
+      {key:'15m',label:'MDF 15mm Madeirado (portas/ext)',cor:'#7a4010',bg:'#fff3ec'},
+      {key:'18', label:'MDF 18mm (portas/frentes ext)',  cor:'#1a4a8a',bg:'#eef4ff'},
+      {key:'6',  label:'HDF 6mm (fundos gaveta)',        cor:'#0d6b2e',bg:'#efffed'},
+    ];
+    const coresPecas=['#d4e8c2','#c2d8e8','#e8d4c2','#d4c2e8','#c2e8d8','#e8c2d4','#e8e8c2','#c2e4e8'];
+    html+=`<h3>✂️ Plano de Corte — ${tipoMovel}</h3>`;
+    tiposPDF.forEach(tipo=>{
+      const chapas=(plano[tipo.key]||[]);
+      if(!chapas.length)return;
+      html+=`<div class="corte-tipo-label" style="color:${tipo.cor};background:${tipo.bg};border-left-color:${tipo.cor}">
+        ${tipo.label} — ${chapas.length} chapa${chapas.length>1?'s':''}
+      </div>`;
+      chapas.forEach((chapa,ci)=>{
+        const maxSVGW=720;
+        const esc=maxSVGW/CHAPA_L;
+        const svgW=Math.round(CHAPA_L*esc);
+        const svgH=Math.round(CHAPA_A*esc);
+        const areaTotal=CHAPA_L*CHAPA_A;
+        const areaUsada=chapa.usada.reduce((s,p)=>s+p.l*p.a,0);
+        const pct=Math.round(areaUsada/areaTotal*100);
+        const pctCor=pct>70?'#166534':pct>40?'#92400e':'#991b1b';
+        html+=`<div class="chapa-wrap">
+          <div class="chapa-info">
+            <span>Chapa ${ci+1} de ${chapas.length} — ${chapa.usada.length} peça${chapa.usada.length!==1?'s':''}</span>
+            <span style="color:${pctCor};font-weight:700">${pct}% aproveitamento</span>
+          </div>
+          <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}"
+               xmlns="http://www.w3.org/2000/svg"
+               style="border:1.5px solid ${tipo.cor};border-radius:6px;background:#f9f9f9">
+            <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#f0f0f0"/>
+            <g opacity=".18" stroke="#666" stroke-width=".5">
+              ${(()=>{let g='';for(let x=0;x<CHAPA_L;x+=100)g+=`<line x1="${Math.round(x*esc)}" y1="0" x2="${Math.round(x*esc)}" y2="${svgH}"/>`;
+                               for(let y=0;y<CHAPA_A;y+=100)g+=`<line x1="0" y1="${Math.round(y*esc)}" x2="${svgW}" y2="${Math.round(y*esc)}"/>`;
+                        return g;})()}
+            </g>
+            ${chapa.usada.map((p,pi)=>{
+              const px=Math.round(p.x*esc),py=Math.round(p.y*esc);
+              const pw=Math.max(Math.round(p.l*esc)-1,3);
+              const ph=Math.max(Math.round(p.a*esc)-1,3);
+              const cor=coresPecas[pi%coresPecas.length];
+              const cx=px+pw/2,cy=py+ph/2;
+              const fs=Math.min(11,Math.max(6,Math.min(pw/7,ph/2.5)));
+              const ns=p.nome.length>20?p.nome.slice(0,19)+'…':p.nome;
+              const dim=`${p.l}×${p.a}`;
+              const rotTag=p.rot?'↻':'';
+              return `<g>
+                <rect x="${px+1}" y="${py+1}" width="${pw-2}" height="${ph-2}"
+                      fill="${cor}" stroke="${tipo.cor}" stroke-width="1" rx="2" opacity=".9"/>
+                ${pw>30&&ph>14?`<text x="${cx}" y="${cy-(fs*.6)}" text-anchor="middle"
+                      dominant-baseline="middle" fill="#1a1a1a" font-size="${fs}px"
+                      font-family="Arial,sans-serif" font-weight="600">${ns} ${rotTag}</text>`:''}
+                ${pw>50&&ph>24?`<text x="${cx}" y="${cy+(fs*.9)}" text-anchor="middle"
+                      dominant-baseline="middle" fill="${tipo.cor}" font-size="${Math.max(fs-1,6)}px"
+                      font-family="Arial,sans-serif">${dim}mm</text>`:''}
+              </g>`;
+            }).join('')}
+            <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="none"
+                  stroke="${tipo.cor}" stroke-width="1.5" rx="4"/>
+            <text x="6" y="${svgH-5}" fill="${tipo.cor}" font-size="9"
+                  font-family="Arial,sans-serif">2750×1830mm — ↻ = girada 90°</text>
+          </svg>
+        </div>`;
+      });
+    });
+  }
+
+  html+=`<div class="footer">Orçamento gerado por ${brand.nome||'Agenda PRO'} • Estimativa sujeita a alterações conforme projeto final.</div></body></html>`;
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
   a.download=`orcamento_${tipoMovel.toLowerCase().replace(/[\s\/]/g,'_')}_${data.replace(/\//g,'-')}.html`;
@@ -2755,9 +4499,12 @@ async function licencaVerificar() {
     const hoje = new Date().toDateString();
     if (LS('aviso7_visto') !== hoje) {
       document.getElementById('aviso7Dias').textContent = dias;
-      document.getElementById('modalAviso7').style.display = 'flex';
-      document.getElementById('modalAviso7').classList.add('open');
+      // CORREÇÃO: só mostra o aviso, NÃO bloqueia — ainda há dias restantes
+      const modalAviso = document.getElementById('modalAviso7');
+      modalAviso.style.display = 'flex';
+      modalAviso.classList.add('open');
       LS('aviso7_visto', hoje);
+      // Garantir que o botão "Lembrar depois" sempre fecha e dá acesso
     }
   }
 }
@@ -2951,18 +4698,173 @@ async function liberarPorEmail(dias) {
 }
 
 (function(){
-  if(!LSJ('conta')){
-    LSJ('conta',{user:'Stylo Design',email:'stylodesignprojetos@gmail.com',senha:'96502208%',googleId:null,googleAvatar:null});
-  }
-  if(!LS('setupDone')){
-    LSJ('brand',{nome:'Agenda PRO',cor:'#c9a84c',logo:null});
-    LS('setupDone','1');
-  }
   aplicarBranding();
   driveVerificarToken();
+  if(!LS('setupDone')){irPara('screenSetup');return;}
   if(LS('sessao')){const c=LSJ('conta');if(c)entrarNoApp(c);else irPara('screenLogin');}
   else irPara('screenLogin');
 })();
 </script>
+
+<!-- MODAL: Rascunho Visual -->
+<div class="modal-overlay" id="modalRascunho" style="z-index:1500;align-items:stretch;padding:16px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:820px;margin:auto;display:flex;flex-direction:column;max-height:90vh;box-shadow:var(--shadow)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <span style="font-family:'Playfair Display',serif;font-size:16px;color:var(--accent2)">✏️ Rascunho Visual do Móvel</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="rascunhoLimpar()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif">🗑️ Limpar</button>
+        <button onclick="fecharModal('modalRascunho')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <label style="font-size:11px;color:var(--muted)">Ferramentas:</label>
+      <button class="rascunho-tool active" id="rTool_rect" onclick="rascunhoTool('rect')">⬜ Retângulo</button>
+      <button class="rascunho-tool" id="rTool_line" onclick="rascunhoTool('line')">➖ Linha</button>
+      <button class="rascunho-tool" id="rTool_text" onclick="rascunhoTool('text')">🔤 Texto</button>
+      <button class="rascunho-tool" id="rTool_eraser" onclick="rascunhoTool('eraser')">🧹 Apagar</button>
+      <span style="width:1px;height:24px;background:var(--border);display:inline-block"></span>
+      <label style="font-size:11px;color:var(--muted)">Cor:</label>
+      <select id="rColor" onchange="rascunhoCor(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 6px;font-size:12px">
+        <option value="#e8c96a">Dourado (peça)</option>
+        <option value="#60a5fa">Azul (medida)</option>
+        <option value="#4ade80">Verde (nota)</option>
+        <option value="#f87171">Vermelho (atenção)</option>
+        <option value="#e8eaf0">Branco</option>
+      </select>
+      <label style="font-size:11px;color:var(--muted)">Espessura:</label>
+      <select id="rThick" onchange="rascunhoEsp(+this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 6px;font-size:12px">
+        <option value="1">Fina</option>
+        <option value="2" selected>Média</option>
+        <option value="4">Grossa</option>
+      </select>
+    </div>
+    <div style="flex:1;overflow:hidden;position:relative;background:#0d1220;border-radius:0 0 16px 16px;min-height:360px">
+      <canvas id="rascunhoCanvas" style="width:100%;height:100%;cursor:crosshair;display:block"></canvas>
+      <div id="rascunhoTextInput" style="display:none;position:absolute">
+        <input id="rascunhoTextVal" style="background:rgba(0,0,0,.8);border:1px solid var(--accent);color:var(--text);padding:4px 8px;border-radius:4px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none" placeholder="Digite o texto..." onkeydown="rascunhoTextConfirm(event)">
+      </div>
+    </div>
+    <div style="padding:8px 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">
+      💡 Dica: Arraste para desenhar. Retângulo = arrastar do canto. Texto = clique e digite, Enter para confirmar.
+    </div>
+  </div>
+</div>
+
+<style>
+.rascunho-tool{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all .15s}
+.rascunho-tool.active{background:var(--accent);color:#0b0f1a;border-color:var(--accent);font-weight:700}
+</style>
+
+<script>
+// ── RASCUNHO VISUAL ──
+let _rCanvas=null,_rCtx=null;
+let _rTool='rect',_rCor='#e8c96a',_rEsp=2;
+let _rDrawing=false,_rStartX=0,_rStartY=0;
+let _rHistory=[];
+let _rSnapshot=null;
+
+function abrirRascunho(){
+  abrirModal('modalRascunho');
+  setTimeout(()=>{
+    _rCanvas=document.getElementById('rascunhoCanvas');
+    const cont=_rCanvas.parentElement;
+    _rCanvas.width=cont.offsetWidth||700;
+    _rCanvas.height=cont.offsetHeight||400;
+    _rCtx=_rCanvas.getContext('2d');
+    if(!_rHistory.length){
+      _rCtx.fillStyle='#0d1220';
+      _rCtx.fillRect(0,0,_rCanvas.width,_rCanvas.height);
+    }
+    rascunhoBindEvents();
+  },120);
+}
+function rascunhoTool(t){
+  _rTool=t;
+  document.querySelectorAll('.rascunho-tool').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('rTool_'+t);
+  if(btn)btn.classList.add('active');
+}
+function rascunhoCor(c){_rCor=c;}
+function rascunhoEsp(e){_rEsp=e;}
+function rascunhoLimpar(){
+  if(!_rCtx||!_rCanvas)return;
+  _rHistory=[];
+  _rCtx.fillStyle='#0d1220';
+  _rCtx.fillRect(0,0,_rCanvas.width,_rCanvas.height);
+}
+function rascunhoSalvarEstado(){
+  if(!_rCanvas)return;
+  _rHistory.push(_rCanvas.toDataURL());
+  if(_rHistory.length>30)_rHistory.shift();
+}
+
+function rascunhoBindEvents(){
+  if(!_rCanvas)return;
+  _rCanvas.onmousedown=e=>{
+    if(_rTool==='text'){
+      const rect=_rCanvas.getBoundingClientRect();
+      const scaleX=_rCanvas.width/rect.width, scaleY=_rCanvas.height/rect.height;
+      const x=(e.clientX-rect.left)*scaleX,y=(e.clientY-rect.top)*scaleY;
+      const inp=document.getElementById('rascunhoTextInput');
+      inp.style.display='block';
+      inp.style.left=(e.clientX-_rCanvas.getBoundingClientRect().left)+'px';
+      inp.style.top=(e.clientY-_rCanvas.getBoundingClientRect().top-20)+'px';
+      const v=document.getElementById('rascunhoTextVal');
+      v.value='';v.focus();
+      v.dataset.x=x;v.dataset.y=y;
+      return;
+    }
+    rascunhoSalvarEstado();
+    const rect=_rCanvas.getBoundingClientRect();
+    const scaleX=_rCanvas.width/rect.width, scaleY=_rCanvas.height/rect.height;
+    _rStartX=(e.clientX-rect.left)*scaleX;_rStartY=(e.clientY-rect.top)*scaleY;
+    _rDrawing=true;
+    if(_rTool==='rect'){
+      _rSnapshot=_rCtx.getImageData(0,0,_rCanvas.width,_rCanvas.height);
+    }else{
+      _rCtx.beginPath();
+      _rCtx.moveTo(_rStartX,_rStartY);
+    }
+  };
+  _rCanvas.onmousemove=e=>{
+    if(!_rDrawing)return;
+    const rect=_rCanvas.getBoundingClientRect();
+    const scaleX=_rCanvas.width/rect.width, scaleY=_rCanvas.height/rect.height;
+    const x=(e.clientX-rect.left)*scaleX,y=(e.clientY-rect.top)*scaleY;
+    _rCtx.strokeStyle=_rTool==='eraser'?'#0d1220':_rCor;
+    _rCtx.lineWidth=_rTool==='eraser'?28:_rEsp;
+    _rCtx.lineCap='round';
+    if(_rTool==='rect'){
+      _rCtx.putImageData(_rSnapshot,0,0);
+      _rCtx.beginPath();
+      _rCtx.strokeRect(_rStartX,_rStartY,x-_rStartX,y-_rStartY);
+    }else{
+      _rCtx.lineTo(x,y);
+      _rCtx.stroke();
+      _rCtx.beginPath();
+      _rCtx.moveTo(x,y);
+    }
+  };
+  _rCanvas.onmouseup=()=>{_rDrawing=false;};
+  _rCanvas.onmouseleave=()=>{_rDrawing=false;};
+  // Touch support
+  function touch2xy(e){const t=e.touches[0]||e.changedTouches[0];return{clientX:t.clientX,clientY:t.clientY};}
+  _rCanvas.ontouchstart=e=>{_rCanvas.onmousedown(touch2xy(e));e.preventDefault();};
+  _rCanvas.ontouchmove=e=>{_rCanvas.onmousemove(touch2xy(e));e.preventDefault();};
+  _rCanvas.ontouchend=e=>{_rCanvas.onmouseup();};
+}
+
+function rascunhoTextConfirm(e){
+  if(e.key!=='Enter')return;
+  const v=document.getElementById('rascunhoTextVal');
+  const txt=v.value.trim();
+  if(txt&&_rCtx){
+    rascunhoSalvarEstado();
+    _rCtx.fillStyle=_rCor;
+    _rCtx.font=`${12+_rEsp*3}px 'DM Sans',sans-serif`;
+    _rCtx.fillText(txt,+v.dataset.x,+v.dataset.y);
+  }
+  document.getElementById('rascunhoTextInput').style.display='none';
+}
+</script>
 </body>
-</html>
