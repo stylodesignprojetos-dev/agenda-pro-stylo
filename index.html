@@ -3571,7 +3571,7 @@ function entrarNoApp(conta){
   setEl('userNome',conta.user||conta.email);
   const av=document.getElementById('userAvatar');
   if(av)av.textContent=(conta.user||conta.email||'U').charAt(0).toUpperCase();
-  const emailAdmin='samuel.a.d.s.1992@gmail.com';
+  const emailAdmin='stylodesignprojetos@gmail.com';
   const isAdmin=conta.email===emailAdmin;
   ['navAdmin','btnAdminHdr'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isAdmin?'':'none';});
   aplicarBranding();irPara('app');
@@ -4843,7 +4843,7 @@ function renderRelatorios(){
 // ── ADMIN ──
 function renderAdmin(){
   const conta=LSJ('conta');
-  if(!conta||conta.email!=='samuel.a.d.s.1992@gmail.com'){toast('⛔ Acesso restrito');navTo('dashboard');return;}
+  if(!conta||conta.email!=='stylodesignprojetos@gmail.com'){toast('⛔ Acesso restrito');navTo('dashboard');return;}
   const usuarios=LSJ('usuarios_globais')||[];
   const now=Date.now();
   setEl('adm-total',usuarios.length);
@@ -5150,7 +5150,7 @@ function contaEmTrialParcial(){
 }
 function licencaVerificar(){
   const conta=LSJ('conta');if(!conta)return;
-  if(conta.email==='samuel.a.d.s.1992@gmail.com')return;
+  if(conta.email==='stylodesignprojetos@gmail.com')return;
   const lic=LSJ('licenca_'+conta.email);if(!lic)return;
   const now=Date.now();const dr=Math.ceil((lic.vencimento-now)/86400000);
   if(now>lic.vencimento){abrirModal('modalBloqueado');mostrarBtnAdm();}
@@ -5158,7 +5158,7 @@ function licencaVerificar(){
 }
 function mostrarBtnAdm(){
   const conta=LSJ('conta');
-  if(conta&&conta.email==='samuel.a.d.s.1992@gmail.com'){const el=document.getElementById('btnLiberarDiretoWrap');if(el)el.style.display='block';}
+  if(conta&&conta.email==='stylodesignprojetos@gmail.com'){const el=document.getElementById('btnLiberarDiretoWrap');if(el)el.style.display='block';}
 }
 // ── CÓDIGO DE LIBERAÇÃO AUTOMÁTICO (troca sozinho a cada 7 dias) ──
 function gerarCodigoAleatorio(){
@@ -5323,7 +5323,7 @@ function nuvemSincronizarAgora(){toast('🔄 Sincronizando...');nuvemPuxarAgora(
 
 // ── LIMITE DE ACESSOS POR PLANO (dispositivos por e-mail) ──
 const PLANO_LIMITES = { 'Starter': 1, 'Pro': 3, 'Premium': 8 };
-const EMAIL_ADMIN = 'samuel.a.d.s.1992@gmail.com';
+const EMAIL_ADMIN = 'stylodesignprojetos@gmail.com';
 const ADMIN_DEVICE_LIMIT = 4; // admin: titular (PC) + até 3 extras = 4 no total, sem limite de dias
 
 // ⚠️ IMPORTANTE — SEGURANÇA:
