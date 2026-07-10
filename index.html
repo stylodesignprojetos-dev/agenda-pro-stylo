@@ -3631,7 +3631,7 @@ function navTo(page){
   if(pageEl)pageEl.classList.add('active');
   const navEl=document.querySelector(`.nav-item[data-page="${page}"]`);
   if(navEl)navEl.classList.add('active');
-  const renders={dashboard:renderDashboard,clientes:renderClientes,projetos:renderProjetos,financeiro:renderFinanceiro,kanban:renderKanban,calendario:renderCalendario,relatorios:renderRelatorios,admin:renderAdmin,planos:renderPlanos,configuracoes:renderConfiguracoes,materiais:renderMateriais,tabelaPrecos:renderTabelaPrecos,planoCorte:function(){renderListaModulosSalvos();atualizarSelectsCorMDF();}};
+  const renders={dashboard:renderDashboard,clientes:renderClientes,projetos:renderProjetos,financeiro:renderFinanceiro,kanban:renderKanban,calendario:renderCalendario,relatorios:renderRelatorios,admin:admAbrirPainel,planos:renderPlanos,configuracoes:renderConfiguracoes,materiais:renderMateriais,tabelaPrecos:renderTabelaPrecos,planoCorte:function(){renderListaModulosSalvos();atualizarSelectsCorMDF();}};
   if(renders[page])renders[page]();
   // fechar sidebar no mobile
   if(window.innerWidth<768){document.getElementById('sidebar').classList.remove('open');}
@@ -4841,10 +4841,10 @@ function renderRelatorios(){
 }
 
 // ── ADMIN ──
-async function renderAdmin(){
+function renderAdmin(){
   const conta=LSJ('conta');
   if(!conta||conta.email!=='stylodesignprojetos@gmail.com'){toast('⛔ Acesso restrito');navTo('dashboard');return;}
-  const usuarios=await sincronizarUsuariosGlobais();
+  const usuarios=LSJ('usuarios_globais')||[];
   const now=Date.now();
   setEl('adm-total',usuarios.length);
   setEl('adm-ativos',usuarios.filter(u=>u.vencimento>now&&!u.emTeste).length);
@@ -4887,12 +4887,15 @@ async function renderAdmin(){
   const jcod=document.getElementById('adminCodigo');if(jcod)jcod.value='';
   admCarregarCodigoAuto();
 }
-async function admLiberar(email,dias){
+function admLiberar(email,dias){
   let u=LSJ('usuarios_globais')||[];
   const now=Date.now();const base=Math.max((u.find(x=>x.email===email)||{}).vencimento||now,now);
   const venc=base+dias*86400000;
-  const plano=(u.find(x=>x.email===email)||{}).plano||'Pro';
-  await salvarUsuarioGlobal({email,vencimento:venc,emTeste:false,plano});
+  const idx=u.findIndex(x=>x.email===email);
+  if(idx>=0){u[idx].vencimento=venc;u[idx].emTeste=false;}
+  else u.push({email,vencimento:venc,emTeste:false,plano:'Pro'});
+  LSJ('usuarios_globais',u);
+  admPublicarLiberacaoNuvem(email,venc,(u.find(x=>x.email===email)||{}).plano||'Pro');
   renderAdmin();toast(`✅ ${email} liberado por ${dias} dias`);
 }
 
@@ -5113,7 +5116,24 @@ async function licencaIniciar(){
       abrirModal('modalBoasVindas');
     }
   }
+  await licencaPuxarAdminNuvem(); // aplica liberações feitas pelo admin em outro aparelho
   registrarUsuario();
+}
+
+// Verifica se o admin liberou/alterou o plano deste e-mail pelo painel Admin (em outro aparelho)
+// e aplica essa liberação aqui — sem isso, "Liberar acesso" só valeria no aparelho do admin.
+async function licencaPuxarAdminNuvem(){
+  const conta=LSJ('conta');if(!conta)return;
+  try{
+    const record=await jbLerRegistro();
+    if(!record||!record.licencasAdmin)return;
+    const over=record.licencasAdmin[conta.email];
+    if(!over)return;
+    const atual=LSJ('licenca_'+conta.email)||{};
+    if(!atual._adminAplicadoEm || over.aplicadoEm>atual._adminAplicadoEm){
+      LSJ('licenca_'+conta.email,{...atual,vencimento:over.vencimento,plano:over.plano,trial:false,parcial:false,_adminAplicadoEm:over.aplicadoEm});
+    }
+  }catch(e){console.warn('Licença: falha ao verificar liberação do admin',e);}
 }
 
 // Verifica se este aparelho já usou o trial (com QUALQUER e-mail), via JSONBin + cache local
@@ -5227,46 +5247,66 @@ async function liberarPorEmail(dias){
   if(!email){toast('⚠️ Digite o e-mail do cliente');return;}
   const now=Date.now();const venc=now+dias*86400000;
   LSJ('licenca_'+email,{inicio:now,vencimento:venc,trial:false,plano});
-  await salvarUsuarioGlobal({email,vencimento:venc,emTeste:false,plano});
+  let u=LSJ('usuarios_globais')||[];
+  const idx=u.findIndex(x=>x.email===email);
+  if(idx>=0){u[idx].vencimento=venc;u[idx].emTeste=false;u[idx].plano=plano;}
+  else u.push({email,vencimento:venc,emTeste:false,plano});
+  LSJ('usuarios_globais',u);
+  await admPublicarLiberacaoNuvem(email,venc,plano);
   const msg=document.getElementById('admLibMsg');if(msg)msg.textContent=`✅ ${email} liberado por ${dias} dias (${plano})`;
   setTimeout(()=>{if(msg)msg.textContent='';},3000);
   renderAdmin();toast(`✅ ${email} liberado (${plano})!`);
 }
-// Busca a lista de usuários no JSONBin (via proxy) e mescla com o cache local (usuarios_globais).
-// Assim o painel Admin mostra quem se cadastrou em QUALQUER aparelho, não só no seu.
-// Se o proxy ainda não estiver configurado, cai de volta pro cache local (comportamento antigo).
-async function sincronizarUsuariosGlobais(){
-  let usuarios=LSJ('usuarios_globais')||[];
-  const record=await jbLerRegistro();
-  if(record){
-    const nuvem=Object.values(record.usuarios||{});
-    const mapa={};
-    usuarios.forEach(u=>mapa[u.email]=u);
-    nuvem.forEach(u=>mapa[u.email]={...mapa[u.email],...u}); // nuvem tem prioridade
-    usuarios=Object.values(mapa);
-    LSJ('usuarios_globais',usuarios); // atualiza o cache local
-  }
-  return usuarios;
+// Grava a liberação de acesso na nuvem, pra valer no aparelho de verdade do cliente (não só no do admin)
+async function admPublicarLiberacaoNuvem(email,vencimento,plano){
+  try{
+    const record=await jbLerRegistro();
+    if(!record)return;
+    record.licencasAdmin=record.licencasAdmin||{};
+    record.licencasAdmin[email]={vencimento,plano,aplicadoEm:Date.now()};
+    await jbSalvarRegistro(record);
+  }catch(e){console.warn('Admin: falha ao publicar liberação na nuvem',e);}
 }
-// Grava/atualiza um usuário tanto no cache local quanto no JSONBin (record.usuarios), sem apagar
-// outros campos do record (ex: record.acessos, record.codigo) que já estão lá pras licenças.
-async function salvarUsuarioGlobal(info){
-  let u=LSJ('usuarios_globais')||[];
-  const idx=u.findIndex(x=>x.email===info.email);
-  if(idx>=0)u[idx]={...u[idx],...info};else u.push(info);
-  LSJ('usuarios_globais',u);
-  const record=await jbLerRegistro();
-  if(record===null)return; // proxy ainda não configurado — fica só local mesmo
-  record.usuarios=record.usuarios||{};
-  record.usuarios[info.email]={...record.usuarios[info.email],...info};
-  await jbSalvarRegistro(record);
-}
-async function registrarUsuario(){
+function registrarUsuario(){
   const conta=LSJ('conta');if(!conta)return;
   const lic=LSJ('licenca_'+conta.email)||{};
+  let u=LSJ('usuarios_globais')||[];
   const info={email:conta.email,nome:conta.user,plano:lic.plano||'Trial',vencimento:lic.vencimento||0,emTeste:lic.trial||false};
-  await salvarUsuarioGlobal(info);
+  const idx=u.findIndex(x=>x.email===conta.email);
+  if(idx>=0)u[idx]={...u[idx],...info};else u.push(info);
+  LSJ('usuarios_globais',u);
+  admPublicarUsuarioNuvem(info); // envia esse cadastro pra nuvem, pra aparecer no painel Admin de qualquer aparelho
 }
+
+// ── LISTA DE USUÁRIOS NO PAINEL ADMIN — sincronizada em nuvem ──
+// Cada usuário que loga em qualquer aparelho "avisa" a nuvem (record.usuariosGlobais).
+// O painel Admin, ao abrir, puxa essa lista de todo mundo, não só do que está salvo no
+// aparelho do admin.
+async function admPublicarUsuarioNuvem(info){
+  try{
+    const record=await jbLerRegistro();
+    if(!record)return;
+    record.usuariosGlobais=record.usuariosGlobais||[];
+    const idx=record.usuariosGlobais.findIndex(x=>x.email===info.email);
+    if(idx>=0)record.usuariosGlobais[idx]={...record.usuariosGlobais[idx],...info};
+    else record.usuariosGlobais.push(info);
+    await jbSalvarRegistro(record);
+  }catch(e){console.warn('Admin: falha ao publicar usuário na nuvem',e);}
+}
+async function admSincronizarUsuariosNuvem(){
+  try{
+    const record=await jbLerRegistro();
+    if(!record||!record.usuariosGlobais)return;
+    let local=LSJ('usuarios_globais')||[];
+    record.usuariosGlobais.forEach(remoto=>{
+      const idx=local.findIndex(x=>x.email===remoto.email);
+      if(idx>=0)local[idx]={...local[idx],...remoto};else local.push(remoto);
+    });
+    LSJ('usuarios_globais',local);
+    renderAdmin();
+  }catch(e){console.warn('Admin: falha ao sincronizar usuários da nuvem',e);}
+}
+function admAbrirPainel(){renderAdmin();admSincronizarUsuariosNuvem();}
 
 // ── SINCRONIZAÇÃO EM NUVEM (clientes/projetos/financeiro/agenda) ──
 // Compartilha os dados entre todos os aparelhos logados com o MESMO e-mail de conta,
