@@ -4841,10 +4841,10 @@ function renderRelatorios(){
 }
 
 // ── ADMIN ──
-function renderAdmin(){
+async function renderAdmin(){
   const conta=LSJ('conta');
   if(!conta||conta.email!=='stylodesignprojetos@gmail.com'){toast('⛔ Acesso restrito');navTo('dashboard');return;}
-  const usuarios=LSJ('usuarios_globais')||[];
+  const usuarios=await sincronizarUsuariosGlobais();
   const now=Date.now();
   setEl('adm-total',usuarios.length);
   setEl('adm-ativos',usuarios.filter(u=>u.vencimento>now&&!u.emTeste).length);
@@ -4887,14 +4887,13 @@ function renderAdmin(){
   const jcod=document.getElementById('adminCodigo');if(jcod)jcod.value='';
   admCarregarCodigoAuto();
 }
-function admLiberar(email,dias){
+async function admLiberar(email,dias){
   let u=LSJ('usuarios_globais')||[];
   const now=Date.now();const base=Math.max((u.find(x=>x.email===email)||{}).vencimento||now,now);
   const venc=base+dias*86400000;
-  const idx=u.findIndex(x=>x.email===email);
-  if(idx>=0){u[idx].vencimento=venc;u[idx].emTeste=false;}
-  else u.push({email,vencimento:venc,emTeste:false,plano:'Pro'});
-  LSJ('usuarios_globais',u);renderAdmin();toast(`✅ ${email} liberado por ${dias} dias`);
+  const plano=(u.find(x=>x.email===email)||{}).plano||'Pro';
+  await salvarUsuarioGlobal({email,vencimento:venc,emTeste:false,plano});
+  renderAdmin();toast(`✅ ${email} liberado por ${dias} dias`);
 }
 
 // ── PLANOS ──
@@ -5228,23 +5227,45 @@ async function liberarPorEmail(dias){
   if(!email){toast('⚠️ Digite o e-mail do cliente');return;}
   const now=Date.now();const venc=now+dias*86400000;
   LSJ('licenca_'+email,{inicio:now,vencimento:venc,trial:false,plano});
-  let u=LSJ('usuarios_globais')||[];
-  const idx=u.findIndex(x=>x.email===email);
-  if(idx>=0){u[idx].vencimento=venc;u[idx].emTeste=false;u[idx].plano=plano;}
-  else u.push({email,vencimento:venc,emTeste:false,plano});
-  LSJ('usuarios_globais',u);
+  await salvarUsuarioGlobal({email,vencimento:venc,emTeste:false,plano});
   const msg=document.getElementById('admLibMsg');if(msg)msg.textContent=`✅ ${email} liberado por ${dias} dias (${plano})`;
   setTimeout(()=>{if(msg)msg.textContent='';},3000);
   renderAdmin();toast(`✅ ${email} liberado (${plano})!`);
 }
-function registrarUsuario(){
-  const conta=LSJ('conta');if(!conta)return;
-  const lic=LSJ('licenca_'+conta.email)||{};
+// Busca a lista de usuários no JSONBin (via proxy) e mescla com o cache local (usuarios_globais).
+// Assim o painel Admin mostra quem se cadastrou em QUALQUER aparelho, não só no seu.
+// Se o proxy ainda não estiver configurado, cai de volta pro cache local (comportamento antigo).
+async function sincronizarUsuariosGlobais(){
+  let usuarios=LSJ('usuarios_globais')||[];
+  const record=await jbLerRegistro();
+  if(record){
+    const nuvem=Object.values(record.usuarios||{});
+    const mapa={};
+    usuarios.forEach(u=>mapa[u.email]=u);
+    nuvem.forEach(u=>mapa[u.email]={...mapa[u.email],...u}); // nuvem tem prioridade
+    usuarios=Object.values(mapa);
+    LSJ('usuarios_globais',usuarios); // atualiza o cache local
+  }
+  return usuarios;
+}
+// Grava/atualiza um usuário tanto no cache local quanto no JSONBin (record.usuarios), sem apagar
+// outros campos do record (ex: record.acessos, record.codigo) que já estão lá pras licenças.
+async function salvarUsuarioGlobal(info){
   let u=LSJ('usuarios_globais')||[];
-  const info={email:conta.email,nome:conta.user,plano:lic.plano||'Trial',vencimento:lic.vencimento||0,emTeste:lic.trial||false};
-  const idx=u.findIndex(x=>x.email===conta.email);
+  const idx=u.findIndex(x=>x.email===info.email);
   if(idx>=0)u[idx]={...u[idx],...info};else u.push(info);
   LSJ('usuarios_globais',u);
+  const record=await jbLerRegistro();
+  if(record===null)return; // proxy ainda não configurado — fica só local mesmo
+  record.usuarios=record.usuarios||{};
+  record.usuarios[info.email]={...record.usuarios[info.email],...info};
+  await jbSalvarRegistro(record);
+}
+async function registrarUsuario(){
+  const conta=LSJ('conta');if(!conta)return;
+  const lic=LSJ('licenca_'+conta.email)||{};
+  const info={email:conta.email,nome:conta.user,plano:lic.plano||'Trial',vencimento:lic.vencimento||0,emTeste:lic.trial||false};
+  await salvarUsuarioGlobal(info);
 }
 
 // ── SINCRONIZAÇÃO EM NUVEM (clientes/projetos/financeiro/agenda) ──
