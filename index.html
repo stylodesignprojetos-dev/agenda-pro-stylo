@@ -5387,14 +5387,9 @@ const PLANO_LIMITES = { 'Starter': 1, 'Pro': 3, 'Premium': 8 };
 const EMAIL_ADMIN = 'stylodesignprojetos@gmail.com';
 const ADMIN_DEVICE_LIMIT = 4; // admin: titular (PC) + até 3 extras = 4 no total, sem limite de dias
 
-// ⚠️ IMPORTANTE — SEGURANÇA:
-// Antes, a chave mestra do JSONBin ficava escrita direto aqui no código (JB_ID_PADRAO/JB_KEY_PADRAO),
-// e como este arquivo é enviado pra outras pessoas, qualquer um que abrisse "Ver código-fonte" (F12)
-// conseguia pegar essa chave e ler/editar/apagar os dados de TODAS as contas.
-// Agora o app não guarda mais essa chave: ele chama um "proxy" (Cloudflare Worker) que fica com a
-// chave em segredo do lado do servidor. Troque a URL abaixo pela URL do seu Worker depois de publicá-lo
-// (veja instruções de deploy que o Claude te passou).
-const NUVEM_PROXY_URL = 'https://agenda-pro-proxy.stylodesignprojetos.workers.dev/dados';
+// Credenciais do JSONBin — fixas no código para funcionar em qualquer aparelho sem configuração
+const JB_ID  = '6a3b2bd5f5f4af5e292653a9';
+const JB_KEY = '$2a$10$IY5M3WdvjVwHFhkQLbFh7eRYvEDZu5WIV.0/PIpPgnzBGU/UuJxZy';
 
 function getDeviceId(){
   let id = LS('deviceId');
@@ -5403,20 +5398,17 @@ function getDeviceId(){
 }
 
 async function jbLerRegistro(){
-  if(!NUVEM_PROXY_URL || NUVEM_PROXY_URL.includes('SEU-WORKER')) return null; // proxy ainda não configurado
   try{
-    const r = await fetch(NUVEM_PROXY_URL);
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${JB_ID}/latest`, { headers:{'X-Master-Key':JB_KEY} });
     const d = await r.json();
-    return d || {};
-  }catch(e){ console.warn('Proxy: falha ao ler', e); return null; }
+    return d.record || {};
+  }catch(e){ console.warn('JSONBin: falha ao ler', e); return null; }
 }
 async function jbSalvarRegistro(record){
-  if(!NUVEM_PROXY_URL || NUVEM_PROXY_URL.includes('SEU-WORKER')) return false; // proxy ainda não configurado
   try{
-    const r = await fetch(NUVEM_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(record) });
-    const d = await r.json();
-    return !!(d && d.ok);
-  }catch(e){ console.warn('Proxy: falha ao salvar', e); return false; }
+    await fetch(`https://api.jsonbin.io/v3/b/${JB_ID}`, { method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':JB_KEY}, body:JSON.stringify(record) });
+    return true;
+  }catch(e){ console.warn('JSONBin: falha ao salvar', e); return false; }
 }
 
 // Verifica (e registra) se este dispositivo pode usar a conta, conforme o plano do e-mail.
