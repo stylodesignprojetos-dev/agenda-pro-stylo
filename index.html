@@ -393,6 +393,7 @@ select.form-control option{background:var(--surface2);}
     <div class="header-right">
       <div class="search-bar"><span>🔍</span><input id="globalSearch" placeholder="Buscar..." oninput="globalSearchFn()"></div>
       <button class="hdr-btn" onclick="abrirOrcamento()">📐 Orçamento</button>
+      <button class="hdr-btn" id="btnSino" onclick="spAbrirNotificacoes()" style="position:relative">🔔<span id="sinoContador" style="display:none;position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:1px 5px">0</span></button>
       <button class="hdr-btn" id="btnAdminHdr" onclick="navTo('admin')" style="display:none;border-color:var(--accent);color:var(--accent)">👑 Admin</button>
       <div class="hdr-pill" id="userPill">
         <div class="hdr-avatar" id="userAvatar">U</div>
@@ -417,6 +418,7 @@ select.form-control option{background:var(--surface2);}
         <button class="nav-item" onclick="navTo('kanban')" data-page="kanban"><span class="ico">🗂️</span>Kanban</button>
         <button class="nav-item" onclick="navTo('calendario')" data-page="calendario"><span class="ico">📅</span>Calendário</button>
         <button class="nav-item" onclick="navTo('relatorios')" data-page="relatorios"><span class="ico">📈</span>Relatórios</button>
+        <button class="nav-item" onclick="navTo('solicitarProjeto')" data-page="solicitarProjeto"><span class="ico">📐</span>Solicitar Projeto 3D</button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Sistema</div>
@@ -572,6 +574,47 @@ select.form-control option{background:var(--surface2);}
             <button class="btn-secondary" onclick="pcLimpar()">🗑️ Limpar</button>
             <button class="btn-primary" onclick="window.print()">🖨️ Imprimir PDF</button>
           </div>
+        </div>
+
+        <!-- ── CALCULADORA DE GAVETA PARAMÉTRICA (MOTOR DE ENGENHARIA) ── -->
+        <div class="chart-box" style="margin-bottom:16px;border:1px solid var(--accent)">
+          <div class="chart-title">🗄️ Calculadora de Gaveta Paramétrica</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Motor de engenharia configurável (ajuste os parâmetros em Configurações). Calcula automaticamente todas as peças da gaveta — laterais, frente, contra-fundo/contra-frente e fundo — já prontas pro corte.</p>
+          <div class="orc-row col3">
+            <div class="orc-field"><label>Tipo de móvel</label>
+              <select id="geSistema">
+                <option value="sistema01">Guarda-Roupa / Closet / Sapateira</option>
+                <option value="sistema02">Cozinha / Banheiro / Home Office</option>
+              </select>
+            </div>
+            <div class="orc-field"><label>Nº de gavetas iguais</label><input type="number" id="geNGavetas" value="1" min="1"></div>
+            <div class="orc-field"><label>Largura interna do vão — LI (mm)</label><input type="number" id="geLI" placeholder="ex: 800"></div>
+          </div>
+          <div class="orc-row col2">
+            <div class="orc-field"><label>Profundidade da gaveta — PG (mm)</label><input type="number" id="gePG" placeholder="ex: 450"></div>
+            <div class="orc-field"><label>Altura do corpo da gaveta — AG (mm)</label><input type="number" id="geAG" placeholder="ex: 180"></div>
+          </div>
+          <div class="orc-field" style="margin-bottom:10px"><label>Calcular também a frente externa?</label>
+            <select id="geComFrenteExterna" onchange="document.getElementById('geFrenteExternaWrap').style.display=this.value==='sim'?'block':'none'">
+              <option value="nao">Não — só o corpo da gaveta</option>
+              <option value="sim">Sim</option>
+            </select>
+          </div>
+          <div id="geFrenteExternaWrap" style="display:none">
+            <div class="orc-row col3">
+              <div class="orc-field"><label>Largura da frente externa (mm)</label><input type="number" id="geLarguraFrenteExterna" placeholder="ex: 800"></div>
+              <div class="orc-field"><label>Altura total disponível p/ frentes (mm)</label><input type="number" id="geAlturaFrentes" placeholder="ex: 720"></div>
+              <div class="orc-field"><label>Tipo de puxador</label>
+                <select id="geTipoFrente" onchange="document.getElementById('gePerfilWrap').style.display=this.value==='perfil'?'block':'none'">
+                  <option value="lisa">Lisa (3mm entre frentes)</option>
+                  <option value="perfil">Perfil Alumínio</option>
+                  <option value="cava">Cava (35mm entre frentes)</option>
+                </select>
+              </div>
+            </div>
+            <div class="orc-field" id="gePerfilWrap" style="display:none"><label>Altura do perfil (mm)</label><input type="number" id="geAlturaPerfil" placeholder="ex: 20"></div>
+          </div>
+          <button class="btn-primary" style="margin-top:6px" onclick="pcCalcularGavetaParametrica()">🧮 Calcular Gaveta</button>
         </div>
 
         <!-- ── CONFIGURAÇÃO DE FITA DE BORDA (vale para o módulo que for calculado) ── -->
@@ -1548,6 +1591,77 @@ select.form-control option{background:var(--surface2);}
             </table></div>
           </div>
         </div>
+        <div class="chart-box" style="margin-top:20px">
+          <div class="chart-title" style="margin-bottom:12px">💹 Indicadores Financeiros (baseado nos orçamentos calculados)</div>
+          <div id="relIndicadores"></div>
+        </div>
+      </div>
+
+      <!-- SOLICITAR PROJETO (marceneiro pede um projeto pra Stylo Design fazer) -->
+      <div class="page" id="page-solicitarProjeto">
+        <div class="page-header">
+          <div class="page-title"><h1>📐 Solicitar Projeto 3D</h1><p>Peça um projeto pra Stylo Design desenvolver — acompanhe tudo por aqui, sem precisar de WhatsApp</p></div>
+        </div>
+
+        <div class="chart-box" style="border:1px solid var(--accent)">
+          <div class="chart-title" style="margin-bottom:4px">1️⃣ Dados do Cliente Final</div>
+          <div class="orc-row col3">
+            <div class="orc-field"><label>Nome do cliente</label><input id="spClienteNome" placeholder="Nome completo"></div>
+            <div class="orc-field"><label>Telefone</label><input id="spClienteTel" placeholder="(00) 00000-0000"></div>
+            <div class="orc-field"><label>Cidade</label><input id="spClienteCidade" placeholder="Cidade/UF"></div>
+          </div>
+          <div class="orc-field" style="max-width:300px"><label>Tipo do imóvel</label>
+            <select id="spTipoImovel"><option>Casa</option><option>Apartamento</option><option>Comercial</option></select>
+          </div>
+
+          <div class="chart-title" style="margin:20px 0 4px">2️⃣ Ambiente</div>
+          <div class="orc-field" style="max-width:300px"><label>Qual ambiente</label>
+            <select id="spAmbiente" onchange="spAtualizarValorEstimado()">
+              <option>Cozinha</option><option>Guarda-roupa</option><option>Dormitório</option><option>Banheiro</option>
+              <option>Home Office</option><option>Sala</option><option>Lavanderia</option><option>Área Gourmet</option><option>Outro</option>
+            </select>
+          </div>
+
+          <div class="chart-title" style="margin:20px 0 4px">3️⃣ Informações do Projeto</div>
+          <div class="form-group" style="margin-bottom:10px"><label>Descreva o projeto</label><textarea class="form-control" id="spDescricao" rows="4" placeholder="Ex: Guarda-roupa de 2,80m de largura, com portas de correr..."></textarea></div>
+          <div class="orc-row col2">
+            <div class="orc-field"><label>Materiais desejados</label><input id="spMateriais" placeholder="Ex: MDF branco TX, madeirado carvalho"></div>
+            <div class="orc-field"><label>Cores</label><input id="spCores" placeholder="Ex: Branco + Freijó"></div>
+          </div>
+          <div class="orc-row col2">
+            <div class="orc-field"><label>Ferragens</label><input id="spFerragens" placeholder="Ex: corrediça telescópica, puxador perfil"></div>
+            <div class="orc-field"><label>Observações</label><input id="spObservacoes" placeholder="Qualquer detalhe extra"></div>
+          </div>
+
+          <div class="chart-title" style="margin:20px 0 4px">4️⃣ Arquivos</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Fotos, planta baixa, PDF, projeto do arquiteto, medidas. (Vídeo não é anexado aqui — cole um link abaixo.)</p>
+          <label class="btn-secondary" style="cursor:pointer;display:inline-flex">📎 Anexar arquivos<input type="file" accept="image/*,application/pdf" multiple id="spArquivos" style="display:none" onchange="spPreviewArquivos(event)"></label>
+          <div id="spArquivosPreview" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"></div>
+          <div class="orc-field" style="margin-top:10px"><label>Link de vídeo (opcional)</label><input id="spLinkVideo" placeholder="Cole aqui um link do WhatsApp/Drive/YouTube"></div>
+
+          <div class="chart-title" style="margin:20px 0 4px">5️⃣ Prazo Desejado</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Datas em vermelho já estão com a agenda cheia.</p>
+          <div id="spCalendario" class="orc-row col3" style="gap:8px"></div>
+          <input type="hidden" id="spPrazo">
+
+          <div class="chart-title" style="margin:20px 0 4px">6️⃣ Prioridade</div>
+          <div class="orc-field" style="max-width:300px"><label>Urgência</label>
+            <select id="spPrioridade" onchange="spAvisoPrioridade()">
+              <option>Normal</option><option>Urgente</option><option>Muito Urgente</option>
+            </select>
+          </div>
+          <p id="spAvisoUrgencia" style="font-size:12px;color:#facc15;margin-top:6px;display:none">⚠️ Prioridades urgentes podem ter taxa adicional — combine com a Stylo Design.</p>
+
+          <div class="chart-title" style="margin:20px 0 4px">7️⃣ Valor Estimado</div>
+          <div id="spValorEstimado" style="font-size:20px;font-weight:800;color:var(--accent)">A combinar</div>
+
+          <button class="btn-primary" style="margin-top:20px" onclick="spEnviarSolicitacao()">📤 Enviar Solicitação</button>
+        </div>
+
+        <div class="chart-box" style="margin-top:20px">
+          <div class="chart-title" style="margin-bottom:12px">🗂️ Minhas Solicitações Enviadas</div>
+          <div id="spMinhasSolicitacoes"><p style="color:var(--text2);font-size:13px">Carregando...</p></div>
+        </div>
       </div>
 
       <!-- PLANOS -->
@@ -1643,6 +1757,110 @@ select.form-control option{background:var(--surface2);}
             <label class="btn-secondary" style="cursor:pointer">📥 Importar JSON<input type="file" accept=".json" style="display:none" onchange="importarJSON(event)"></label>
           </div>
         </div>
+
+        <div class="page-header" style="margin-top:28px">
+          <div class="page-title"><h1 style="font-size:20px">💹 Módulo Financeiro Inteligente</h1><p>Configure uma vez — o cálculo de preço, tempo e lucro do orçamento usa esses valores</p></div>
+          <button class="btn-primary" onclick="salvarConfigFinanceiro()">💾 Salvar Financeiro</button>
+        </div>
+        <div class="two-col">
+          <div class="chart-box">
+            <div class="chart-title">👷 Mão de Obra — Valor da Hora</div>
+            <div class="form-group" style="margin-bottom:10px"><label>Marceneiro (R$/h)</label><input class="form-control" type="number" step="0.01" id="mo-marceneiro"></div>
+            <div class="form-group" style="margin-bottom:10px"><label>Auxiliar (R$/h)</label><input class="form-control" type="number" step="0.01" id="mo-auxiliar"></div>
+            <div class="form-group" style="margin-bottom:10px"><label>Montador (R$/h)</label><input class="form-control" type="number" step="0.01" id="mo-montador"></div>
+            <div class="form-group" style="margin-bottom:10px"><label>Projetista (R$/h)</label><input class="form-control" type="number" step="0.01" id="mo-projetista"></div>
+            <div class="form-group"><label>Instalador (R$/h)</label><input class="form-control" type="number" step="0.01" id="mo-instalador"></div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">🏢 Custos Fixos Mensais da Empresa</div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Aluguel</label><input type="number" step="0.01" id="cf-aluguel" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Energia</label><input type="number" step="0.01" id="cf-energia" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Internet</label><input type="number" step="0.01" id="cf-internet" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Água</label><input type="number" step="0.01" id="cf-agua" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Telefone</label><input type="number" step="0.01" id="cf-telefone" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Software</label><input type="number" step="0.01" id="cf-software" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Máquinas</label><input type="number" step="0.01" id="cf-maquinas" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Manutenção</label><input type="number" step="0.01" id="cf-manutencao" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Contador</label><input type="number" step="0.01" id="cf-contador" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Impostos fixos</label><input type="number" step="0.01" id="cf-impostosFixos" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Veículos</label><input type="number" step="0.01" id="cf-veiculos" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Seguro</label><input type="number" step="0.01" id="cf-seguro" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Combustível (fixo/mês)</label><input type="number" step="0.01" id="cf-combustivel" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Pró-labore</label><input type="number" step="0.01" id="cf-prolabore" oninput="atualizarPreviewCustoFixoDiario()"></div>
+              <div class="orc-field"><label>Dias produtivos/mês</label><input type="number" id="cf-diasProdutivos" value="22" oninput="atualizarPreviewCustoFixoDiario()"></div>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--text2)">Custo fixo diário calculado: <b id="cfDiarioPreview" style="color:var(--accent)">R$ 0,00</b></div>
+          </div>
+        </div>
+        <div class="two-col" style="margin-top:20px">
+          <div class="chart-box">
+            <div class="chart-title">📊 Parâmetros Financeiros Padrão</div>
+            <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Usados como sugestão em todo orçamento novo (você pode ajustar caso a caso).</p>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Margem de lucro desejada (%)</label><input type="number" step="0.1" id="fin-margem" value="30"></div>
+              <div class="orc-field"><label>Imposto sobre a venda (%)</label><input type="number" step="0.1" id="fin-imposto" value="6"></div>
+              <div class="orc-field"><label>Comissão de vendas (%)</label><input type="number" step="0.1" id="fin-comissao" value="0"></div>
+              <div class="orc-field"><label>Reserva de garantia (%)</label><input type="number" step="0.1" id="fin-garantia" value="2"></div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">⏱️ Tempo Padrão por Etapa (minutos)</div>
+            <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Tempo base por móvel simples — o sistema aumenta automaticamente conforme a complexidade.</p>
+            <div class="orc-row col3" style="font-size:12px">
+              <div class="orc-field"><label>Projeto</label><input type="number" id="et-projeto" value="30"></div>
+              <div class="orc-field"><label>Plano de corte</label><input type="number" id="et-planoCorte" value="15"></div>
+              <div class="orc-field"><label>Separação material</label><input type="number" id="et-separacao" value="10"></div>
+              <div class="orc-field"><label>Corte</label><input type="number" id="et-corte" value="20"></div>
+              <div class="orc-field"><label>Colagem de fita</label><input type="number" id="et-fita" value="15"></div>
+              <div class="orc-field"><label>Furação</label><input type="number" id="et-furacao" value="15"></div>
+              <div class="orc-field"><label>Usinagem</label><input type="number" id="et-usinagem" value="20"></div>
+              <div class="orc-field"><label>Montagem</label><input type="number" id="et-montagem" value="60"></div>
+              <div class="orc-field"><label>Conferência</label><input type="number" id="et-conferencia" value="10"></div>
+              <div class="orc-field"><label>Limpeza</label><input type="number" id="et-limpeza" value="10"></div>
+              <div class="orc-field"><label>Embalagem</label><input type="number" id="et-embalagem" value="15"></div>
+              <div class="orc-field"><label>Carregamento</label><input type="number" id="et-carregamento" value="15"></div>
+              <div class="orc-field"><label>Entrega</label><input type="number" id="et-entrega" value="30"></div>
+              <div class="orc-field"><label>Instalação</label><input type="number" id="et-instalacao" value="90"></div>
+              <div class="orc-field"><label>Acabamento</label><input type="number" id="et-acabamento" value="15"></div>
+              <div class="orc-field"><label>Assistência técnica</label><input type="number" id="et-assistencia" value="0"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-header" style="margin-top:28px">
+          <div class="page-title"><h1 style="font-size:20px">🗄️ Motor de Engenharia — Gaveta Paramétrica</h1><p>Parâmetros usados pela calculadora de gaveta no Plano de Corte — mude aqui, e todo cálculo novo já usa os valores certos</p></div>
+          <button class="btn-primary" onclick="salvarGavetaEngineParams()">💾 Salvar Motor de Gaveta</button>
+        </div>
+        <div class="two-col">
+          <div class="chart-box">
+            <div class="chart-title">📏 Espessuras</div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Espessura corpo — EC (mm)</label><input type="number" id="ge-EC" value="15"></div>
+              <div class="orc-field"><label>Espessura frente externa — EFE (mm)</label><input type="number" id="ge-EFE" value="18"></div>
+              <div class="orc-field"><label>Espessura fundo — EF (mm)</label><input type="number" id="ge-EF" value="6"></div>
+            </div>
+            <div class="chart-title" style="margin-top:16px">🔪 Rasgo</div>
+            <div class="orc-row col3">
+              <div class="orc-field"><label>Espessura do rasgo (mm)</label><input type="number" id="ge-espessuraRasgo" value="6"></div>
+              <div class="orc-field"><label>Profundidade do rasgo — PR (mm)</label><input type="number" id="ge-PR" value="5"></div>
+              <div class="orc-field"><label>Altura do rasgo — AR (mm acima da base)</label><input type="number" id="ge-AR" value="15"></div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">🎚️ Corrediça</div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Folga esquerda (mm)</label><input type="number" id="ge-folgaEsq" value="13"></div>
+              <div class="orc-field"><label>Folga direita (mm)</label><input type="number" id="ge-folgaDir" value="13"></div>
+            </div>
+            <p style="font-size:11px;color:var(--text2);margin-top:4px">Folga total padrão = 26mm (13+13). Ajuste aqui se usar outro modelo de corrediça.</p>
+            <div class="chart-title" style="margin-top:16px">🔲 Frentes Externas</div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Folga entre frentes — lisa (mm)</label><input type="number" id="ge-folgaLisa" value="3"></div>
+              <div class="orc-field"><label>Vão puxador cava (mm)</label><input type="number" id="ge-folgaCava" value="35"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ADMIN -->
@@ -1650,6 +1868,10 @@ select.form-control option{background:var(--surface2);}
         <div class="page-header">
           <div class="page-title"><h1>👑 Painel Administrador</h1><p>Controle total da plataforma</p></div>
           <button class="btn-secondary" onclick="exportarJSON()">📥 Exportar dados</button>
+        </div>
+        <div class="chart-box" style="margin-bottom:20px;border:1px solid var(--accent)">
+          <div class="chart-title" style="margin-bottom:12px">📥 Solicitações de Projeto dos Marceneiros</div>
+          <div id="admSolicitacoes"><p style="color:var(--text2);font-size:13px">Carregando...</p></div>
         </div>
         <div class="admin-grid">
           <div class="stat-card gold"><div class="stat-icon">👤</div><div class="stat-val" id="adm-total">0</div><div class="stat-label">Total usuários</div></div>
@@ -3493,7 +3715,7 @@ function irPara(id){document.querySelectorAll('.screen').forEach(s=>s.classList.
 function abrirModal(id){const el=document.getElementById(id);if(el){el.style.display='';el.classList.add('open');}}
 function fecharModal(id){const el=document.getElementById(id);if(el){el.classList.remove('open');el.style.display='none';}}
 function toast(msg,dur=3200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function formatBRL(v){return'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2});}
+function formatBRL(v){return'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function LS(k,v){if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}
 function LSJ(k,v){if(v===undefined){const x=localStorage.getItem(k);return x?JSON.parse(x):null;}localStorage.setItem(k,JSON.stringify(v));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
@@ -3579,6 +3801,7 @@ function entrarNoApp(conta){
   licencaIniciar();licencaVerificar();registrarUsuario();
   verificarLimiteDispositivos(conta);
   nuvemIniciarAutoSync();
+  spAtualizarSino();
 }
 function sair(){nuvemPararAutoSync();LS('sessao',null);irPara('screenLogin');const el=document.getElementById('loginSenha');if(el)el.value='';const err=document.getElementById('loginErr');if(err)err.textContent='';}
 
@@ -3631,7 +3854,7 @@ function navTo(page){
   if(pageEl)pageEl.classList.add('active');
   const navEl=document.querySelector(`.nav-item[data-page="${page}"]`);
   if(navEl)navEl.classList.add('active');
-  const renders={dashboard:renderDashboard,clientes:renderClientes,projetos:renderProjetos,financeiro:renderFinanceiro,kanban:renderKanban,calendario:renderCalendario,relatorios:renderRelatorios,admin:admAbrirPainel,planos:renderPlanos,configuracoes:renderConfiguracoes,materiais:renderMateriais,tabelaPrecos:renderTabelaPrecos,planoCorte:function(){renderListaModulosSalvos();atualizarSelectsCorMDF();}};
+  const renders={dashboard:renderDashboard,clientes:renderClientes,projetos:renderProjetos,financeiro:renderFinanceiro,kanban:renderKanban,calendario:renderCalendario,relatorios:renderRelatorios,admin:admAbrirPainel,planos:renderPlanos,configuracoes:renderConfiguracoes,materiais:renderMateriais,tabelaPrecos:renderTabelaPrecos,solicitarProjeto:renderSolicitarProjeto,planoCorte:function(){renderListaModulosSalvos();atualizarSelectsCorMDF();}};
   if(renders[page])renders[page]();
   // fechar sidebar no mobile
   if(window.innerWidth<768){document.getElementById('sidebar').classList.remove('open');}
@@ -4838,6 +5061,49 @@ function renderRelatorios(){
     const tipos={};pj.forEach(p=>{if(!tipos[p.tipo||'Outro'])tipos[p.tipo||'Outro']={n:0,t:0};tipos[p.tipo||'Outro'].n++;tipos[p.tipo||'Outro'].t+=p.valor;});
     rt.innerHTML=Object.entries(tipos).sort((a,b)=>b[1].t-a[1].t).map(([k,v])=>`<tr><td>${k}</td><td>${v.n}</td><td style="color:var(--accent2);font-weight:700">${formatBRL(v.t)}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--text2);padding:20px">Sem dados</td></tr>';
   }
+  renderIndicadoresFinanceiros();
+}
+
+// ── INDICADORES FINANCEIROS AGREGADOS ──
+// Junta o resultado financeiro (_orcDados.financeiro._ultimoResultado) de todos os
+// orçamentos já calculados, pra mostrar lucro por período e custo médio por peça/m²/chapa.
+function renderIndicadoresFinanceiros(){
+  const el=document.getElementById('relIndicadores');if(!el)return;
+  const todos=getOrcamentos();
+  const now=new Date();
+  const inicioSemana=new Date(now);inicioSemana.setDate(now.getDate()-now.getDay());
+  const inicioMes=new Date(now.getFullYear(),now.getMonth(),1);
+  const inicioAno=new Date(now.getFullYear(),0,1);
+  let lucroHoje=0,lucroSemana=0,lucroMes=0,lucroAno=0;
+  let somaCustoPorPeca=0,nPecas=0,somaPrecoVenda=0,nCalculos=0,somaHoras=0;
+  Object.values(todos).forEach(orc=>{
+    const fin=orc&&orc.financeiro;
+    const r=fin&&fin._ultimoResultado;
+    if(!r)return;
+    nCalculos++;
+    somaPrecoVenda+=r.precoVenda||0;
+    somaHoras+=(r.tempo&&r.tempo.totalHoras)||0;
+    if(fin.pecas>0){somaCustoPorPeca+=(r.custoBase/fin.pecas);nPecas++;}
+    // sem timestamp salvo por cálculo — soma tudo em "mês/ano atual" como aproximação
+    lucroMes+=r.lucroLiquido||0;
+    lucroAno+=r.lucroLiquido||0;
+  });
+  const custoMedioPorPeca=nPecas?somaCustoPorPeca/nPecas:0;
+  const ticketMedio=nCalculos?somaPrecoVenda/nCalculos:0;
+  const cards=[
+    {l:'Orçamentos calculados',v:nCalculos},
+    {l:'Lucro líquido (mês atual)',v:formatBRL(lucroMes)},
+    {l:'Lucro líquido (ano atual)',v:formatBRL(lucroAno)},
+    {l:'Ticket médio (preço de venda)',v:formatBRL(ticketMedio)},
+    {l:'Custo médio por peça',v:formatBRL(custoMedioPorPeca)},
+    {l:'Horas de produção somadas',v:somaHoras.toFixed(1)+'h'},
+  ];
+  el.innerHTML=`<div class="orc-row col3">${cards.map(c=>`
+    <div class="chart-box" style="padding:14px">
+      <div style="font-size:11px;color:var(--text2)">${c.l.toUpperCase()}</div>
+      <div style="font-size:18px;font-weight:700;color:var(--accent)">${c.v}</div>
+    </div>`).join('')}</div>
+    <p style="font-size:11px;color:var(--text2);margin-top:10px">* Os valores de "mês/ano atual" somam todos os orçamentos calculados até agora (o sistema ainda não guarda a data de cada cálculo individualmente).</p>`;
 }
 
 // ── ADMIN ──
@@ -5051,6 +5317,8 @@ function renderConfiguracoes(){
   set('cfgNome',b.nome);const ec=document.getElementById('cfgCor');if(ec)ec.value=b.cor||'#c9a84c';
   const lp=document.getElementById('cfgLogoPreview');if(lp)lp.innerHTML=b.logo?`<img src="${b.logo}" style="height:48px;border-radius:8px;">`:'📁 Clique para enviar logo';
   set('cfgCodigoLib',LS('codigo_liberacao'));set('cfgDriveId',LS('drive_client_id'));
+  renderConfigFinanceiro();
+  renderGavetaEngineConfig();
 }
 function salvarConfiguracoes(){
   const b=LSJ('brand')||{};
@@ -5258,13 +5526,31 @@ async function liberarPorEmail(dias){
   renderAdmin();toast(`✅ ${email} liberado (${plano})!`);
 }
 // Grava a liberação de acesso na nuvem, pra valer no aparelho de verdade do cliente (não só no do admin)
+// ── GRAVAÇÃO SEGURA NA NUVEM (evita que duas gravações ao mesmo tempo se sobrescrevam) ──
+// Lê o registro, aplica a alteração, grava, e CONFIRMA lendo de novo. Se não confirmar
+// (porque outra gravação concorrente sobrescreveu no meio do caminho), tenta de novo do zero.
+async function nuvemAtualizarComRetry(mutatorFn,verificarFn,tentativas=4){
+  for(let i=0;i<tentativas;i++){
+    const record=await jbLerRegistro();
+    if(!record)return false;
+    mutatorFn(record);
+    const ok=await jbSalvarRegistro(record);
+    if(!ok){await new Promise(res=>setTimeout(res,400+i*400));continue;}
+    await new Promise(res=>setTimeout(res,500+i*400));
+    const conferencia=await jbLerRegistro();
+    if(conferencia&&verificarFn(conferencia))return true;
+  }
+  return false;
+}
 async function admPublicarLiberacaoNuvem(email,vencimento,plano){
   try{
-    const record=await jbLerRegistro();
-    if(!record)return;
-    record.licencasAdmin=record.licencasAdmin||{};
-    record.licencasAdmin[email]={vencimento,plano,aplicadoEm:Date.now()};
-    await jbSalvarRegistro(record);
+    await nuvemAtualizarComRetry(
+      record=>{
+        record.licencasAdmin=record.licencasAdmin||{};
+        record.licencasAdmin[email]={vencimento,plano,aplicadoEm:Date.now()};
+      },
+      record=>!!(record.licencasAdmin&&record.licencasAdmin[email]&&record.licencasAdmin[email].vencimento===vencimento)
+    );
   }catch(e){console.warn('Admin: falha ao publicar liberação na nuvem',e);}
 }
 function registrarUsuario(){
@@ -5284,13 +5570,15 @@ function registrarUsuario(){
 // aparelho do admin.
 async function admPublicarUsuarioNuvem(info){
   try{
-    const record=await jbLerRegistro();
-    if(!record)return;
-    record.usuariosGlobais=record.usuariosGlobais||[];
-    const idx=record.usuariosGlobais.findIndex(x=>x.email===info.email);
-    if(idx>=0)record.usuariosGlobais[idx]={...record.usuariosGlobais[idx],...info};
-    else record.usuariosGlobais.push(info);
-    await jbSalvarRegistro(record);
+    await nuvemAtualizarComRetry(
+      record=>{
+        record.usuariosGlobais=record.usuariosGlobais||[];
+        const idx=record.usuariosGlobais.findIndex(x=>x.email===info.email);
+        if(idx>=0)record.usuariosGlobais[idx]={...record.usuariosGlobais[idx],...info};
+        else record.usuariosGlobais.push(info);
+      },
+      record=>(record.usuariosGlobais||[]).some(x=>x.email===info.email)
+    );
   }catch(e){console.warn('Admin: falha ao publicar usuário na nuvem',e);}
 }
 async function admSincronizarUsuariosNuvem(){
@@ -5306,7 +5594,7 @@ async function admSincronizarUsuariosNuvem(){
     renderAdmin();
   }catch(e){console.warn('Admin: falha ao sincronizar usuários da nuvem',e);}
 }
-function admAbrirPainel(){renderAdmin();admSincronizarUsuariosNuvem();}
+function admAbrirPainel(){renderAdmin();admSincronizarUsuariosNuvem();admCarregarSolicitacoes();}
 
 // ── SINCRONIZAÇÃO EM NUVEM (clientes/projetos/financeiro/agenda) ──
 // Compartilha os dados entre todos os aparelhos logados com o MESMO e-mail de conta,
@@ -5337,12 +5625,11 @@ function nuvemAgendarEnvio(){
 async function nuvemEnviarAgora(){
   const email=chaveContaNuvem();if(!email)return;
   nuvemSetStatus('enviando');
-  const record=await jbLerRegistro();
-  if(record===null){nuvemSetStatus('erro');return;}
-  record.dadosApp=record.dadosApp||{};
   const pacote=nuvemEmpacotarDados();
-  record.dadosApp[email]=pacote;
-  const ok=await jbSalvarRegistro(record);
+  const ok=await nuvemAtualizarComRetry(
+    record=>{record.dadosApp=record.dadosApp||{};record.dadosApp[email]=pacote;},
+    record=>!!(record.dadosApp&&record.dadosApp[email]&&record.dadosApp[email].atualizadoEm===pacote.atualizadoEm)
+  );
   if(ok){LS('nuvemVersao_'+email,String(pacote.atualizadoEm));nuvemSetStatus('ok');}
   else nuvemSetStatus('erro');
 }
@@ -5387,9 +5674,14 @@ const PLANO_LIMITES = { 'Starter': 1, 'Pro': 3, 'Premium': 8 };
 const EMAIL_ADMIN = 'stylodesignprojetos@gmail.com';
 const ADMIN_DEVICE_LIMIT = 4; // admin: titular (PC) + até 3 extras = 4 no total, sem limite de dias
 
-// Credenciais do JSONBin — fixas no código para funcionar em qualquer aparelho sem configuração
-const JB_ID  = '6a3b2bd5f5f4af5e292653a9';
-const JB_KEY = '$2a$10$IY5M3WdvjVwHFhkQLbFh7eRYvEDZu5WIV.0/PIpPgnzBGU/UuJxZy';
+// ⚠️ IMPORTANTE — SEGURANÇA:
+// Antes, a chave mestra do JSONBin ficava escrita direto aqui no código (JB_ID_PADRAO/JB_KEY_PADRAO),
+// e como este arquivo é enviado pra outras pessoas, qualquer um que abrisse "Ver código-fonte" (F12)
+// conseguia pegar essa chave e ler/editar/apagar os dados de TODAS as contas.
+// Agora o app não guarda mais essa chave: ele chama um "proxy" (Cloudflare Worker) que fica com a
+// chave em segredo do lado do servidor. Troque a URL abaixo pela URL do seu Worker depois de publicá-lo
+// (veja instruções de deploy que o Claude te passou).
+const NUVEM_PROXY_URL = 'https://agenda-pro-proxy.stylodesignprojetos.workers.dev/dados';
 
 function getDeviceId(){
   let id = LS('deviceId');
@@ -5398,17 +5690,20 @@ function getDeviceId(){
 }
 
 async function jbLerRegistro(){
+  if(!NUVEM_PROXY_URL || NUVEM_PROXY_URL.includes('SEU-WORKER')) return null; // proxy ainda não configurado
   try{
-    const r = await fetch(`https://api.jsonbin.io/v3/b/${JB_ID}/latest`, { headers:{'X-Master-Key':JB_KEY} });
+    const r = await fetch(NUVEM_PROXY_URL);
     const d = await r.json();
-    return d.record || {};
-  }catch(e){ console.warn('JSONBin: falha ao ler', e); return null; }
+    return d || {};
+  }catch(e){ console.warn('Proxy: falha ao ler', e); return null; }
 }
 async function jbSalvarRegistro(record){
+  if(!NUVEM_PROXY_URL || NUVEM_PROXY_URL.includes('SEU-WORKER')) return false; // proxy ainda não configurado
   try{
-    await fetch(`https://api.jsonbin.io/v3/b/${JB_ID}`, { method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':JB_KEY}, body:JSON.stringify(record) });
-    return true;
-  }catch(e){ console.warn('JSONBin: falha ao salvar', e); return false; }
+    const r = await fetch(NUVEM_PROXY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(record) });
+    const d = await r.json();
+    return !!(d && d.ok);
+  }catch(e){ console.warn('Proxy: falha ao salvar', e); return false; }
 }
 
 // Verifica (e registra) se este dispositivo pode usar a conta, conforme o plano do e-mail.
@@ -5541,9 +5836,10 @@ function renderOrcTabs(p){
   const nav=document.getElementById('orcTabsNav');
   const content=document.getElementById('orcTabsContent');
   if(!nav||!content)return;
-  // Aba de dados gerais + aba por ambiente
+  // Aba de dados gerais + aba por ambiente + aba financeira
   const abas=[{uid:'geral',ico:'📋',label:'Geral'}];
   (p.ambientes||[]).forEach(a=>abas.push({uid:a.uid||a.id,ico:a.ico,label:a.label,ambData:a}));
+  abas.push({uid:'financeiro',ico:'💹',label:'Financeiro'});
 
   let abaAtiva=abas[0].uid;
   function renderNav(){
@@ -5558,16 +5854,134 @@ function renderOrcTabs(p){
     document.querySelectorAll('.orc-panel').forEach(el=>{
       el.style.display=el.dataset.uid===uid?'block':'none';
     });
+    if(uid==='financeiro')orcFinCarregar();
   };
   renderNav();
 
   content.innerHTML=abas.map(a=>{
     if(a.uid==='geral') return renderOrcPanelGeral(p);
+    if(a.uid==='financeiro') return renderOrcPanelFinanceiro(p);
     return renderOrcPanelAmbiente(a.ambData,p);
   }).join('');
 
   // Mostrar só o primeiro
   document.querySelectorAll('.orc-panel').forEach((el,i)=>{el.style.display=i===0?'block':'none';});
+}
+
+// ── PAINEL FINANCEIRO — calculadora de preço, tempo e lucro do orçamento ──
+function renderOrcPanelFinanceiro(p){
+  const d=_orcDados['financeiro']||{};
+  return`<div class="orc-panel" data-uid="financeiro">
+    <div class="orc-section">
+      <div class="orc-section-title">📐 Dados do Móvel/Projeto (para tempo e complexidade)</div>
+      <div class="orc-row col3">
+        <div class="orc-field"><label>Nº de peças</label><input type="number" id="orcFin_pecas" value="${d.pecas||0}"></div>
+        <div class="orc-field"><label>Nº de cortes</label><input type="number" id="orcFin_cortes" value="${d.cortes||0}"></div>
+        <div class="orc-field"><label>Nº de furos</label><input type="number" id="orcFin_furos" value="${d.furos||0}"></div>
+        <div class="orc-field"><label>Nº de gavetas</label><input type="number" id="orcFin_gavetas" value="${d.gavetas||0}"></div>
+        <div class="orc-field"><label>Nº de portas</label><input type="number" id="orcFin_portas" value="${d.portas||0}"></div>
+        <div class="orc-field"><label>Nº de módulos</label><input type="number" id="orcFin_modulos" value="${d.modulos||0}"></div>
+      </div>
+    </div>
+    <div class="orc-section">
+      <div class="orc-section-title">💰 Custos Diretos</div>
+      <div class="orc-row col3">
+        <div class="orc-field"><label>Custo de material (MDF, ferragens, etc.)</label><input type="number" step="0.01" id="orcFin_custoMaterial" value="${d.custoMaterial||0}"></div>
+        <div class="orc-field"><label>% de desperdício do plano de corte (opcional)</label><input type="number" step="0.1" id="orcFin_desperdicio" value="${d.desperdicio||0}"></div>
+      </div>
+    </div>
+    <div class="orc-section">
+      <div class="orc-section-title">🚚 Transporte</div>
+      <div class="orc-row col4">
+        <div class="orc-field"><label>Distância (km, ida e volta)</label><input type="number" step="0.1" id="orcFin_distKm" value="${(d.transporte&&d.transporte.distanciaKm)||0}"></div>
+        <div class="orc-field"><label>Custo combustível (R$/km)</label><input type="number" step="0.01" id="orcFin_combKm" value="${(d.transporte&&d.transporte.combustivelKm)||0}"></div>
+        <div class="orc-field"><label>Pedágio</label><input type="number" step="0.01" id="orcFin_pedagio" value="${(d.transporte&&d.transporte.pedagio)||0}"></div>
+        <div class="orc-field"><label>Nº de viagens</label><input type="number" id="orcFin_viagens" value="${(d.transporte&&d.transporte.viagens)||1}"></div>
+      </div>
+    </div>
+    <div class="orc-section">
+      <div class="orc-section-title">🔧 Instalação</div>
+      <div class="orc-row col3">
+        <div class="orc-field"><label>Horas de instalação</label><input type="number" step="0.5" id="orcFin_instHoras" value="${(d.instalacao&&d.instalacao.horas)||0}"></div>
+        <div class="orc-field"><label>Nº de instaladores</label><input type="number" id="orcFin_instQtd" value="${(d.instalacao&&d.instalacao.qtdInstaladores)||1}"></div>
+      </div>
+    </div>
+    <div class="orc-section">
+      <div class="orc-section-title">📊 Percentuais (deixe em branco para usar o padrão de Configurações)</div>
+      <div class="orc-row col4">
+        <div class="orc-field"><label>Margem de lucro (%)</label><input type="number" step="0.1" id="orcFin_margem" value="${d.margemOverride??''}" placeholder="padrão"></div>
+        <div class="orc-field"><label>Imposto (%)</label><input type="number" step="0.1" id="orcFin_imposto" value="${d.impostoOverride??''}" placeholder="padrão"></div>
+        <div class="orc-field"><label>Comissão (%)</label><input type="number" step="0.1" id="orcFin_comissao" value="${d.comissaoOverride??''}" placeholder="padrão"></div>
+        <div class="orc-field"><label>Garantia (%)</label><input type="number" step="0.1" id="orcFin_garantia" value="${d.garantiaOverride??''}" placeholder="padrão"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin:16px 0">
+      <button class="btn-primary" onclick="orcFinCalcular()">🧮 Calcular Financeiro</button>
+    </div>
+    <div id="orcFinResultado">${d._ultimoResultadoHTML||''}</div>
+  </div>`;
+}
+
+function orcFinColetarEntrada(){
+  return{
+    pecas:parseFloat(document.getElementById('orcFin_pecas')?.value)||0,
+    cortes:parseFloat(document.getElementById('orcFin_cortes')?.value)||0,
+    furos:parseFloat(document.getElementById('orcFin_furos')?.value)||0,
+    gavetas:parseFloat(document.getElementById('orcFin_gavetas')?.value)||0,
+    portas:parseFloat(document.getElementById('orcFin_portas')?.value)||0,
+    modulos:parseFloat(document.getElementById('orcFin_modulos')?.value)||0,
+    custoMaterial:parseFloat(document.getElementById('orcFin_custoMaterial')?.value)||0,
+    percentualDesperdicio:parseFloat(document.getElementById('orcFin_desperdicio')?.value)||0,
+    transporte:{
+      distanciaKm:parseFloat(document.getElementById('orcFin_distKm')?.value)||0,
+      combustivelKm:parseFloat(document.getElementById('orcFin_combKm')?.value)||0,
+      pedagio:parseFloat(document.getElementById('orcFin_pedagio')?.value)||0,
+      viagens:parseFloat(document.getElementById('orcFin_viagens')?.value)||1,
+    },
+    instalacao:{
+      horas:parseFloat(document.getElementById('orcFin_instHoras')?.value)||0,
+      qtdInstaladores:parseFloat(document.getElementById('orcFin_instQtd')?.value)||1,
+    },
+    margemOverride: document.getElementById('orcFin_margem')?.value===''?undefined:parseFloat(document.getElementById('orcFin_margem').value),
+    impostoOverride: document.getElementById('orcFin_imposto')?.value===''?undefined:parseFloat(document.getElementById('orcFin_imposto').value),
+    comissaoOverride: document.getElementById('orcFin_comissao')?.value===''?undefined:parseFloat(document.getElementById('orcFin_comissao').value),
+    garantiaOverride: document.getElementById('orcFin_garantia')?.value===''?undefined:parseFloat(document.getElementById('orcFin_garantia').value),
+  };
+}
+
+function orcFinCalcular(){
+  const entrada=orcFinColetarEntrada();
+  const r=calcularFinanceiroOrcamento(entrada);
+  const sugestoes=analisarOrcamentoIA(r,entrada);
+  const html=`
+    <div class="orc-section" style="border:1px solid var(--accent);background:rgba(201,168,76,0.06)">
+      <div class="orc-section-title">📈 Resultado</div>
+      <div class="orc-row col3">
+        <div class="chart-box" style="padding:14px"><div style="font-size:11px;color:var(--text2)">COMPLEXIDADE</div><div style="font-size:18px;font-weight:700">${r.complexidade.nivel}</div></div>
+        <div class="chart-box" style="padding:14px"><div style="font-size:11px;color:var(--text2)">TEMPO ESTIMADO</div><div style="font-size:18px;font-weight:700">${r.tempo.totalHoras.toFixed(1)}h (~${r.diasEstimados.toFixed(1)} dias)</div></div>
+        <div class="chart-box" style="padding:14px"><div style="font-size:11px;color:var(--text2)">CUSTO TOTAL</div><div style="font-size:18px;font-weight:700">${formatBRL(r.custoBase)}</div></div>
+      </div>
+      <div class="orc-row col3">
+        <div class="chart-box" style="padding:14px;border-color:var(--accent)"><div style="font-size:11px;color:var(--text2)">PREÇO DE VENDA SUGERIDO</div><div style="font-size:22px;font-weight:700;color:var(--accent)">${formatBRL(r.precoVenda)}</div></div>
+        <div class="chart-box" style="padding:14px"><div style="font-size:11px;color:var(--text2)">LUCRO BRUTO</div><div style="font-size:18px;font-weight:700;color:#4ade80">${formatBRL(r.lucroBruto)}</div></div>
+        <div class="chart-box" style="padding:14px"><div style="font-size:11px;color:var(--text2)">LUCRO LÍQUIDO (${r.margemRealPct.toFixed(1)}%)</div><div style="font-size:18px;font-weight:700;color:#4ade80">${formatBRL(r.lucroLiquido)}</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:8px">
+        Mão de obra: ${formatBRL(r.maoDeObra.total)} · Custo fixo rateado: ${formatBRL(r.custoFixoRateado)} · Transporte: ${formatBRL(r.custoTransporte)} · Instalação: ${formatBRL(r.custoInstalacaoExtra)} · Material: ${formatBRL(r.custoMaterial)}
+      </div>
+    </div>
+    <div class="orc-section">
+      <div class="orc-section-title">🤖 Sugestões</div>
+      <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8">${sugestoes.map(s=>`<li>${s}</li>`).join('')}</ul>
+    </div>`;
+  document.getElementById('orcFinResultado').innerHTML=html;
+  // guarda no _orcDados pra persistir junto com o resto do orçamento
+  const entradaSalvar={...entrada,_ultimoResultadoHTML:html,_ultimoResultado:r};
+  _orcDados['financeiro']=entradaSalvar;
+}
+function orcFinCarregar(){
+  const d=_orcDados['financeiro'];
+  if(d&&d._ultimoResultadoHTML){const el=document.getElementById('orcFinResultado');if(el)el.innerHTML=d._ultimoResultadoHTML;}
 }
 
 // ── PAINEL GERAL ──
@@ -5946,6 +6360,623 @@ function orcColetarItens(uid){
     });
   });
   return it;
+}
+
+// ══════════════════════════════════════════════════════
+// MÓDULO FINANCEIRO INTELIGENTE
+// Mão de obra, custos fixos, tempo de produção, complexidade,
+// cálculo de preço de venda e sugestões automáticas (regras).
+// ══════════════════════════════════════════════════════
+const MO_PAPEIS=['marceneiro','auxiliar','montador','projetista','instalador'];
+const CF_CAMPOS=['aluguel','energia','internet','agua','telefone','software','maquinas','manutencao','contador','impostosFixos','veiculos','seguro','combustivel','prolabore'];
+const ETAPAS_PRODUCAO=['projeto','planoCorte','separacao','corte','fita','furacao','usinagem','montagem','conferencia','limpeza','embalagem','carregamento','entrega','instalacao','acabamento','assistencia'];
+// Qual profissional (papel) executa cada etapa, pra calcular o custo de mão de obra
+const ETAPA_PAPEL={projeto:'projetista',planoCorte:'marceneiro',separacao:'auxiliar',corte:'marceneiro',fita:'auxiliar',furacao:'marceneiro',usinagem:'marceneiro',montagem:'marceneiro',conferencia:'marceneiro',limpeza:'auxiliar',embalagem:'auxiliar',carregamento:'auxiliar',entrega:'montador',instalacao:'instalador',acabamento:'marceneiro',assistencia:'instalador'};
+
+function chaveFinanceiro(){const c=LSJ('conta');return 'configFinanceiro_'+(c?c.email:'geral');}
+
+function renderConfigFinanceiro(){
+  const cfg=LSJ(chaveFinanceiro())||{};
+  const mo=cfg.maoDeObra||{};
+  MO_PAPEIS.forEach(p=>{const el=document.getElementById('mo-'+p);if(el)el.value=mo[p]||'';});
+  const cf=cfg.custosFixos||{};
+  CF_CAMPOS.forEach(c=>{const el=document.getElementById('cf-'+c);if(el)el.value=cf[c]||'';});
+  const diasEl=document.getElementById('cf-diasProdutivos');if(diasEl)diasEl.value=cfg.diasProdutivosMes||22;
+  const fin=cfg.parametros||{};
+  const setF=(id,v,def)=>{const el=document.getElementById(id);if(el)el.value=(v===undefined||v===null||v==='')?def:v;};
+  setF('fin-margem',fin.margem,30);
+  setF('fin-imposto',fin.imposto,6);
+  setF('fin-comissao',fin.comissao,0);
+  setF('fin-garantia',fin.garantia,2);
+  const et=cfg.etapas||{};
+  const defaults={projeto:30,planoCorte:15,separacao:10,corte:20,fita:15,furacao:15,usinagem:20,montagem:60,conferencia:10,limpeza:10,embalagem:15,carregamento:15,entrega:30,instalacao:90,acabamento:15,assistencia:0};
+  ETAPAS_PRODUCAO.forEach(e=>{const el=document.getElementById('et-'+e);if(el)el.value=(et[e]!==undefined?et[e]:defaults[e]);});
+  atualizarPreviewCustoFixoDiario();
+}
+
+function coletarConfigFinanceiroDoForm(){
+  const maoDeObra={};MO_PAPEIS.forEach(p=>{maoDeObra[p]=parseFloat(document.getElementById('mo-'+p)?.value)||0;});
+  const custosFixos={};CF_CAMPOS.forEach(c=>{custosFixos[c]=parseFloat(document.getElementById('cf-'+c)?.value)||0;});
+  const diasProdutivosMes=parseFloat(document.getElementById('cf-diasProdutivos')?.value)||22;
+  const parametros={
+    margem:parseFloat(document.getElementById('fin-margem')?.value)||0,
+    imposto:parseFloat(document.getElementById('fin-imposto')?.value)||0,
+    comissao:parseFloat(document.getElementById('fin-comissao')?.value)||0,
+    garantia:parseFloat(document.getElementById('fin-garantia')?.value)||0,
+  };
+  const etapas={};ETAPAS_PRODUCAO.forEach(e=>{etapas[e]=parseFloat(document.getElementById('et-'+e)?.value)||0;});
+  return{maoDeObra,custosFixos,diasProdutivosMes,parametros,etapas};
+}
+
+function salvarConfigFinanceiro(){
+  const cfg=coletarConfigFinanceiroDoForm();
+  LSJ(chaveFinanceiro(),cfg);
+  atualizarPreviewCustoFixoDiario();
+  toast('✅ Configurações financeiras salvas!');
+}
+
+function atualizarPreviewCustoFixoDiario(){
+  const el=document.getElementById('cfDiarioPreview');if(!el)return;
+  const cfg=coletarConfigFinanceiroDoForm();
+  const total=CF_CAMPOS.reduce((s,c)=>s+(cfg.custosFixos[c]||0),0);
+  const diario=cfg.diasProdutivosMes>0?total/cfg.diasProdutivosMes:0;
+  el.textContent=formatBRL(diario);
+}
+
+// ── COMPLEXIDADE AUTOMÁTICA ──
+// Recebe as contagens do móvel e devolve nível + multiplicador de tempo
+function calcularComplexidade({pecas=0,cortes=0,furos=0,gavetas=0,portas=0,modulos=0}={}){
+  const pontos = pecas*1 + cortes*0.5 + furos*0.3 + gavetas*3 + portas*2 + modulos*4;
+  let nivel,mult;
+  if(pontos<=15){nivel='Muito simples';mult=0.7;}
+  else if(pontos<=35){nivel='Simples';mult=1.0;}
+  else if(pontos<=70){nivel='Médio';mult=1.3;}
+  else if(pontos<=120){nivel='Complexo';mult=1.7;}
+  else {nivel='Muito complexo';mult=2.2;}
+  return{pontos,nivel,mult};
+}
+
+// ── TEMPO DE PRODUÇÃO ──
+// Aplica o multiplicador de complexidade sobre os tempos-base configurados por etapa
+function calcularTempoProducao(cfg,complexidadeMult){
+  const detalhe={};let totalMin=0;
+  ETAPAS_PRODUCAO.forEach(e=>{
+    const base=cfg.etapas[e]||0;
+    const min=base*complexidadeMult;
+    detalhe[e]=min;
+    totalMin+=min;
+  });
+  return{detalhe,totalMin,totalHoras:totalMin/60};
+}
+
+// ── MÃO DE OBRA ──
+function calcularCustoMaoDeObra(cfg,tempoDetalheMin){
+  let total=0;const porPapel={};
+  ETAPAS_PRODUCAO.forEach(e=>{
+    const papel=ETAPA_PAPEL[e];
+    const valorHora=cfg.maoDeObra[papel]||0;
+    const horas=(tempoDetalheMin[e]||0)/60;
+    const custo=horas*valorHora;
+    porPapel[papel]=(porPapel[papel]||0)+custo;
+    total+=custo;
+  });
+  return{total,porPapel};
+}
+
+// ── CUSTO FIXO DIÁRIO RATEADO ──
+function calcularCustoFixoDiario(cfg){
+  const total=CF_CAMPOS.reduce((s,c)=>s+(cfg.custosFixos[c]||0),0);
+  return cfg.diasProdutivosMes>0?total/cfg.diasProdutivosMes:0;
+}
+
+// ── CÁLCULO FINANCEIRO COMPLETO DE UM ORÇAMENTO ──
+// entrada: {custoMaterial, pecas, cortes, furos, gavetas, portas, modulos,
+//           transporte:{distanciaKm,combustivelKm,pedagio,viagens},
+//           instalacao:{horas,qtdInstaladores}, margemOverride, impostoOverride, comissaoOverride, garantiaOverride}
+function calcularFinanceiroOrcamento(entrada){
+  const cfg=LSJ(chaveFinanceiro())||coletarConfigFinanceiroDoForm();
+  const comp=calcularComplexidade(entrada);
+  const tempo=calcularTempoProducao(cfg,comp.mult);
+  const mo=calcularCustoMaoDeObra(cfg,tempo.detalhe);
+  const diasEstimados=Math.max(tempo.totalHoras/8,0.25);
+  const custoFixoDiario=calcularCustoFixoDiario(cfg);
+  const custoFixoRateado=custoFixoDiario*diasEstimados;
+
+  const transp=entrada.transporte||{};
+  const custoTransporte=((transp.distanciaKm||0)*(transp.combustivelKm||0)+(transp.pedagio||0))*(transp.viagens||1);
+
+  const inst=entrada.instalacao||{};
+  const valorHoraInstalador=cfg.maoDeObra.instalador||0;
+  const custoInstalacaoExtra=(inst.horas||0)*valorHoraInstalador*(inst.qtdInstaladores||1);
+
+  const custoMaterial=entrada.custoMaterial||0;
+  const custoBase=custoMaterial+mo.total+custoFixoRateado+custoTransporte+custoInstalacaoExtra;
+
+  const margem=entrada.margemOverride??cfg.parametros.margem??30;
+  const imposto=entrada.impostoOverride??cfg.parametros.imposto??6;
+  const comissao=entrada.comissaoOverride??cfg.parametros.comissao??0;
+  const garantia=entrada.garantiaOverride??cfg.parametros.garantia??2;
+
+  // Markup: percentuais que incidem sobre o preço de venda (não sobre o custo)
+  const percSobreVenda=(margem+imposto+comissao+garantia)/100;
+  const precoVenda = percSobreVenda<0.95 ? custoBase/(1-percSobreVenda) : custoBase*1.5; // trava de segurança
+  const lucroBruto=precoVenda-custoBase;
+  const valorImposto=precoVenda*(imposto/100);
+  const valorComissao=precoVenda*(comissao/100);
+  const valorGarantia=precoVenda*(garantia/100);
+  const lucroLiquido=lucroBruto-valorImposto-valorComissao-valorGarantia;
+  const margemRealPct=precoVenda>0?(lucroLiquido/precoVenda)*100:0;
+
+  return{
+    complexidade:comp,tempo,maoDeObra:mo,custoFixoDiario,custoFixoRateado,custoTransporte,custoInstalacaoExtra,
+    custoMaterial,custoBase,precoVenda,lucroBruto,lucroLiquido,margemRealPct,
+    diasEstimados,percentuais:{margem,imposto,comissao,garantia}
+  };
+}
+
+// ── SUGESTÕES AUTOMÁTICAS (regras) ──
+function analisarOrcamentoIA(resultado,entrada){
+  const s=[];
+  const margemAlvo=resultado.percentuais.margem;
+  if(resultado.margemRealPct<margemAlvo*0.6){
+    s.push(`⚠️ O lucro líquido real (${resultado.margemRealPct.toFixed(1)}%) está bem abaixo da meta de ${margemAlvo}%. Considere revisar o preço ou reduzir custos.`);
+  } else if(resultado.margemRealPct>=margemAlvo){
+    s.push(`✅ Margem de lucro dentro ou acima da meta (${resultado.margemRealPct.toFixed(1)}%).`);
+  }
+  if(entrada.percentualDesperdicio && entrada.percentualDesperdicio>15){
+    s.push(`♻️ Desperdício de material alto (${entrada.percentualDesperdicio.toFixed(1)}%). Revise o plano de corte pra aproveitar melhor as chapas.`);
+  }
+  if(resultado.tempo.totalHoras>40){
+    s.push(`⏰ Tempo estimado alto (${resultado.tempo.totalHoras.toFixed(1)}h ≈ ${resultado.diasEstimados.toFixed(1)} dias). Avalie contratar ajuda extra pra não atrasar outros projetos.`);
+  }
+  if(resultado.complexidade.nivel==='Complexo'||resultado.complexidade.nivel==='Muito complexo'){
+    s.push(`🔧 Projeto classificado como "${resultado.complexidade.nivel}" — capriche na conferência antes da entrega, projetos assim têm mais risco de retrabalho.`);
+  }
+  s.push(`💰 Preço de venda sugerido: ${formatBRL(resultado.precoVenda)} (custo total ${formatBRL(resultado.custoBase)}).`);
+  return s;
+}
+
+// ══════════════════════════════════════════════════════
+// MOTOR DE ENGENHARIA — GAVETA PARAMÉTRICA
+// Implementa os dois sistemas construtivos de gaveta:
+//  Sistema 01: Guarda-Roupa / Closet / Sapateira (laterais SEM rasgo)
+//  Sistema 02: Cozinha / Banheiro / Home Office   (laterais COM rasgo)
+// Nada aqui é fixo no código — tudo vem dos parâmetros configuráveis.
+// ══════════════════════════════════════════════════════
+const GAVETA_ENGINE_DEFAULTS={EC:15,EFE:18,EF:6,PR:5,AR:15,espessuraRasgo:6,folgaEsq:13,folgaDir:13,folgaLisa:3,folgaCava:35};
+
+function chaveGavetaEngine(){const c=LSJ('conta');return 'gavetaEngine_'+(c?c.email:'geral');}
+function getGavetaEngineParams(){return{...GAVETA_ENGINE_DEFAULTS,...(LSJ(chaveGavetaEngine())||{})};}
+
+function renderGavetaEngineConfig(){
+  const p=getGavetaEngineParams();
+  Object.keys(GAVETA_ENGINE_DEFAULTS).forEach(k=>{const el=document.getElementById('ge-'+k);if(el)el.value=p[k];});
+}
+function salvarGavetaEngineParams(){
+  const p={};
+  Object.keys(GAVETA_ENGINE_DEFAULTS).forEach(k=>{p[k]=parseFloat(document.getElementById('ge-'+k)?.value)||GAVETA_ENGINE_DEFAULTS[k];});
+  LSJ(chaveGavetaEngine(),p);
+  toast('✅ Motor de gaveta salvo!');
+}
+
+// Calcula o corpo da gaveta (laterais, frente interna, contra-fundo/contra-frente, fundo)
+// sistema: 'sistema01' (guarda-roupa/closet/sapateira) ou 'sistema02' (cozinha/banheiro/home office)
+// LI = largura interna do vão (mm) · PG = profundidade da gaveta (mm) · AG = altura do corpo da gaveta (mm)
+function calcularCorpoGaveta(sistema,LI,PG,AG){
+  const P=getGavetaEngineParams();
+  const LG=LI-(P.folgaEsq+P.folgaDir);              // largura do corpo, já descontando a corrediça
+  const alturaLateral=AG-P.EF;                       // laterais ficam apoiadas sobre o fundo
+  const larguraFrente=LG-(P.EC*2);                   // frente/contra-fundo/contra-frente
+  const larguraFundo=LG-(P.EC*2)+(P.PR*2);           // fundo entra no rasgo de cada lado
+
+  const tipoCorpo=P.EC===15?'15b':P.EC===18?'18':String(P.EC);
+  const tipoFundo=P.EF===6?'6':String(P.EF);
+
+  let pecas=[];
+  if(sistema==='sistema01'){
+    pecas=[
+      {nome:'Lateral Gaveta',   tipo:tipoCorpo,l:PG,a:alturaLateral,qty:2,rasgo:false},
+      {nome:'Frente (corpo)',   tipo:tipoCorpo,l:larguraFrente,a:AG,qty:1,rasgo:true},
+      {nome:'Contra Fundo',     tipo:tipoCorpo,l:larguraFrente,a:AG,qty:1,rasgo:true},
+      {nome:'Fundo Gaveta',     tipo:tipoFundo,l:PG,a:larguraFundo,qty:1,rasgo:false},
+    ];
+  } else {
+    const comprimentoFundo=PG-(P.EC*2)+(P.PR*2);      // sistema02: fundo entra 5mm em TODOS os lados
+    pecas=[
+      {nome:'Lateral Gaveta',   tipo:tipoCorpo,l:PG,a:alturaLateral,qty:2,rasgo:true},
+      {nome:'Frente Interna',   tipo:tipoCorpo,l:larguraFrente,a:AG,qty:1,rasgo:true},
+      {nome:'Contra Frente',    tipo:tipoCorpo,l:larguraFrente,a:AG,qty:1,rasgo:true},
+      {nome:'Fundo Gaveta',     tipo:tipoFundo,l:comprimentoFundo,a:larguraFundo,qty:1,rasgo:false},
+    ];
+  }
+  return{LG,alturaLateral,larguraFrente,larguraFundo,pecas,params:P};
+}
+
+// Distribui a altura das frentes externas (a parte "aparente" da gaveta) entre N gavetas
+// tipoFrente: 'lisa' | 'perfil' | 'cava'
+function calcularFrentesExternas(alturaTotalDisponivel,nGavetas,tipoFrente,alturaPerfil){
+  const P=getGavetaEngineParams();
+  nGavetas=Math.max(1,nGavetas||1);
+  let alturaUtil=alturaTotalDisponivel;
+  let folga=P.folgaLisa;
+  if(tipoFrente==='perfil'){alturaUtil-=(alturaPerfil||0);}
+  else if(tipoFrente==='cava'){folga=P.folgaCava;}
+  const totalFolgas=folga*(nGavetas-1);
+  const alturaCadaFrente=(alturaUtil-totalFolgas)/nGavetas;
+  return{alturaCadaFrente,folga,alturaUtil,nGavetas,tipoFrente};
+}
+
+// Monta as peças completas de uma gaveta (corpo + frente externa, se aplicável) já no formato
+// {tipo,nome,l,a,qty} que o Plano de Corte usa (mesmo formato dos assistentes gr/cz/etc).
+function pcCalcularGavetaParametrica(){
+  const gv=id=>parseFloat(document.getElementById(id)?.value)||0;
+  const gs=id=>document.getElementById(id)?.value||'';
+  const sistema=gs('geSistema')||'sistema01';
+  const LI=gv('geLI'),PG=gv('gePG'),AG=gv('geAG');
+  const nGavetas=Math.max(1,gv('geNGavetas')||1);
+  const comFrenteExterna=gs('geComFrenteExterna')==='sim';
+  const tipoFrente=gs('geTipoFrente')||'lisa';
+  const alturaPerfil=gv('geAlturaPerfil');
+  const alturaDisponivelFrentes=gv('geAlturaFrentes');
+  const larguraFrenteExterna=gv('geLarguraFrenteExterna')||LI;
+
+  if(!LI||!PG||!AG){toast('⚠️ Preencha LI, PG e AG (medidas do vão/gaveta)');return;}
+
+  const corpo=calcularCorpoGaveta(sistema,LI,PG,AG);
+  let pecas=corpo.pecas.map(p=>({...p,qty:p.qty*nGavetas}));
+
+  let obsExtra='';
+  if(comFrenteExterna&&alturaDisponivelFrentes>0){
+    const P=getGavetaEngineParams();
+    const fr=calcularFrentesExternas(alturaDisponivelFrentes,nGavetas,tipoFrente,alturaPerfil);
+    const tipoFrenteExt=P.EFE===18?'18':String(P.EFE);
+    pecas.push({nome:'Frente Externa',tipo:tipoFrenteExt,l:larguraFrenteExterna-3,a:fr.alturaCadaFrente,qty:nGavetas,rasgo:false});
+    obsExtra=`<div class="chart-box" style="margin-top:12px">
+      <div class="chart-title">🔲 Frentes Externas</div>
+      <p style="font-size:13px;color:var(--text2)">Tipo: <b style="color:var(--accent2)">${({lisa:'Lisa',perfil:'Perfil Alumínio',cava:'Puxador Cava'})[tipoFrente]}</b> · Folga entre frentes: <b style="color:var(--accent2)">${fr.folga}mm</b></p>
+      <p style="font-size:20px;font-weight:800;color:var(--accent2);margin-top:6px">${fr.alturaCadaFrente.toFixed(1)}mm de altura cada uma (${nGavetas} frente${nGavetas>1?'s':''})</p>
+    </div>`;
+  }
+
+  const obsFormulas=`<div class="chart-box" style="margin-top:12px">
+    <div class="chart-title">📐 Memória de Cálculo</div>
+    <p style="font-size:12px;color:var(--text2);line-height:1.8">
+      Sistema: <b>${sistema==='sistema01'?'01 — Guarda-Roupa/Closet/Sapateira (laterais sem rasgo)':'02 — Cozinha/Banheiro/Home Office (laterais com rasgo)'}</b><br>
+      LG (largura do corpo) = LI − folga corrediça = ${LI} − ${corpo.params.folgaEsq+corpo.params.folgaDir} = <b>${corpo.LG}mm</b><br>
+      Altura lateral = AG − EF = ${AG} − ${corpo.params.EF} = <b>${corpo.alturaLateral}mm</b><br>
+      Largura frente/contra-fundo = LG − (EC×2) = ${corpo.LG} − ${corpo.params.EC*2} = <b>${corpo.larguraFrente}mm</b><br>
+      Largura do fundo = LG − (EC×2) + (PR×2) = <b>${corpo.larguraFundo}mm</b>
+    </p>
+  </div>`;
+
+  const plano=chapasNecessarias(pecas);
+  const titulo=`Gaveta Paramétrica — ${sistema==='sistema01'?'Sistema 01':'Sistema 02'} (${nGavetas}un, LG=${corpo.LG}mm)`;
+  pcMostrarResultado({fitaHtml:obsExtra+obsFormulas},pecas,plano,titulo);
+  toast('✅ Gaveta calculada!');
+}
+
+// ══════════════════════════════════════════════════════
+// SOLICITAR PROJETO 3D — fluxo completo marceneiro → Stylo Design
+// Formulário completo + calendário com limite de capacidade + esteira de 9 etapas +
+// dashboard do admin + notificações in-app. Tudo salvo na nuvem (record.solicitacoesProjeto).
+// ══════════════════════════════════════════════════════
+const SP_STATUS_FLOW=['Solicitado','Recebido','Em análise','Modelagem 3D','Renderização','Revisão','Aguardando aprovação','Finalizado','Entregue'];
+const SP_VALOR_ESTIMADO={'Cozinha':250,'Guarda-roupa':180,'Banheiro':120,'Dormitório':150,'Home Office':150,'Sala':150,'Lavanderia':100,'Área Gourmet':200,'Outro':0};
+let _spArquivos=[];
+
+function chaveCapacidadeSP(){return 'spCapacidadeDiaria';}
+function getCapacidadeDiariaSP(){return parseInt(LS(chaveCapacidadeSP()))||3;}
+
+function spAtualizarValorEstimado(){
+  const amb=document.getElementById('spAmbiente')?.value;
+  const v=SP_VALOR_ESTIMADO[amb];
+  const el=document.getElementById('spValorEstimado');
+  if(el)el.innerHTML=v?formatBRL(v)+' <span style="font-size:12px;color:var(--text2);font-weight:400">(estimativa — valor final combinado após análise)</span>':'A combinar';
+}
+function spAvisoPrioridade(){
+  const p=document.getElementById('spPrioridade')?.value;
+  const el=document.getElementById('spAvisoUrgencia');
+  if(el)el.style.display=(p&&p!=='Normal')?'block':'none';
+}
+
+function renderSolicitarProjeto(){
+  _spArquivos=[];
+  const ids=['spClienteNome','spClienteTel','spClienteCidade','spDescricao','spMateriais','spCores','spFerragens','spObservacoes','spLinkVideo'];
+  ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const prev=document.getElementById('spArquivosPreview');if(prev)prev.innerHTML='';
+  document.getElementById('spPrazo').value='';
+  spAtualizarValorEstimado();
+  spAvisoPrioridade();
+  spRenderCalendario();
+  spCarregarMinhasSolicitacoes();
+  spAtualizarSino();
+}
+
+// ── ARQUIVOS (fotos comprimidas + PDFs) ──
+function spPreviewArquivos(e){
+  const files=Array.from(e.target.files||[]);
+  files.forEach(file=>{
+    if(file.type==='application/pdf'){
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const tamanhoKB=Math.round(ev.target.result.length/1024);
+        if(tamanhoKB>2000){toast(`⚠️ ${file.name} é muito grande (${tamanhoKB}KB) — tente um PDF menor`);return;}
+        _spArquivos.push({nome:file.name,tipo:'pdf',dataUrl:ev.target.result,tamanhoKB});
+        spRenderArquivosPreview();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const img=new Image();
+        img.onload=()=>{
+          const maxW=900;const escala=Math.min(1,maxW/img.width);
+          const canvas=document.createElement('canvas');
+          canvas.width=img.width*escala;canvas.height=img.height*escala;
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          const dataUrl=canvas.toDataURL('image/jpeg',0.6);
+          _spArquivos.push({nome:file.name,tipo:'imagem',dataUrl,tamanhoKB:Math.round(dataUrl.length/1024)});
+          spRenderArquivosPreview();
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+function spRenderArquivosPreview(){
+  const el=document.getElementById('spArquivosPreview');if(!el)return;
+  el.innerHTML=_spArquivos.map((a,i)=>a.tipo==='imagem'
+    ?`<div style="position:relative"><img src="${a.dataUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><span onclick="spRemoverArquivo(${i})" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:999px;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span></div>`
+    :`<div style="position:relative;width:70px;height:70px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;text-align:center;padding:4px">📄<span style="font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:60px">${a.nome}</span><span onclick="spRemoverArquivo(${i})" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:999px;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span></div>`
+  ).join('');
+}
+function spRemoverArquivo(i){_spArquivos.splice(i,1);spRenderArquivosPreview();}
+
+// ── CALENDÁRIO DE 15 DIAS COM LIMITE DE CAPACIDADE ──
+let _spDataEscolhida=null;
+async function spRenderCalendario(){
+  const el=document.getElementById('spCalendario');if(!el)return;
+  el.innerHTML='<p style="font-size:12px;color:var(--text2)">Carregando disponibilidade...</p>';
+  const record=await jbLerRegistro();
+  const todas=(record&&record.solicitacoesProjeto)||[];
+  const capacidade=getCapacidadeDiariaSP();
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const dias=[];
+  for(let i=0;i<15;i++){
+    const d=new Date(hoje.getTime()+i*86400000);
+    const iso=d.toISOString().split('T')[0];
+    const ocupadas=todas.filter(s=>s.prazoDesejado===iso&&s.status!=='Entregue').length;
+    dias.push({iso,label:d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}),cheia:ocupadas>=capacidade,ocupadas});
+  }
+  el.innerHTML=dias.map(d=>`
+    <button type="button" onclick="${d.cheia?'':`spEscolherData('${d.iso}')`}"
+      style="padding:10px;border-radius:8px;border:1px solid ${d.cheia?'#ef4444':(d.iso===_spDataEscolhida?'var(--accent)':'var(--border)')};
+      background:${d.iso===_spDataEscolhida?'rgba(201,168,76,0.15)':(d.cheia?'rgba(239,68,68,0.08)':'var(--surface2)')};
+      color:${d.cheia?'#ef4444':'var(--text)'};cursor:${d.cheia?'not-allowed':'pointer'};font-size:12px;font-weight:700">
+      ${d.label}${d.cheia?'<br><span style="font-size:9px">Lotado</span>':''}
+    </button>`).join('');
+}
+function spEscolherData(iso){
+  _spDataEscolhida=iso;
+  document.getElementById('spPrazo').value=iso;
+  spRenderCalendario();
+}
+
+// ── ENVIAR SOLICITAÇÃO ──
+async function spEnviarSolicitacao(){
+  const conta=LSJ('conta');if(!conta){toast('⚠️ Faça login primeiro');return;}
+  const gv=id=>document.getElementById(id)?.value.trim()||'';
+  const clienteNome=gv('spClienteNome'),descricao=gv('spDescricao'),prazo=gv('spPrazo');
+  if(!clienteNome){toast('⚠️ Informe o nome do cliente');return;}
+  if(!descricao){toast('⚠️ Descreva o projeto');return;}
+  if(!prazo){toast('⚠️ Escolha uma data no calendário');return;}
+
+  const ambiente=gv('spAmbiente');
+  const item={
+    id:'sol_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),
+    emailMarceneiro:conta.email,nomeMarceneiro:conta.user||conta.email,
+    clienteFinal:{nome:clienteNome,telefone:gv('spClienteTel'),cidade:gv('spClienteCidade'),tipoImovel:gv('spTipoImovel')},
+    ambiente,
+    descricao,materiais:gv('spMateriais'),cores:gv('spCores'),ferragens:gv('spFerragens'),observacoes:gv('spObservacoes'),
+    arquivos:_spArquivos,linkVideo:gv('spLinkVideo'),
+    prazoDesejado:prazo,
+    prioridade:gv('spPrioridade')||'Normal',
+    valorEstimado:SP_VALOR_ESTIMADO[ambiente]||0,
+    status:'Solicitado',
+    enviadoEm:Date.now(),
+    historico:[{status:'Solicitado',em:Date.now(),obs:''}],
+    entregaveis:[],
+  };
+  toast('📤 Enviando...');
+  const ok=await nuvemAtualizarComRetry(
+    record=>{record.solicitacoesProjeto=record.solicitacoesProjeto||[];record.solicitacoesProjeto.push(item);},
+    record=>(record.solicitacoesProjeto||[]).some(x=>x.id===item.id)
+  );
+  if(ok){
+    toast('✅ Solicitação enviada!');
+    renderSolicitarProjeto();
+  } else {
+    toast('⚠️ Falha ao enviar — verifique sua internet e tente de novo');
+  }
+}
+
+// ── ESTEIRA VISUAL DE ETAPAS ──
+function spEsteiraHTML(statusAtual){
+  const idx=SP_STATUS_FLOW.indexOf(statusAtual);
+  return `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:10px 0">${SP_STATUS_FLOW.map((s,i)=>`
+    <div style="flex:1;min-width:70px;text-align:center">
+      <div style="height:6px;border-radius:999px;background:${i<=idx?'var(--accent)':'var(--border)'}"></div>
+      <div style="font-size:9px;margin-top:4px;color:${i<=idx?'var(--accent2)':'var(--text2)'};font-weight:${i===idx?700:400}">${s}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ── MINHAS SOLICITAÇÕES (visão do marceneiro) ──
+async function spCarregarMinhasSolicitacoes(){
+  const el=document.getElementById('spMinhasSolicitacoes');if(!el)return;
+  const conta=LSJ('conta');if(!conta)return;
+  const record=await jbLerRegistro();
+  const todas=(record&&record.solicitacoesProjeto)||[];
+  const minhas=todas.filter(s=>s.emailMarceneiro===conta.email).sort((a,b)=>b.enviadoEm-a.enviadoEm);
+  if(!minhas.length){el.innerHTML='<p style="color:var(--text2);font-size:13px">Você ainda não enviou nenhuma solicitação.</p>';return;}
+  el.innerHTML=minhas.map(s=>`
+    <div class="chart-box" style="margin-bottom:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <b>${s.ambiente} — ${s.clienteFinal.nome}</b>
+        <span style="font-size:11px;color:var(--text2)">Prazo: ${new Date(s.prazoDesejado+'T00:00').toLocaleDateString('pt-BR')} · ${s.prioridade}</span>
+      </div>
+      ${spEsteiraHTML(s.status)}
+      <p style="font-size:13px;color:var(--text2)">${s.descricao}</p>
+      ${s.arquivos&&s.arquivos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${s.arquivos.map(a=>a.tipo==='imagem'?`<img src="${a.dataUrl}" style="width:50px;height:50px;object-fit:cover;border-radius:6px">`:`<span style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:6px">📄 ${a.nome}</span>`).join('')}</div>`:''}
+      ${s.entregaveis&&s.entregaveis.length?`<div style="margin-top:10px;padding:10px;background:rgba(74,222,128,0.08);border-radius:8px">
+        <b style="font-size:12px;color:#4ade80">📥 Downloads disponíveis:</b>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${s.entregaveis.map(a=>`<a href="${a.dataUrl}" download="${a.nome}" style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:6px;color:var(--accent2);text-decoration:none">⬇️ ${a.nome}</a>`).join('')}</div>
+      </div>`:''}
+    </div>`).join('');
+}
+
+// ── NOTIFICAÇÕES IN-APP ──
+function chaveUltimaVezVistoSP(){const c=LSJ('conta');return 'spUltimaVezVisto_'+(c?c.email:'geral');}
+async function spAtualizarSino(){
+  const conta=LSJ('conta');if(!conta)return;
+  const ultimaVez=parseInt(LS(chaveUltimaVezVistoSP()))||0;
+  const record=await jbLerRegistro();
+  const minhas=((record&&record.solicitacoesProjeto)||[]).filter(s=>s.emailMarceneiro===conta.email);
+  let naoLidas=0;
+  minhas.forEach(s=>(s.historico||[]).forEach(h=>{if(h.em>ultimaVez)naoLidas++;}));
+  const badge=document.getElementById('sinoContador');
+  if(badge){badge.style.display=naoLidas>0?'flex':'none';badge.textContent=naoLidas;}
+}
+async function spAbrirNotificacoes(){
+  const conta=LSJ('conta');if(!conta)return;
+  const record=await jbLerRegistro();
+  const minhas=((record&&record.solicitacoesProjeto)||[]).filter(s=>s.emailMarceneiro===conta.email);
+  const eventos=[];
+  minhas.forEach(s=>(s.historico||[]).forEach(h=>eventos.push({...h,projeto:`${s.ambiente} — ${s.clienteFinal.nome}`})));
+  eventos.sort((a,b)=>b.em-a.em);
+  const html=eventos.length?eventos.slice(0,20).map(e=>`
+    <div style="padding:10px;border-bottom:1px solid var(--border)">
+      <b style="font-size:12px">${e.projeto}</b><br>
+      <span style="font-size:12px;color:var(--accent2)">${e.status}</span>
+      <span style="font-size:11px;color:var(--text2)"> · ${new Date(e.em).toLocaleString('pt-BR')}</span>
+      ${e.obs?`<p style="font-size:12px;margin-top:4px">${e.obs}</p>`:''}
+    </div>`).join(''):'<p style="padding:14px;font-size:13px;color:var(--text2)">Sem notificações ainda.</p>';
+  let modal=document.getElementById('modalNotificacoesSP');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='modalNotificacoesSP';
+    modal.style.cssText='position:fixed;top:70px;right:20px;width:320px;max-height:70vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.4);z-index:9999';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div style="padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+    <b>🔔 Notificações</b><span onclick="document.getElementById('modalNotificacoesSP').remove()" style="cursor:pointer">✕</span>
+  </div>${html}`;
+  LS(chaveUltimaVezVistoSP(),String(Date.now()));
+  spAtualizarSino();
+}
+
+// ── PAINEL ADMIN: dashboard + lista completa + detalhe + upload de entregáveis ──
+async function admCarregarSolicitacoes(){
+  const el=document.getElementById('admSolicitacoes');if(!el)return;
+  const record=await jbLerRegistro();
+  const todas=((record&&record.solicitacoesProjeto)||[]).sort((a,b)=>b.enviadoEm-a.enviadoEm);
+  const hoje=new Date().toISOString().split('T')[0];
+  const novas=todas.filter(s=>s.status==='Solicitado').length;
+  const emAndamento=todas.filter(s=>['Recebido','Em análise','Modelagem 3D','Renderização','Revisão'].includes(s.status)).length;
+  const aguardando=todas.filter(s=>s.status==='Aguardando aprovação').length;
+  const concluidos=todas.filter(s=>['Finalizado','Entregue'].includes(s.status)).length;
+  const entregasHoje=todas.filter(s=>s.prazoDesejado===hoje&&s.status!=='Entregue').length;
+  const atrasados=todas.filter(s=>s.prazoDesejado<hoje&&s.status!=='Entregue').length;
+
+  const dash=`<div class="orc-row col3" style="margin-bottom:14px">
+    ${[['📥','Novas',novas],['📐','Em andamento',emAndamento],['⏳','Aguard. aprovação',aguardando],
+       ['✅','Concluídos',concluidos],['📅','Entregas hoje',entregasHoje],['🚨','Atrasados',atrasados]]
+    .map(([ico,label,v])=>`<div class="chart-box" style="padding:12px;text-align:center">
+        <div style="font-size:20px">${ico}</div><div style="font-size:20px;font-weight:800">${v}</div>
+        <div style="font-size:10px;color:var(--text2)">${label.toUpperCase()}</div>
+      </div>`).join('')}
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <label style="font-size:12px;color:var(--text2)">Capacidade de projetos/dia:</label>
+    <input type="number" id="admCapacidadeSP" value="${getCapacidadeDiariaSP()}" style="width:60px" class="form-control">
+    <button class="btn-secondary" onclick="LS(chaveCapacidadeSP(),document.getElementById('admCapacidadeSP').value);toast('✅ Capacidade salva!')">Salvar</button>
+  </div>`;
+
+  if(!todas.length){el.innerHTML=dash+'<p style="color:var(--text2);font-size:13px">Nenhuma solicitação recebida ainda.</p>';return;}
+
+  const lista=todas.map(s=>`
+    <div class="chart-box" style="margin-bottom:10px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer" onclick="admToggleDetalheSP('${s.id}')">
+        <div>
+          <b>${s.ambiente} — ${s.clienteFinal.nome}</b>
+          <span style="font-size:11px;color:var(--text2)"> · ${s.nomeMarceneiro} (${s.emailMarceneiro}) · ${s.clienteFinal.cidade||''}</span>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:var(--accent2)">${s.status} ▾</span>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Prazo: ${new Date(s.prazoDesejado+'T00:00').toLocaleDateString('pt-BR')} · Prioridade: ${s.prioridade}</div>
+      <div id="admDetalhe_${s.id}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+        ${spEsteiraHTML(s.status)}
+        <p style="font-size:13px"><b>Descrição:</b> ${s.descricao}</p>
+        <p style="font-size:12px;color:var(--text2)">Materiais: ${s.materiais||'—'} · Cores: ${s.cores||'—'} · Ferragens: ${s.ferragens||'—'}</p>
+        ${s.observacoes?`<p style="font-size:12px;color:var(--text2)">Obs: ${s.observacoes}</p>`:''}
+        <p style="font-size:12px;color:var(--text2)">Telefone: ${s.clienteFinal.telefone||'—'} · Imóvel: ${s.clienteFinal.tipoImovel||'—'}</p>
+        ${s.linkVideo?`<p style="font-size:12px"><a href="${s.linkVideo}" target="_blank" style="color:var(--accent2)">🎬 Link de vídeo</a></p>`:''}
+        ${s.arquivos&&s.arquivos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">${s.arquivos.map(a=>a.tipo==='imagem'?`<img src="${a.dataUrl}" onclick="window.open('${a.dataUrl}','_blank')" style="width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer">`:`<a href="${a.dataUrl}" download="${a.nome}" style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:6px;color:var(--accent2);text-decoration:none">📄 ${a.nome}</a>`).join('')}</div>`:''}
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="form-control" style="max-width:200px" onchange="admAtualizarStatusSolicitacao('${s.id}',this.value)">
+            ${SP_STATUS_FLOW.map(st=>`<option ${s.status===st?'selected':''}>${st}</option>`).join('')}
+          </select>
+          <label class="btn-secondary" style="cursor:pointer;font-size:12px">📎 Enviar entregável<input type="file" accept="image/*,application/pdf" multiple style="display:none" onchange="admUploadEntregavel('${s.id}',event)"></label>
+        </div>
+        ${s.entregaveis&&s.entregaveis.length?`<p style="font-size:11px;color:var(--text2);margin-top:6px">Já enviados: ${s.entregaveis.map(a=>a.nome).join(', ')}</p>`:''}
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <input class="form-control" id="admObs_${s.id}" placeholder="Observação/mensagem pro marceneiro">
+          <button class="btn-secondary" onclick="admEnviarObservacao('${s.id}')">Enviar</button>
+        </div>
+      </div>
+    </div>`).join('');
+  el.innerHTML=dash+lista;
+}
+function admToggleDetalheSP(id){
+  const el=document.getElementById('admDetalhe_'+id);if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+async function admAtualizarStatusSolicitacao(id,novoStatus){
+  const ok=await nuvemAtualizarComRetry(
+    record=>{
+      record.solicitacoesProjeto=record.solicitacoesProjeto||[];
+      const s=record.solicitacoesProjeto.find(x=>x.id===id);
+      if(s){s.status=novoStatus;s.historico=s.historico||[];s.historico.push({status:novoStatus,em:Date.now(),obs:''});}
+    },
+    record=>{const s=(record.solicitacoesProjeto||[]).find(x=>x.id===id);return s&&s.status===novoStatus;}
+  );
+  if(ok){toast('✅ Status atualizado!');admCarregarSolicitacoes();}else toast('⚠️ Falha ao atualizar — tente de novo');
+}
+async function admEnviarObservacao(id){
+  const el=document.getElementById('admObs_'+id);const obs=el?.value.trim();if(!obs)return;
+  const ok=await nuvemAtualizarComRetry(
+    record=>{
+      const s=(record.solicitacoesProjeto||[]).find(x=>x.id===id);
+      if(s){s.historico=s.historico||[];s.historico.push({status:s.status,em:Date.now(),obs});}
+    },
+    record=>{const s=(record.solicitacoesProjeto||[]).find(x=>x.id===id);return s&&s.historico.some(h=>h.obs===obs);}
+  );
+  if(ok){toast('✅ Observação enviada!');if(el)el.value='';admCarregarSolicitacoes();}else toast('⚠️ Falha ao enviar');
+}
+function admUploadEntregavel(id,e){
+  const files=Array.from(e.target.files||[]);
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=async ev=>{
+      const item={nome:file.name,dataUrl:ev.target.result};
+      const ok=await nuvemAtualizarComRetry(
+        record=>{const s=(record.solicitacoesProjeto||[]).find(x=>x.id===id);if(s){s.entregaveis=s.entregaveis||[];s.entregaveis.push(item);}},
+        record=>{const s=(record.solicitacoesProjeto||[]).find(x=>x.id===id);return s&&s.entregaveis.some(a=>a.nome===item.nome);}
+      );
+      if(ok){toast(`✅ ${file.name} enviado!`);admCarregarSolicitacoes();}else toast('⚠️ Falha ao enviar arquivo');
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function salvarOrcamento(){
