@@ -328,6 +328,21 @@ select.form-control option{background:var(--surface2);}
       <button class="btn-ghost" onclick="irPara('screenRecuperar')">Esqueci a senha</button>
       <button class="btn-ghost" onclick="irPara('screenSetup')">Criar conta</button>
     </div>
+    <div style="text-align:center;margin-top:10px">
+      <button class="btn-ghost" style="font-size:12px" onclick="abrirModal('modalLoginFuncionario')">👷 Sou funcionário de uma marcenaria cadastrada</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN DO FUNCIONÁRIO (caminho separado do login principal) -->
+<div id="modalLoginFuncionario" class="modal">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header"><h3>👷 Login do Funcionário</h3><span onclick="fecharModal('modalLoginFuncionario')">✕</span></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Use o e-mail e senha que o dono da marcenaria cadastrou pra você em "Equipe & Cronograma".</p>
+    <div class="inp-wrap"><span>✉️</span><input id="funcEmail" type="email" placeholder="Seu e-mail"></div>
+    <div class="inp-wrap"><span>🔑</span><input id="funcSenha" type="password" placeholder="Sua senha" onkeydown="if(event.key==='Enter')fazerLoginFuncionario()"></div>
+    <div id="funcLoginErr" class="err"></div>
+    <button class="btn-gold" style="margin-top:8px;width:100%" onclick="fazerLoginFuncionario()">Entrar</button>
   </div>
 </div>
 
@@ -418,6 +433,8 @@ select.form-control option{background:var(--surface2);}
         <button class="nav-item" onclick="navTo('kanban')" data-page="kanban"><span class="ico">🗂️</span>Kanban</button>
         <button class="nav-item" onclick="navTo('calendario')" data-page="calendario"><span class="ico">📅</span>Calendário</button>
         <button class="nav-item" onclick="navTo('relatorios')" data-page="relatorios"><span class="ico">📈</span>Relatórios</button>
+        <button class="nav-item" onclick="navTo('estoque')" data-page="estoque"><span class="ico">📦</span>Estoque</button>
+        <button class="nav-item" onclick="navTo('equipe')" data-page="equipe"><span class="ico">👷</span>Equipe & Cronograma</button>
         <button class="nav-item" onclick="navTo('solicitarProjeto')" data-page="solicitarProjeto"><span class="ico">📐</span>Solicitar Projeto 3D</button>
       </div>
       <div class="sidebar-section">
@@ -449,6 +466,13 @@ select.form-control option{background:var(--surface2);}
           <div class="stat-card purple"><div class="stat-icon">👥</div><div class="stat-val" id="ds-cli">0</div><div class="stat-label">Clientes</div></div>
           <div class="stat-card red"><div class="stat-icon">⏰</div><div class="stat-val" id="ds-atr">0</div><div class="stat-label">Atrasados</div></div>
           <div class="stat-card gold"><div class="stat-icon">📈</div><div class="stat-val" id="ds-lucro">R$ 0</div><div class="stat-label">Lucro do mês</div></div>
+        </div>
+        <div class="stats-grid" style="margin-top:12px">
+          <div class="stat-card blue"><div class="stat-icon">📅</div><div class="stat-val" id="ds-hoje">0</div><div class="stat-label">Serviços de hoje</div></div>
+          <div class="stat-card gold"><div class="stat-icon">💵</div><div class="stat-val" id="ds-receber">R$ 0</div><div class="stat-label">Valor a receber (em andamento)</div></div>
+          <div class="stat-card purple"><div class="stat-icon">🪵</div><div class="stat-val" id="ds-estoque">0</div><div class="stat-label">Chapas MDF em estoque</div></div>
+          <div class="stat-card green"><div class="stat-icon">⏱️</div><div class="stat-val" id="ds-tempo">0h</div><div class="stat-label">Tempo médio de produção</div></div>
+          <div class="stat-card blue"><div class="stat-icon">⭐</div><div class="stat-val" id="ds-cliNovos">0</div><div class="stat-label">Clientes novos (mês)</div></div>
         </div>
         <div class="two-col" style="margin-bottom:20px">
           <div class="chart-box">
@@ -1384,13 +1408,15 @@ select.form-control option{background:var(--surface2);}
                 </select>
               </div>
               <div class="form-group"><label>Preço por chapa (R$) <small style="color:var(--text2)">opcional</small></label><input class="form-control" id="mdf-preco" type="number" step="0.01" placeholder="0,00"></div>
+              <div class="form-group"><label>Chapas em estoque</label><input class="form-control" id="mdf-estoque" type="number" placeholder="0"></div>
+              <div class="form-group"><label>Estoque mínimo (alerta) <small style="color:var(--text2)">opcional</small></label><input class="form-control" id="mdf-estoqueMin" type="number" placeholder="Ex: 2"></div>
             </div>
             <button class="btn-primary" style="margin-top:12px" onclick="mdfSalvar()">💾 Salvar MDF</button>
           </div>
           <div class="chart-box">
             <div class="chart-title">📋 MDFs cadastrados</div>
             <div class="table-wrap" style="border:none"><table class="data-table">
-              <thead><tr><th>Nome</th><th>Cor</th><th>Espessura</th><th>Acabamento</th><th>Preço/chapa</th><th>Ações</th></tr></thead>
+              <thead><tr><th>Nome</th><th>Cor</th><th>Espessura</th><th>Acabamento</th><th>Preço/chapa</th><th>Estoque</th><th>Ações</th></tr></thead>
               <tbody id="mdfLista"></tbody>
             </table></div>
           </div>
@@ -1597,6 +1623,162 @@ select.form-control option{background:var(--surface2);}
         </div>
       </div>
 
+      <!-- ESTOQUE COMPLETO -->
+      <div class="page" id="page-estoque">
+        <div class="page-header">
+          <div class="page-title"><h1>📦 Estoque de Materiais</h1><p>Chapas, ferragens, fita de borda, parafusos e cola — tudo num só lugar</p></div>
+        </div>
+        <div class="pc-tabs" style="margin-bottom:16px;flex-wrap:wrap">
+          <button class="pc-tab active" onclick="estToggleAba('mdf',this)">🪵 Chapas MDF</button>
+          <button class="pc-tab" onclick="estToggleAba('corredica',this)">🎚️ Corrediças</button>
+          <button class="pc-tab" onclick="estToggleAba('dobradica',this)">🔩 Dobradiças</button>
+          <button class="pc-tab" onclick="estToggleAba('fita',this)">🎗️ Fita de Borda</button>
+          <button class="pc-tab" onclick="estToggleAba('parafuso',this)">🔧 Parafusos</button>
+          <button class="pc-tab" onclick="estToggleAba('cola',this)">🧴 Cola</button>
+          <button class="pc-tab" onclick="estToggleAba('outro',this)">📦 Outros</button>
+        </div>
+
+        <!-- CHAPAS MDF (reaproveita o cadastro que já existe em Materiais) -->
+        <div class="est-aba" id="estAba-mdf">
+          <div class="chart-box">
+            <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span>🪵 Chapas MDF cadastradas</span>
+              <button class="btn-secondary" onclick="navTo('materiais')">✏️ Editar em Materiais</button>
+            </div>
+            <div class="table-wrap" style="border:none"><table class="data-table">
+              <thead><tr><th>Nome</th><th>Cor</th><th>Espessura</th><th>Estoque</th></tr></thead>
+              <tbody id="estListaMdf"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- CATEGORIAS GENÉRICAS (corrediça, dobradiça, fita, parafuso, cola, outro) -->
+        <div class="est-aba" id="estAba-corredica" style="display:none"></div>
+        <div class="est-aba" id="estAba-dobradica" style="display:none"></div>
+        <div class="est-aba" id="estAba-fita" style="display:none"></div>
+        <div class="est-aba" id="estAba-parafuso" style="display:none"></div>
+        <div class="est-aba" id="estAba-cola" style="display:none"></div>
+        <div class="est-aba" id="estAba-outro" style="display:none"></div>
+      </div>
+
+      <!-- EQUIPE & CRONOGRAMA -->
+      <div class="page" id="page-equipe">
+        <div class="page-header">
+          <div class="page-title"><h1>👷 Equipe & Cronograma</h1><p>Comunique a equipe, monte o cronograma de entregas/instalações e a lista de compras</p></div>
+        </div>
+        <div class="chart-box" style="margin-bottom:16px;border:1px solid var(--accent)">
+          <div class="chart-title">👤 Minha visão</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Se você é montador ou motorista usando o app no seu celular, selecione seu nome aqui pra ver só o que é seu.</p>
+          <div class="orc-row col2">
+            <div class="orc-field"><label>Quem está usando este aparelho?</label><select id="eqMeuPapel" onchange="eqSalvarMeuPapel()"><option value="">👑 Dono / Ver tudo</option></select></div>
+          </div>
+        </div>
+        <div class="pc-tabs" style="margin-bottom:16px">
+          <button class="pc-tab active" onclick="eqToggleAba('comunicacao',this)">📣 Comunicação</button>
+          <button class="pc-tab" onclick="eqToggleAba('equipe',this)">👥 Equipe</button>
+          <button class="pc-tab" onclick="eqToggleAba('cronograma',this)">📅 Cronograma</button>
+          <button class="pc-tab" onclick="eqToggleAba('compras',this)">🛒 Lista de Compras</button>
+        </div>
+
+        <!-- COMUNICAÇÃO -->
+        <div class="eq-aba" id="eqAba-comunicacao">
+          <div class="chart-box" style="margin-bottom:16px">
+            <div class="chart-title">📣 Novo Aviso</div>
+            <div class="form-group" style="margin-bottom:10px"><label>Mensagem</label><textarea class="form-control" id="eqAvisoTexto" rows="3" placeholder="Ex: Amanhã a entrega do Cliente X foi antecipada para 8h"></textarea></div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Para quem</label>
+                <select id="eqAvisoPapel"><option value="Todos">📢 Todos</option><option value="Administrador">👨‍💼 Administradores</option><option value="Projetista">📐 Projetistas</option><option value="Vendedor">💼 Vendedores</option><option value="Marceneiro">🪚 Marceneiros</option><option value="Motorista">🚚 Motoristas</option><option value="Montador">🔧 Montadores</option><option value="Estoque">📦 Estoque</option><option value="Financeiro">💳 Financeiro</option></select>
+              </div>
+              <div class="orc-field"><label>Data (opcional)</label><input type="date" id="eqAvisoData"></div>
+            </div>
+            <button class="btn-primary" style="margin-top:8px" onclick="eqEnviarAviso()">📤 Publicar Aviso</button>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">🗒️ Mural de Avisos</div>
+            <div id="eqListaAvisos"><p style="color:var(--text2);font-size:13px">Carregando...</p></div>
+          </div>
+        </div>
+
+        <!-- EQUIPE -->
+        <div class="eq-aba" id="eqAba-equipe" style="display:none">
+          <div class="chart-box" style="margin-bottom:16px">
+            <div class="chart-title">➕ Adicionar Funcionário</div>
+            <p id="eqUsoPlano" style="font-size:12px;color:var(--text2);margin-bottom:10px"></p>
+            <div class="orc-row col3">
+              <div class="orc-field"><label>Nome</label><input id="eqNome" placeholder="Nome completo"></div>
+              <div class="orc-field"><label>Cargo</label>
+                <select id="eqFuncao" onchange="eqAplicarPresetCargo()">
+                  <option>Administrador</option><option>Projetista</option><option>Vendedor</option>
+                  <option>Marceneiro</option><option>Motorista</option><option>Montador</option>
+                  <option>Estoque</option><option>Financeiro</option><option>Outro</option>
+                </select>
+              </div>
+              <div class="orc-field"><label>Telefone</label><input id="eqTelefone" placeholder="(00) 00000-0000"></div>
+            </div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>E-mail de login <small style="color:var(--text2)">(opcional — só se ele for acessar o app)</small></label><input id="eqEmail" type="email" placeholder="funcionario@email.com"></div>
+              <div class="orc-field"><label>Senha de acesso</label><input id="eqSenhaMembro" type="text" placeholder="Mínimo 4 caracteres"></div>
+            </div>
+            <div style="margin-top:12px">
+              <div class="chart-title" style="font-size:13px">🔐 O que este cargo pode ver (marque/desmarque)</div>
+              <div id="eqPermissoesGrid" class="orc-row col4" style="font-size:12px"></div>
+            </div>
+            <button class="btn-primary" style="margin-top:12px" onclick="eqAdicionarMembro()">💾 Adicionar</button>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">👥 Equipe cadastrada</div>
+            <div class="table-wrap" style="border:none"><table class="data-table">
+              <thead><tr><th>Nome</th><th>Cargo</th><th>Login</th><th>Telefone</th><th>Ações</th></tr></thead>
+              <tbody id="eqListaMembros"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- CRONOGRAMA -->
+        <div class="eq-aba" id="eqAba-cronograma" style="display:none">
+          <div class="chart-box" style="margin-bottom:16px">
+            <div class="chart-title">➕ Novo Compromisso</div>
+            <div class="orc-row col3">
+              <div class="orc-field"><label>Tipo</label>
+                <select id="crTipo"><option>Entrega</option><option>Instalação</option><option>Manutenção</option><option>Compra/Busca</option><option>Outro</option></select>
+              </div>
+              <div class="orc-field"><label>Responsável</label><select id="crResponsavel"><option value="">— selecione —</option></select></div>
+              <div class="orc-field"><label>Data</label><input type="date" id="crData"></div>
+            </div>
+            <div class="orc-row col2">
+              <div class="orc-field"><label>Endereço / Local</label><input id="crLocal" placeholder="Endereço completo"></div>
+              <div class="orc-field"><label>Cliente (opcional)</label><input id="crCliente" placeholder="Nome do cliente"></div>
+            </div>
+            <div class="form-group" style="margin:10px 0"><label>Observações</label><textarea class="form-control" id="crObs" rows="2"></textarea></div>
+            <button class="btn-primary" onclick="crAdicionar()">💾 Adicionar ao Cronograma</button>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span>📅 Cronograma</span>
+              <select id="crFiltroPeriodo" onchange="renderCronograma()" style="max-width:140px"><option value="semana">Esta semana</option><option value="mes">Este mês</option><option value="todos">Todos</option></select>
+            </div>
+            <div id="crLista"><p style="color:var(--text2);font-size:13px">Carregando...</p></div>
+          </div>
+        </div>
+
+        <!-- LISTA DE COMPRAS -->
+        <div class="eq-aba" id="eqAba-compras" style="display:none">
+          <div class="chart-box" style="margin-bottom:16px">
+            <div class="chart-title">➕ Adicionar Item</div>
+            <div class="orc-row col3">
+              <div class="orc-field"><label>Item</label><input id="lcItem" placeholder="Ex: Cola de contato 3L"></div>
+              <div class="orc-field"><label>Quantidade</label><input id="lcQtd" placeholder="Ex: 2 latas"></div>
+              <div class="orc-field"><label>Quem vai buscar</label><select id="lcResponsavel"><option value="">— selecione —</option></select></div>
+            </div>
+            <button class="btn-primary" style="margin-top:8px" onclick="lcAdicionar()">💾 Adicionar à Lista</button>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">🛒 Lista de Compras</div>
+            <div id="lcLista"><p style="color:var(--text2);font-size:13px">Carregando...</p></div>
+          </div>
+        </div>
+      </div>
+
       <!-- SOLICITAR PROJETO (marceneiro pede um projeto pra Stylo Design fazer) -->
       <div class="page" id="page-solicitarProjeto">
         <div class="page-header">
@@ -1614,12 +1796,21 @@ select.form-control option{background:var(--surface2);}
             <select id="spTipoImovel"><option>Casa</option><option>Apartamento</option><option>Comercial</option></select>
           </div>
 
-          <div class="chart-title" style="margin:20px 0 4px">2️⃣ Ambiente</div>
-          <div class="orc-field" style="max-width:300px"><label>Qual ambiente</label>
-            <select id="spAmbiente" onchange="spAtualizarValorEstimado()">
-              <option>Cozinha</option><option>Guarda-roupa</option><option>Dormitório</option><option>Banheiro</option>
-              <option>Home Office</option><option>Sala</option><option>Lavanderia</option><option>Área Gourmet</option><option>Outro</option>
-            </select>
+          <div class="chart-title" style="margin:20px 0 4px">2️⃣ Ambientes do Projeto</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Selecione todos os ambientes que precisam de projeto. Cada ambiente = <b style="color:var(--accent2)">R$ 60,00</b>. O valor vai somando automaticamente.</p>
+          <div id="spAmbientesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px">
+            <!-- preenchido por JS -->
+          </div>
+          <input type="hidden" id="spAmbiente">
+          <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-size:12px;color:var(--text2)" id="spAmbientesResumo">Nenhum ambiente selecionado</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text2)">VALOR ESTIMADO DO PROJETO</div>
+              <div id="spValorEstimado" style="font-size:26px;font-weight:800;color:var(--accent2)">R$ 0,00</div>
+              <div style="font-size:11px;color:var(--text2)">(valor final combinado após análise)</div>
+            </div>
           </div>
 
           <div class="chart-title" style="margin:20px 0 4px">3️⃣ Informações do Projeto</div>
@@ -1652,9 +1843,6 @@ select.form-control option{background:var(--surface2);}
           </div>
           <p id="spAvisoUrgencia" style="font-size:12px;color:#facc15;margin-top:6px;display:none">⚠️ Prioridades urgentes podem ter taxa adicional — combine com a Stylo Design.</p>
 
-          <div class="chart-title" style="margin:20px 0 4px">7️⃣ Valor Estimado</div>
-          <div id="spValorEstimado" style="font-size:20px;font-weight:800;color:var(--accent)">A combinar</div>
-
           <button class="btn-primary" style="margin-top:20px" onclick="spEnviarSolicitacao()">📤 Enviar Solicitação</button>
         </div>
 
@@ -1666,11 +1854,11 @@ select.form-control option{background:var(--surface2);}
 
       <!-- PLANOS -->
       <div class="page" id="page-planos">
-        <div class="page-header"><div class="page-title"><h1>Planos & Assinaturas</h1><p>Escolha o ideal para seu negócio</p></div></div>
+        <div class="page-header"><div class="page-title"><h1>Planos & Assinaturas</h1><p>Escolha conforme o tamanho da sua equipe</p></div></div>
         <div class="plans-grid">
           <div class="plan-card">
             <div class="plan-name">Starter</div>
-            <div class="plan-price">R$ 29,90</div><div class="plan-period">/mês</div>
+            <div class="plan-price">R$ 39,90</div><div class="plan-period">/mês</div>
             <div class="plan-features">
               <div class="plan-feature">1 usuário</div>
               <div class="plan-feature">Projetos ilimitados</div>
@@ -1682,27 +1870,48 @@ select.form-control option{background:var(--surface2);}
           </div>
           <div class="plan-card featured">
             <div class="plan-badge">Mais escolhido</div>
-            <div class="plan-name">Pro</div>
-            <div class="plan-price">R$ 49,90</div><div class="plan-period">/mês</div>
+            <div class="plan-name">Profissional</div>
+            <div class="plan-price">R$ 79,90</div><div class="plan-period">/mês</div>
             <div class="plan-features">
-              <div class="plan-feature">Até 3 usuários</div>
+              <div class="plan-feature">Até 5 usuários</div>
               <div class="plan-feature">Todos os recursos</div>
+              <div class="plan-feature">Cargos e permissões</div>
               <div class="plan-feature">Relatórios avançados</div>
               <div class="plan-feature">Suporte prioritário</div>
             </div>
-            <button class="btn-primary" style="width:100%" onclick="assinarPlano('Pro')">Assinar Pro</button>
+            <button class="btn-primary" style="width:100%" onclick="assinarPlano('Profissional')">Assinar Profissional</button>
           </div>
           <div class="plan-card">
-            <div class="plan-name">Premium</div>
-            <div class="plan-price">R$ 97,90</div><div class="plan-period">/mês</div>
+            <div class="plan-name">Empresa</div>
+            <div class="plan-price">R$ 149,90</div><div class="plan-period">/mês</div>
             <div class="plan-features">
-              <div class="plan-feature">Até 8 usuários</div>
-              <div class="plan-feature">Tudo do Pro</div>
+              <div class="plan-feature">Até 15 usuários</div>
+              <div class="plan-feature">Tudo do Profissional</div>
+              <div class="plan-feature">Equipe & Cronograma completo</div>
+              <div class="plan-feature">Suporte prioritário</div>
+            </div>
+            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Empresa')">Assinar Empresa</button>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Business</div>
+            <div class="plan-price">R$ 249,90</div><div class="plan-period">/mês</div>
+            <div class="plan-features">
+              <div class="plan-feature">Até 30 usuários</div>
+              <div class="plan-feature">Tudo do Empresa</div>
               <div class="plan-feature">API personalizada</div>
               <div class="plan-feature">White-label</div>
+            </div>
+            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Business')">Assinar Business</button>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">Sob consulta</div><div class="plan-period">a partir de R$ 399,90/mês</div>
+            <div class="plan-features">
+              <div class="plan-feature">Usuários ilimitados</div>
+              <div class="plan-feature">Tudo do Business</div>
               <div class="plan-feature">Suporte exclusivo</div>
             </div>
-            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Premium')">Assinar Premium</button>
+            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Enterprise')">Falar com a Stylo</button>
           </div>
         </div>
         <div class="chart-box">
@@ -1888,9 +2097,11 @@ select.form-control option{background:var(--surface2);}
             <div class="form-group" style="margin-bottom:10px"><label>E-mail do cliente</label><input class="form-control" id="admEmailLib" placeholder="email@cliente.com"></div>
             <div class="form-group" style="margin-bottom:10px"><label>Plano</label>
               <select class="form-control" id="admPlanoLib">
-                <option value="Starter">Starter — 1 dispositivo (só o titular)</option>
-                <option value="Pro" selected>Pro — titular + 2 extras (3 no total)</option>
-                <option value="Premium">Premium — titular + 7 extras (8 no total)</option>
+                <option value="Starter">Starter — 1 usuário</option>
+                <option value="Profissional" selected>Profissional — até 5 usuários</option>
+                <option value="Empresa">Empresa — até 15 usuários</option>
+                <option value="Business">Business — até 30 usuários</option>
+                <option value="Enterprise">Enterprise — usuários ilimitados</option>
               </select>
             </div>
             <div style="display:flex;gap:8px">
@@ -3793,13 +4004,21 @@ function entrarNoApp(conta){
   setEl('userNome',conta.user||conta.email);
   const av=document.getElementById('userAvatar');
   if(av)av.textContent=(conta.user||conta.email||'U').charAt(0).toUpperCase();
+  // Sempre reseta a visibilidade do menu primeiro — evita que itens fiquem escondidos
+  // (ou o Admin apareça indevidamente) de uma sessão anterior no mesmo aparelho.
+  document.querySelectorAll('.nav-item[data-page]').forEach(el=>{el.style.display='';});
   const emailAdmin='stylodesignprojetos@gmail.com';
   const isAdmin=conta.email===emailAdmin;
   ['navAdmin','btnAdminHdr'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isAdmin?'':'none';});
   aplicarBranding();irPara('app');
   navTo('dashboard');
-  licencaIniciar();licencaVerificar();registrarUsuario();
-  verificarLimiteDispositivos(conta);
+  if(conta.isFuncionario){
+    // Funcionário usa a conta/plano do dono — sem licença/trial própria e sem contar no limite de dispositivos do dono
+    aplicarPermissoesFuncionario(conta);
+  } else {
+    licencaIniciar();licencaVerificar();registrarUsuario();
+    verificarLimiteDispositivos(conta);
+  }
   nuvemIniciarAutoSync();
   spAtualizarSino();
 }
@@ -3854,7 +4073,7 @@ function navTo(page){
   if(pageEl)pageEl.classList.add('active');
   const navEl=document.querySelector(`.nav-item[data-page="${page}"]`);
   if(navEl)navEl.classList.add('active');
-  const renders={dashboard:renderDashboard,clientes:renderClientes,projetos:renderProjetos,financeiro:renderFinanceiro,kanban:renderKanban,calendario:renderCalendario,relatorios:renderRelatorios,admin:admAbrirPainel,planos:renderPlanos,configuracoes:renderConfiguracoes,materiais:renderMateriais,tabelaPrecos:renderTabelaPrecos,solicitarProjeto:renderSolicitarProjeto,planoCorte:function(){renderListaModulosSalvos();atualizarSelectsCorMDF();}};
+  const renders={dashboard:renderDashboard,clientes:renderClientes,projetos:renderProjetos,financeiro:renderFinanceiro,kanban:renderKanban,calendario:renderCalendario,relatorios:renderRelatorios,admin:admAbrirPainel,planos:renderPlanos,configuracoes:renderConfiguracoes,materiais:renderMateriais,tabelaPrecos:renderTabelaPrecos,solicitarProjeto:renderSolicitarProjeto,estoque:renderEstoque,equipe:renderEquipe,planoCorte:function(){renderListaModulosSalvos();atualizarSelectsCorMDF();}};
   if(renders[page])renders[page]();
   // fechar sidebar no mobile
   if(window.innerWidth<768){document.getElementById('sidebar').classList.remove('open');}
@@ -4985,6 +5204,34 @@ function renderDashboard(){
   setEl('ds-fat',formatBRL(rec));setEl('ds-ativos',ativos.length);setEl('ds-conc',conc.length);
   setEl('ds-cli',cli.length);setEl('ds-atr',atrasados.length);setEl('ds-lucro',formatBRL(lucro));
   const conta=LSJ('conta');if(conta){setEl('dashGreeting',`Bem-vindo, ${conta.user||''}! 👋`);}
+
+  // ── NOVOS INDICADORES DO DASHBOARD INTELIGENTE ──
+  // Serviços de hoje (eventos da agenda marcados para hoje)
+  const hojeStr=hoje();
+  const eventosHoje=getEventos().filter(e=>e.data===hojeStr);
+  setEl('ds-hoje',eventosHoje.length);
+
+  // Valor a receber = soma do valor dos projetos ainda não finalizados (pipeline em aberto)
+  const valorReceber=ativos.reduce((s,p)=>s+(parseFloat(p.valor)||0),0);
+  setEl('ds-receber',formatBRL(valorReceber));
+
+  // Chapas MDF em estoque (soma de todas as cores cadastradas) + alerta se alguma estiver baixa
+  const mdfs=LSJ(chaveMateriais())||[];
+  const totalChapas=mdfs.reduce((s,m)=>s+(parseInt(m.estoque)||0),0);
+  const algumBaixo=mdfs.some(m=>m.estoqueMin>0&&(m.estoque||0)<=m.estoqueMin);
+  const elEstoque=document.getElementById('ds-estoque');
+  if(elEstoque){elEstoque.textContent=totalChapas+(algumBaixo?' ⚠️':'');elEstoque.style.color=algumBaixo?'#ef4444':'';}
+
+  // Tempo médio de produção — média das horas estimadas em todos os orçamentos já calculados
+  const orcamentos=Object.values(getOrcamentos());
+  const temposCalculados=orcamentos.map(o=>o&&o.financeiro&&o.financeiro._ultimoResultado&&o.financeiro._ultimoResultado.tempo&&o.financeiro._ultimoResultado.tempo.totalHoras).filter(t=>t>0);
+  const tempoMedio=temposCalculados.length?temposCalculados.reduce((a,b)=>a+b,0)/temposCalculados.length:0;
+  setEl('ds-tempo',tempoMedio?tempoMedio.toFixed(1)+'h':'—');
+
+  // Clientes novos cadastrados neste mês
+  const clientesNovos=cli.filter(c=>{if(!c.dataCad)return false;const d=new Date(c.dataCad+'T00:00:00');return d.getMonth()===mes&&d.getFullYear()===ano;});
+  setEl('ds-cliNovos',clientesNovos.length);
+
   // Chart faturamento
   const cf=document.getElementById('chartFat');
   if(cf){
@@ -5191,14 +5438,22 @@ function mdfSalvar(){
   const esp=document.getElementById('mdf-esp').value;
   const acabamento=document.getElementById('mdf-acabamento').value;
   const preco=parseFloat(document.getElementById('mdf-preco').value)||0;
+  const estoque=parseInt(document.getElementById('mdf-estoque').value)||0;
+  const estoqueMin=parseInt(document.getElementById('mdf-estoqueMin').value)||0;
   if(!nome||!cor){toast('⚠️ Preencha nome e cor');return;}
   let lista=LSJ(chaveMateriais())||[];
-  lista.push({id:Date.now(),nome,cor,esp,acabamento,preco});
+  lista.push({id:Date.now(),nome,cor,esp,acabamento,preco,estoque,estoqueMin});
   LSJ(chaveMateriais(),lista);
-  ['mdf-nome','mdf-cor','mdf-preco'].forEach(id=>document.getElementById(id).value='');
+  ['mdf-nome','mdf-cor','mdf-preco','mdf-estoque','mdf-estoqueMin'].forEach(id=>document.getElementById(id).value='');
   renderMdfLista();
   atualizarSelectsCorMDF();
   toast('✅ MDF cadastrado!');
+}
+function mdfAjustarEstoque(id,delta){
+  let lista=LSJ(chaveMateriais())||[];
+  lista=lista.map(m=>m.id===id?{...m,estoque:Math.max(0,(m.estoque||0)+delta)}:m);
+  LSJ(chaveMateriais(),lista);
+  renderMdfLista();
 }
 function mdfRemover(id){
   let lista=LSJ(chaveMateriais())||[];
@@ -5210,12 +5465,22 @@ function mdfRemover(id){
 function renderMdfLista(){
   const tb=document.getElementById('mdfLista');if(!tb)return;
   const lista=LSJ(chaveMateriais())||[];
-  tb.innerHTML=lista.map(m=>`<tr>
+  tb.innerHTML=lista.map(m=>{
+    const baixo=m.estoqueMin>0&&(m.estoque||0)<=m.estoqueMin;
+    return`<tr>
     <td>${m.nome}</td><td>${m.cor}</td><td>${m.esp}mm</td>
     <td>${m.acabamento==='madeirado'?'🪵 Madeirado':'⬜ Liso'}</td>
     <td>${m.preco?formatBRL(m.preco):'-'}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="tbl-btn" onclick="mdfAjustarEstoque(${m.id},-1)">➖</button>
+        <span style="font-weight:700;min-width:20px;text-align:center;color:${baixo?'#ef4444':'inherit'}">${m.estoque||0}</span>
+        <button class="tbl-btn" onclick="mdfAjustarEstoque(${m.id},1)">➕</button>
+        ${baixo?'<span title="Estoque baixo!" style="font-size:12px">⚠️</span>':''}
+      </div>
+    </td>
     <td><button class="tbl-btn" onclick="mdfRemover(${m.id})">🗑️</button></td>
-  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:16px">Nenhum MDF cadastrado ainda</td></tr>';
+  </tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:16px">Nenhum MDF cadastrado ainda</td></tr>';
 }
 
 function puxadorSalvar(){
@@ -5606,7 +5871,7 @@ let _nuvemEnvioTimer = null;
 let _nuvemSyncInterval = null;
 let _nuvemStatus = 'idle'; // idle | enviando | recebendo | erro | ok
 
-function chaveContaNuvem(){const c=LSJ('conta');return c?c.email:null;}
+function chaveContaNuvem(){const c=LSJ('conta');return c?(c.isFuncionario?c.ownerEmail:c.email):null;}
 
 function nuvemSetStatus(s){_nuvemStatus=s;const el=document.getElementById('nuvemStatusTxt');if(el){
   const map={idle:'—',enviando:'📤 Enviando...',recebendo:'📥 Recebendo...',ok:'✅ Sincronizado',erro:'⚠️ Falha ao sincronizar (verifique internet/JSONBin)'};
@@ -5614,7 +5879,9 @@ function nuvemSetStatus(s){_nuvemStatus=s;const el=document.getElementById('nuve
 }}
 
 function nuvemEmpacotarDados(){
-  return {clientes:getClientes(),projetos:getProjetos(),lancamentos:getLanc(),eventos:getEventos(),atualizadoEm:Date.now()};
+  return {clientes:getClientes(),projetos:getProjetos(),lancamentos:getLanc(),eventos:getEventos(),
+    equipeMembros:getEquipeMembros(),avisos:getAvisos(),cronograma:getCronograma(),listaCompras:getListaCompras(),estoqueGenerico:getEstoqueGenerico(),
+    atualizadoEm:Date.now()};
 }
 
 function nuvemAgendarEnvio(){
@@ -5648,6 +5915,11 @@ async function nuvemPuxarAgora(){
     setProjetos(remoto.projetos||[]);
     setLanc(remoto.lancamentos||[]);
     setEventos(remoto.eventos||[]);
+    setEquipeMembros(remoto.equipeMembros||[]);
+    setAvisos(remoto.avisos||[]);
+    setCronograma(remoto.cronograma||[]);
+    setListaCompras(remoto.listaCompras||[]);
+    setEstoqueGenerico(remoto.estoqueGenerico||[]);
     _nuvemAplicandoRemoto=false;
     LS('nuvemVersao_'+email,String(remoto.atualizadoEm));
     nuvemAtualizarTelas();
@@ -5656,9 +5928,10 @@ async function nuvemPuxarAgora(){
 }
 
 function nuvemAtualizarTelas(){
-  ['renderDashboard','renderClientes','renderProjetos','renderKanban','renderFinanceiro','renderCalendario','renderCalendarioProducao','renderRelatorios'].forEach(fn=>{
+  ['renderDashboard','renderClientes','renderProjetos','renderKanban','renderFinanceiro','renderCalendario','renderCalendarioProducao','renderRelatorios','renderEstoque','renderEquipe'].forEach(fn=>{
     try{if(typeof window[fn]==='function')window[fn]();}catch(e){}
   });
+  try{spAtualizarSino();}catch(e){}
 }
 
 function nuvemIniciarAutoSync(){
@@ -5670,7 +5943,10 @@ function nuvemPararAutoSync(){clearInterval(_nuvemSyncInterval);_nuvemSyncInterv
 function nuvemSincronizarAgora(){toast('🔄 Sincronizando...');nuvemPuxarAgora();}
 
 // ── LIMITE DE ACESSOS POR PLANO (dispositivos por e-mail) ──
-const PLANO_LIMITES = { 'Starter': 1, 'Pro': 3, 'Premium': 8 };
+// Quantos APARELHOS podem usar o MESMO login (anti-compartilhamento de senha) — por plano
+const PLANO_LIMITES = { 'Starter': 1, 'Profissional': 3, 'Empresa': 5, 'Business': 8, 'Enterprise': 999 };
+// Quantos USUÁRIOS (dono + funcionários com login próprio) a empresa pode ter — por plano
+const PLANO_LIMITE_USUARIOS = { 'Starter': 1, 'Profissional': 5, 'Empresa': 15, 'Business': 30, 'Enterprise': Infinity };
 const EMAIL_ADMIN = 'stylodesignprojetos@gmail.com';
 const ADMIN_DEVICE_LIMIT = 4; // admin: titular (PC) + até 3 extras = 4 no total, sem limite de dias
 
@@ -6661,17 +6937,78 @@ function pcCalcularGavetaParametrica(){
 // dashboard do admin + notificações in-app. Tudo salvo na nuvem (record.solicitacoesProjeto).
 // ══════════════════════════════════════════════════════
 const SP_STATUS_FLOW=['Solicitado','Recebido','Em análise','Modelagem 3D','Renderização','Revisão','Aguardando aprovação','Finalizado','Entregue'];
-const SP_VALOR_ESTIMADO={'Cozinha':250,'Guarda-roupa':180,'Banheiro':120,'Dormitório':150,'Home Office':150,'Sala':150,'Lavanderia':100,'Área Gourmet':200,'Outro':0};
+const SP_AMBIENTES = [
+  {id:'cozinha',     nome:'🍳 Cozinha'},
+  {id:'guardaroupa', nome:'👔 Guarda-Roupa'},
+  {id:'dormitorio',  nome:'🛏️ Dormitório'},
+  {id:'banheiro',    nome:'🚿 Banheiro'},
+  {id:'homeoffice',  nome:'💻 Home Office'},
+  {id:'sala',        nome:'🛋️ Sala'},
+  {id:'lavanderia',  nome:'🧺 Lavanderia'},
+  {id:'gourmet',     nome:'🍖 Área Gourmet'},
+  {id:'painel',      nome:'📺 Painel TV'},
+  {id:'closet',      nome:'👗 Closet'},
+  {id:'outro',       nome:'📦 Outro'},
+];
+const SP_VALOR_POR_AMBIENTE = 60; // R$ por ambiente
+
 let _spArquivos=[];
+let _spAmbientesSelecionados = new Set();
 
 function chaveCapacidadeSP(){return 'spCapacidadeDiaria';}
 function getCapacidadeDiariaSP(){return parseInt(LS(chaveCapacidadeSP()))||3;}
 
+function spRenderAmbientes(){
+  const grid = document.getElementById('spAmbientesGrid'); if(!grid) return;
+  grid.innerHTML = SP_AMBIENTES.map(a=>`
+    <button type="button" onclick="spToggleAmbiente('${a.id}')" id="spAmb_${a.id}"
+      style="padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);
+             color:var(--text2);cursor:pointer;font-size:13px;font-weight:500;text-align:left;
+             transition:all .15s;display:flex;align-items:center;gap:8px">
+      <span id="spAmbCheck_${a.id}" style="font-size:16px">⬜</span>
+      <span>${a.nome}</span>
+    </button>`).join('');
+}
+
+function spToggleAmbiente(id){
+  if(_spAmbientesSelecionados.has(id)) _spAmbientesSelecionados.delete(id);
+  else _spAmbientesSelecionados.add(id);
+  spAtualizarValorEstimado();
+}
+
 function spAtualizarValorEstimado(){
-  const amb=document.getElementById('spAmbiente')?.value;
-  const v=SP_VALOR_ESTIMADO[amb];
-  const el=document.getElementById('spValorEstimado');
-  if(el)el.innerHTML=v?formatBRL(v)+' <span style="font-size:12px;color:var(--text2);font-weight:400">(estimativa — valor final combinado após análise)</span>':'A combinar';
+  // atualiza visual dos botões
+  SP_AMBIENTES.forEach(a=>{
+    const btn=document.getElementById('spAmb_'+a.id);
+    const check=document.getElementById('spAmbCheck_'+a.id);
+    const sel=_spAmbientesSelecionados.has(a.id);
+    if(btn){
+      btn.style.borderColor=sel?'var(--accent)':'var(--border)';
+      btn.style.background=sel?'rgba(201,168,76,0.15)':'var(--surface2)';
+      btn.style.color=sel?'var(--accent2)':'var(--text2)';
+      btn.style.fontWeight=sel?'700':'500';
+    }
+    if(check) check.textContent=sel?'✅':'⬜';
+  });
+
+  const n=_spAmbientesSelecionados.size;
+  const total=n*SP_VALOR_POR_AMBIENTE;
+
+  const elVal=document.getElementById('spValorEstimado');
+  const elRes=document.getElementById('spAmbientesResumo');
+
+  if(elVal) elVal.textContent=n===0?'R$ 0,00':formatBRL(total);
+  if(elRes){
+    if(n===0) elRes.textContent='Nenhum ambiente selecionado';
+    else {
+      const nomes=SP_AMBIENTES.filter(a=>_spAmbientesSelecionados.has(a.id)).map(a=>a.nome).join(', ');
+      elRes.innerHTML=`<b style="color:var(--text)">${n} ambiente${n>1?'s':''}</b> selecionado${n>1?'s':''}: ${nomes}`;
+    }
+  }
+
+  // atualiza o campo hidden com os nomes para usar no envio
+  const el=document.getElementById('spAmbiente');
+  if(el) el.value=SP_AMBIENTES.filter(a=>_spAmbientesSelecionados.has(a.id)).map(a=>a.nome).join(', ')||'Não informado';
 }
 function spAvisoPrioridade(){
   const p=document.getElementById('spPrioridade')?.value;
@@ -6681,10 +7018,12 @@ function spAvisoPrioridade(){
 
 function renderSolicitarProjeto(){
   _spArquivos=[];
+  _spAmbientesSelecionados=new Set();
   const ids=['spClienteNome','spClienteTel','spClienteCidade','spDescricao','spMateriais','spCores','spFerragens','spObservacoes','spLinkVideo'];
   ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const prev=document.getElementById('spArquivosPreview');if(prev)prev.innerHTML='';
   document.getElementById('spPrazo').value='';
+  spRenderAmbientes();
   spAtualizarValorEstimado();
   spAvisoPrioridade();
   spRenderCalendario();
@@ -6773,17 +7112,21 @@ async function spEnviarSolicitacao(){
   if(!descricao){toast('⚠️ Descreva o projeto');return;}
   if(!prazo){toast('⚠️ Escolha uma data no calendário');return;}
 
-  const ambiente=gv('spAmbiente');
+  const nAmbientes=_spAmbientesSelecionados.size;
+  if(nAmbientes===0){toast('⚠️ Selecione ao menos 1 ambiente');return;}
+  const ambientesNomes=SP_AMBIENTES.filter(a=>_spAmbientesSelecionados.has(a.id)).map(a=>a.nome);
+  const ambiente=ambientesNomes.join(', ');
   const item={
     id:'sol_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),
     emailMarceneiro:conta.email,nomeMarceneiro:conta.user||conta.email,
     clienteFinal:{nome:clienteNome,telefone:gv('spClienteTel'),cidade:gv('spClienteCidade'),tipoImovel:gv('spTipoImovel')},
     ambiente,
+    ambientes:ambientesNomes,
     descricao,materiais:gv('spMateriais'),cores:gv('spCores'),ferragens:gv('spFerragens'),observacoes:gv('spObservacoes'),
     arquivos:_spArquivos,linkVideo:gv('spLinkVideo'),
     prazoDesejado:prazo,
     prioridade:gv('spPrioridade')||'Normal',
-    valorEstimado:SP_VALOR_ESTIMADO[ambiente]||0,
+    valorEstimado:nAmbientes*SP_VALOR_POR_AMBIENTE,
     status:'Solicitado',
     enviadoEm:Date.now(),
     historico:[{status:'Solicitado',em:Date.now(),obs:''}],
@@ -6820,12 +7163,15 @@ async function spCarregarMinhasSolicitacoes(){
   const todas=(record&&record.solicitacoesProjeto)||[];
   const minhas=todas.filter(s=>s.emailMarceneiro===conta.email).sort((a,b)=>b.enviadoEm-a.enviadoEm);
   if(!minhas.length){el.innerHTML='<p style="color:var(--text2);font-size:13px">Você ainda não enviou nenhuma solicitação.</p>';return;}
-  el.innerHTML=minhas.map(s=>`
+  el.innerHTML=minhas.map(s=>{
+    const nAmb=(s.ambientes&&s.ambientes.length)||(s.ambiente?s.ambiente.split(',').length:0);
+    return`
     <div class="chart-box" style="margin-bottom:12px;padding:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-        <b>${s.ambiente} — ${s.clienteFinal.nome}</b>
+        <b>🏠 ${nAmb} ambiente${nAmb>1?'s':''} — ${s.clienteFinal.nome}</b>
         <span style="font-size:11px;color:var(--text2)">Prazo: ${new Date(s.prazoDesejado+'T00:00').toLocaleDateString('pt-BR')} · ${s.prioridade}</span>
       </div>
+      <div style="font-size:12px;color:var(--accent2);margin-top:2px">${s.ambiente}</div>
       ${spEsteiraHTML(s.status)}
       <p style="font-size:13px;color:var(--text2)">${s.descricao}</p>
       ${s.arquivos&&s.arquivos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${s.arquivos.map(a=>a.tipo==='imagem'?`<img src="${a.dataUrl}" style="width:50px;height:50px;object-fit:cover;border-radius:6px">`:`<span style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:6px">📄 ${a.nome}</span>`).join('')}</div>`:''}
@@ -6833,32 +7179,42 @@ async function spCarregarMinhasSolicitacoes(){
         <b style="font-size:12px;color:#4ade80">📥 Downloads disponíveis:</b>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${s.entregaveis.map(a=>`<a href="${a.dataUrl}" download="${a.nome}" style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:6px;color:var(--accent2);text-decoration:none">⬇️ ${a.nome}</a>`).join('')}</div>
       </div>`:''}
-    </div>`).join('');
+    </div>`;}).join('');
 }
 
 // ── NOTIFICAÇÕES IN-APP ──
 function chaveUltimaVezVistoSP(){const c=LSJ('conta');return 'spUltimaVezVisto_'+(c?c.email:'geral');}
+async function spColetarEventosNotificacao(){
+  const conta=LSJ('conta');if(!conta)return[];
+  const record=await jbLerRegistro();if(!record)return[];
+  const eventos=[];
+  // Histórico das minhas solicitações de projeto 3D (já existia)
+  const minhas=((record.solicitacoesProjeto)||[]).filter(s=>s.emailMarceneiro===conta.email);
+  minhas.forEach(s=>(s.historico||[]).forEach(h=>eventos.push({tipo:'projeto',em:h.em,titulo:`${s.ambiente} — ${s.clienteFinal.nome}`,detalhe:h.status,obs:h.obs})));
+  // Avisos do mural da equipe (novo) — só os relevantes pro cargo de quem está logado
+  const ownerScope=conta.isFuncionario?conta.ownerEmail:conta.email;
+  const dadosEmpresa=record.dadosApp&&record.dadosApp[ownerScope];
+  let avisos=(dadosEmpresa&&dadosEmpresa.avisos)||[];
+  if(conta.isFuncionario)avisos=avisos.filter(a=>a.papelAlvo==='Todos'||a.papelAlvo===conta.cargo);
+  avisos.forEach(a=>eventos.push({tipo:'aviso',em:a.criadoEm,titulo:`📣 ${a.papelAlvo}`,detalhe:a.texto,obs:a.autor?`por ${a.autor}`:''}));
+  eventos.sort((a,b)=>b.em-a.em);
+  return eventos;
+}
 async function spAtualizarSino(){
   const conta=LSJ('conta');if(!conta)return;
   const ultimaVez=parseInt(LS(chaveUltimaVezVistoSP()))||0;
-  const record=await jbLerRegistro();
-  const minhas=((record&&record.solicitacoesProjeto)||[]).filter(s=>s.emailMarceneiro===conta.email);
-  let naoLidas=0;
-  minhas.forEach(s=>(s.historico||[]).forEach(h=>{if(h.em>ultimaVez)naoLidas++;}));
+  const eventos=await spColetarEventosNotificacao();
+  const naoLidas=eventos.filter(e=>e.em>ultimaVez).length;
   const badge=document.getElementById('sinoContador');
   if(badge){badge.style.display=naoLidas>0?'flex':'none';badge.textContent=naoLidas;}
 }
 async function spAbrirNotificacoes(){
   const conta=LSJ('conta');if(!conta)return;
-  const record=await jbLerRegistro();
-  const minhas=((record&&record.solicitacoesProjeto)||[]).filter(s=>s.emailMarceneiro===conta.email);
-  const eventos=[];
-  minhas.forEach(s=>(s.historico||[]).forEach(h=>eventos.push({...h,projeto:`${s.ambiente} — ${s.clienteFinal.nome}`})));
-  eventos.sort((a,b)=>b.em-a.em);
-  const html=eventos.length?eventos.slice(0,20).map(e=>`
+  const eventos=await spColetarEventosNotificacao();
+  const html=eventos.length?eventos.slice(0,25).map(e=>`
     <div style="padding:10px;border-bottom:1px solid var(--border)">
-      <b style="font-size:12px">${e.projeto}</b><br>
-      <span style="font-size:12px;color:var(--accent2)">${e.status}</span>
+      <b style="font-size:12px">${e.tipo==='aviso'?'📣 Aviso — ':''}${e.titulo}</b><br>
+      <span style="font-size:12px;color:var(--accent2)">${e.detalhe}</span>
       <span style="font-size:11px;color:var(--text2)"> · ${new Date(e.em).toLocaleString('pt-BR')}</span>
       ${e.obs?`<p style="font-size:12px;margin-top:4px">${e.obs}</p>`:''}
     </div>`).join(''):'<p style="padding:14px;font-size:13px;color:var(--text2)">Sem notificações ainda.</p>';
@@ -6905,16 +7261,19 @@ async function admCarregarSolicitacoes(){
 
   if(!todas.length){el.innerHTML=dash+'<p style="color:var(--text2);font-size:13px">Nenhuma solicitação recebida ainda.</p>';return;}
 
-  const lista=todas.map(s=>`
+  const lista=todas.map(s=>{
+    const nAmb=(s.ambientes&&s.ambientes.length)||(s.ambiente?s.ambiente.split(',').length:0);
+    return`
     <div class="chart-box" style="margin-bottom:10px;padding:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer" onclick="admToggleDetalheSP('${s.id}')">
         <div>
-          <b>${s.ambiente} — ${s.clienteFinal.nome}</b>
-          <span style="font-size:11px;color:var(--text2)"> · ${s.nomeMarceneiro} (${s.emailMarceneiro}) · ${s.clienteFinal.cidade||''}</span>
+          <b>🏠 ${nAmb} ambiente${nAmb>1?'s':''} — ${s.clienteFinal.nome}</b>
+          <div style="font-size:11px;color:var(--accent2)">${s.ambiente}</div>
+          <span style="font-size:11px;color:var(--text2)">${s.nomeMarceneiro} (${s.emailMarceneiro}) · ${s.clienteFinal.cidade||''}</span>
         </div>
         <span style="font-size:11px;font-weight:700;color:var(--accent2)">${s.status} ▾</span>
       </div>
-      <div style="font-size:11px;color:var(--text2);margin-top:4px">Prazo: ${new Date(s.prazoDesejado+'T00:00').toLocaleDateString('pt-BR')} · Prioridade: ${s.prioridade}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Prazo: ${new Date(s.prazoDesejado+'T00:00').toLocaleDateString('pt-BR')} · Prioridade: ${s.prioridade} · Valor estimado: ${formatBRL(s.valorEstimado||0)}</div>
       <div id="admDetalhe_${s.id}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
         ${spEsteiraHTML(s.status)}
         <p style="font-size:13px"><b>Descrição:</b> ${s.descricao}</p>
@@ -6935,7 +7294,7 @@ async function admCarregarSolicitacoes(){
           <button class="btn-secondary" onclick="admEnviarObservacao('${s.id}')">Enviar</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;}).join('');
   el.innerHTML=dash+lista;
 }
 function admToggleDetalheSP(id){
@@ -6977,6 +7336,454 @@ function admUploadEntregavel(id,e){
     };
     reader.readAsDataURL(file);
   });
+}
+
+// ══════════════════════════════════════════════════════
+// ESTOQUE COMPLETO — chapas MDF (já existente em Materiais) + categorias genéricas
+// (corrediças, dobradiças, fita de borda, parafusos, cola, outros), tudo sincronizado em nuvem.
+// ══════════════════════════════════════════════════════
+function getEstoqueGenerico(){return LSJ('ap2_estoqueGenerico')||[];}
+function setEstoqueGenerico(v){LSJ('ap2_estoqueGenerico',v);if(!_nuvemAplicandoRemoto)nuvemAgendarEnvio();}
+
+const EST_CATEGORIAS={
+  corredica:{label:'Corrediça',placeholder:'Ex: 45cm telescópica',unidades:['un','par']},
+  dobradica:{label:'Dobradiça',placeholder:'Ex: reta 35mm inox',unidades:['un']},
+  fita:{label:'Fita de Borda',placeholder:'Ex: 22mm x 50m — Branco TX',unidades:['rolo','metro']},
+  parafuso:{label:'Parafuso',placeholder:'Ex: 4,0 x 40mm cabeça chata',unidades:['caixa','un','kg']},
+  cola:{label:'Cola',placeholder:'Ex: Cascorez Extra 1kg',unidades:['un','litro','kg']},
+  outro:{label:'Outro Material',placeholder:'Ex: descreva o item',unidades:['un','caixa','pacote','metro','kg','litro']},
+};
+
+function estToggleAba(cat,btn){
+  document.querySelectorAll('#page-estoque .pc-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('#page-estoque .est-aba').forEach(el=>el.style.display='none');
+  const el=document.getElementById('estAba-'+cat);if(el)el.style.display='block';
+  if(cat!=='mdf')estRenderCategoria(cat);
+}
+
+function estRenderCategoria(cat){
+  const el=document.getElementById('estAba-'+cat);if(!el)return;
+  const info=EST_CATEGORIAS[cat];if(!info)return;
+  el.innerHTML=`
+    <div class="chart-box" style="margin-bottom:16px">
+      <div class="chart-title">➕ Adicionar ${info.label}</div>
+      <div class="orc-row col4">
+        <div class="orc-field" style="grid-column:span 2"><label>Especificação</label><input id="est_${cat}_nome" placeholder="${info.placeholder}"></div>
+        <div class="orc-field"><label>Quantidade</label><input id="est_${cat}_qtd" type="number" placeholder="0"></div>
+        <div class="orc-field"><label>Unidade</label><select id="est_${cat}_un">${info.unidades.map(u=>`<option>${u}</option>`).join('')}</select></div>
+      </div>
+      <div class="orc-row col2">
+        <div class="orc-field"><label>Estoque mínimo (alerta) <small style="color:var(--text2)">opcional</small></label><input id="est_${cat}_min" type="number" placeholder="Ex: 5"></div>
+      </div>
+      <button class="btn-primary" style="margin-top:8px" onclick="estAdicionarItem('${cat}')">💾 Adicionar</button>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">📋 ${info.label}s em estoque</div>
+      <div class="table-wrap" style="border:none"><table class="data-table">
+        <thead><tr><th>Especificação</th><th>Quantidade</th><th>Ações</th></tr></thead>
+        <tbody id="estLista_${cat}"></tbody>
+      </table></div>
+    </div>`;
+  estRenderLista(cat);
+}
+
+function estAdicionarItem(cat){
+  const nome=document.getElementById(`est_${cat}_nome`)?.value.trim();
+  const qtd=parseFloat(document.getElementById(`est_${cat}_qtd`)?.value)||0;
+  const un=document.getElementById(`est_${cat}_un`)?.value||'un';
+  const min=parseFloat(document.getElementById(`est_${cat}_min`)?.value)||0;
+  if(!nome){toast('⚠️ Descreva o item');return;}
+  const lista=getEstoqueGenerico();
+  lista.push({id:'est_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),categoria:cat,nome,qtd,unidade:un,min});
+  setEstoqueGenerico(lista);
+  ['nome','qtd','min'].forEach(f=>{const e=document.getElementById(`est_${cat}_${f}`);if(e)e.value='';});
+  estRenderLista(cat);
+  toast('✅ Adicionado ao estoque!');
+}
+function estAjustarQtd(id,delta){
+  const lista=getEstoqueGenerico().map(i=>i.id===id?{...i,qtd:Math.max(0,(i.qtd||0)+delta)}:i);
+  setEstoqueGenerico(lista);
+  const item=lista.find(i=>i.id===id);
+  if(item)estRenderLista(item.categoria);
+}
+function estRemoverItem(id,cat){
+  setEstoqueGenerico(getEstoqueGenerico().filter(i=>i.id!==id));
+  estRenderLista(cat);
+}
+function estRenderLista(cat){
+  const tb=document.getElementById('estLista_'+cat);if(!tb)return;
+  const lista=getEstoqueGenerico().filter(i=>i.categoria===cat);
+  tb.innerHTML=lista.map(i=>{
+    const baixo=i.min>0&&(i.qtd||0)<=i.min;
+    return`<tr>
+      <td>${i.nome}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="tbl-btn" onclick="estAjustarQtd('${i.id}',-1)">➖</button>
+          <span style="font-weight:700;min-width:40px;text-align:center;color:${baixo?'#ef4444':'inherit'}">${i.qtd} ${i.unidade}</span>
+          <button class="tbl-btn" onclick="estAjustarQtd('${i.id}',1)">➕</button>
+          ${baixo?'<span title="Estoque baixo!">⚠️</span>':''}
+        </div>
+      </td>
+      <td><button class="tbl-btn" onclick="estRemoverItem('${i.id}','${cat}')">🗑️</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--text2);padding:16px">Nada cadastrado ainda</td></tr>';
+}
+
+function renderEstoque(){
+  // Chapas MDF (reaproveita o cadastro de Materiais)
+  const tb=document.getElementById('estListaMdf');
+  if(tb){
+    const mdfs=LSJ(chaveMateriais())||[];
+    tb.innerHTML=mdfs.map(m=>{
+      const baixo=m.estoqueMin>0&&(m.estoque||0)<=m.estoqueMin;
+      return`<tr><td>${m.nome}</td><td>${m.cor}</td><td>${m.esp}mm</td><td style="color:${baixo?'#ef4444':'inherit'};font-weight:700">${m.estoque||0}${baixo?' ⚠️':''}</td></tr>`;
+    }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:16px">Nenhum MDF cadastrado — vá em Materiais</td></tr>';
+  }
+  // Renderiza a categoria genérica ativa (se já estiver visível)
+  Object.keys(EST_CATEGORIAS).forEach(cat=>{
+    const el=document.getElementById('estAba-'+cat);
+    if(el&&el.style.display!=='none')estRenderCategoria(cat);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// EQUIPE & CRONOGRAMA — comunicação, membros, agenda de entregas/instalações, lista de compras
+// ══════════════════════════════════════════════════════
+function getEquipeMembros(){return LSJ('ap2_equipeMembros')||[];}
+function setEquipeMembros(v){LSJ('ap2_equipeMembros',v);if(!_nuvemAplicandoRemoto)nuvemAgendarEnvio();}
+function getAvisos(){return LSJ('ap2_avisos')||[];}
+function setAvisos(v){LSJ('ap2_avisos',v);if(!_nuvemAplicandoRemoto)nuvemAgendarEnvio();}
+function getCronograma(){return LSJ('ap2_cronograma')||[];}
+function setCronograma(v){LSJ('ap2_cronograma',v);if(!_nuvemAplicandoRemoto)nuvemAgendarEnvio();}
+function getListaCompras(){return LSJ('ap2_listaCompras')||[];}
+function setListaCompras(v){LSJ('ap2_listaCompras',v);if(!_nuvemAplicandoRemoto)nuvemAgendarEnvio();}
+
+function chaveMeuPapelDevice(){const c=LSJ('conta');return 'eqMeuPapelDevice_'+(c?c.email:'geral');}
+
+function eqToggleAba(aba,btn){
+  document.querySelectorAll('#page-equipe .pc-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('#page-equipe .eq-aba').forEach(el=>el.style.display='none');
+  const el=document.getElementById('eqAba-'+aba);if(el)el.style.display='block';
+  if(aba==='equipe'&&!document.getElementById('eqPermissoesGrid')?.children.length)eqAplicarPresetCargo();
+}
+
+function eqPopularSelects(){
+  const membros=getEquipeMembros();
+  const opts='<option value="">— selecione —</option>'+membros.map(m=>`<option value="${m.id}">${m.nome} (${m.funcao})</option>`).join('');
+  const crSel=document.getElementById('crResponsavel');if(crSel)crSel.innerHTML=opts;
+  const lcSel=document.getElementById('lcResponsavel');if(lcSel)lcSel.innerHTML=opts;
+  const meuPapelSel=document.getElementById('eqMeuPapel');
+  if(meuPapelSel){
+    const salvo=LS(chaveMeuPapelDevice())||'';
+    meuPapelSel.innerHTML='<option value="">👑 Dono / Ver tudo</option>'+membros.map(m=>`<option value="${m.id}" ${salvo===m.id?'selected':''}>${m.funcao==='Montador'?'🔧':m.funcao==='Motorista'?'🚚':'💼'} ${m.nome} (${m.funcao})</option>`).join('');
+  }
+}
+function eqSalvarMeuPapel(){
+  const v=document.getElementById('eqMeuPapel')?.value||'';
+  LS(chaveMeuPapelDevice(),v);
+  toast(v?'✅ Visão personalizada ativada!':'✅ Mostrando tudo (visão do dono)');
+  eqRenderAvisos();renderCronograma();
+}
+
+// ── COMUNICAÇÃO ──
+function eqEnviarAviso(){
+  const texto=document.getElementById('eqAvisoTexto')?.value.trim();
+  const papel=document.getElementById('eqAvisoPapel')?.value||'Todos';
+  const data=document.getElementById('eqAvisoData')?.value||'';
+  if(!texto){toast('⚠️ Escreva a mensagem');return;}
+  const conta=LSJ('conta');
+  const lista=getAvisos();
+  lista.unshift({id:'av_'+Date.now().toString(36),texto,papelAlvo:papel,data,autor:conta?.user||'Dono',criadoEm:Date.now()});
+  setAvisos(lista);
+  document.getElementById('eqAvisoTexto').value='';
+  eqRenderAvisos();
+  toast('📣 Aviso publicado!');
+}
+function eqRemoverAviso(id){
+  setAvisos(getAvisos().filter(a=>a.id!==id));
+  eqRenderAvisos();
+}
+function eqRenderAvisos(){
+  const el=document.getElementById('eqListaAvisos');if(!el)return;
+  const meuPapelId=LS(chaveMeuPapelDevice())||'';
+  const membro=meuPapelId?getEquipeMembros().find(m=>m.id===meuPapelId):null;
+  let avisos=getAvisos();
+  if(membro)avisos=avisos.filter(a=>a.papelAlvo==='Todos'||a.papelAlvo===membro.funcao);
+  const cores={Todos:'#60a5fa',Administrador:'#c9a84c',Projetista:'#e879f9',Vendedor:'#a78bfa',Marceneiro:'#38bdf8',Motorista:'#4ade80',Montador:'#fb923c',Estoque:'#facc15',Financeiro:'#22d3ee'};
+  el.innerHTML=avisos.length?avisos.map(a=>`
+    <div class="chart-box" style="margin-bottom:8px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <span style="font-size:11px;font-weight:700;color:${cores[a.papelAlvo]||'#999'}">● ${a.papelAlvo}</span>
+        <span style="font-size:11px;color:var(--text2)">${a.autor} · ${new Date(a.criadoEm).toLocaleString('pt-BR')}${a.data?' · Para: '+new Date(a.data+'T00:00').toLocaleDateString('pt-BR'):''}</span>
+      </div>
+      <p style="font-size:13px;margin-top:6px">${a.texto}</p>
+      <button class="tbl-btn" style="margin-top:6px" onclick="eqRemoverAviso('${a.id}')">🗑️ Remover</button>
+    </div>`).join(''):'<p style="color:var(--text2);font-size:13px">Nenhum aviso ainda.</p>';
+}
+
+// ── EQUIPE (membros) ──
+function eqRemoverMembro(id){
+  if(!confirm('Remover este membro da equipe?'))return;
+  setEquipeMembros(getEquipeMembros().filter(m=>m.id!==id));
+  eqRenderMembros();eqPopularSelects();
+  eqAtualizarIndicadorUso();
+}
+function eqRenderMembros(){
+  const tb=document.getElementById('eqListaMembros');if(!tb)return;
+  const ico={Administrador:'👨‍💼',Projetista:'📐',Vendedor:'💼',Marceneiro:'🪚',Motorista:'🚚',Montador:'🔧',Estoque:'📦',Financeiro:'💳',Outro:'👤'};
+  tb.innerHTML=getEquipeMembros().map(m=>`<tr>
+    <td>${m.nome}</td><td>${ico[m.funcao]||'👤'} ${m.funcao}</td>
+    <td>${m.email?`✅ ${m.email}`:'— sem login'}</td>
+    <td>${m.telefone||'—'}</td>
+    <td><button class="tbl-btn" onclick="eqRemoverMembro('${m.id}')">🗑️</button></td>
+  </tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:16px">Nenhum funcionário cadastrado ainda</td></tr>';
+}
+
+// ── CRONOGRAMA ──
+function crAdicionar(){
+  const tipo=document.getElementById('crTipo')?.value||'Entrega';
+  const responsavelId=document.getElementById('crResponsavel')?.value||'';
+  const data=document.getElementById('crData')?.value;
+  const local=document.getElementById('crLocal')?.value.trim();
+  const cliente=document.getElementById('crCliente')?.value.trim();
+  const obs=document.getElementById('crObs')?.value.trim();
+  if(!data){toast('⚠️ Escolha a data');return;}
+  if(!responsavelId){toast('⚠️ Escolha o responsável');return;}
+  const lista=getCronograma();
+  lista.push({id:'cr_'+Date.now().toString(36),tipo,responsavelId,data,local,cliente,obs,status:'Pendente'});
+  setCronograma(lista);
+  ['crLocal','crCliente','crObs'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});
+  renderCronograma();
+  toast('✅ Adicionado ao cronograma!');
+}
+function crConcluir(id){
+  setCronograma(getCronograma().map(c=>c.id===id?{...c,status:c.status==='Concluído'?'Pendente':'Concluído'}:c));
+  renderCronograma();
+}
+function crRemover(id){
+  setCronograma(getCronograma().filter(c=>c.id!==id));
+  renderCronograma();
+}
+function renderCronograma(){
+  const el=document.getElementById('crLista');if(!el)return;
+  const periodo=document.getElementById('crFiltroPeriodo')?.value||'semana';
+  const hojeD=new Date();hojeD.setHours(0,0,0,0);
+  let limite=new Date(hojeD);
+  if(periodo==='semana')limite=new Date(hojeD.getTime()+7*86400000);
+  else if(periodo==='mes')limite=new Date(hojeD.getFullYear(),hojeD.getMonth()+1,1);
+  const meuPapelId=LS(chaveMeuPapelDevice())||'';
+  const membros=getEquipeMembros();
+  let lista=getCronograma().slice().sort((a,b)=>a.data.localeCompare(b.data));
+  if(periodo!=='todos')lista=lista.filter(c=>{const d=new Date(c.data+'T00:00');return d>=hojeD&&d<limite;});
+  if(meuPapelId)lista=lista.filter(c=>c.responsavelId===meuPapelId);
+  const icoTipo={Entrega:'🚚',Instalação:'🔧',Manutenção:'🛠️','Compra/Busca':'🛒',Outro:'📌'};
+  el.innerHTML=lista.length?lista.map(c=>{
+    const resp=membros.find(m=>m.id===c.responsavelId);
+    const atrasado=c.status!=='Concluído'&&c.data<hoje();
+    return`<div class="chart-box" style="margin-bottom:8px;padding:12px;border-left:3px solid ${atrasado?'#ef4444':(c.status==='Concluído'?'#4ade80':'var(--accent)')}">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <b>${icoTipo[c.tipo]||'📌'} ${c.tipo}${c.cliente?' — '+c.cliente:''}</b>
+        <span style="font-size:11px;color:var(--text2)">${new Date(c.data+'T00:00').toLocaleDateString('pt-BR')} · ${resp?resp.nome:'—'}</span>
+      </div>
+      ${c.local?`<p style="font-size:12px;color:var(--text2);margin-top:4px">📍 ${c.local}</p>`:''}
+      ${c.obs?`<p style="font-size:13px;margin-top:4px">${c.obs}</p>`:''}
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button class="tbl-btn" onclick="crConcluir('${c.id}')">${c.status==='Concluído'?'↩️ Reabrir':'✅ Concluir'}</button>
+        <button class="tbl-btn" onclick="crRemover('${c.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join(''):'<p style="color:var(--text2);font-size:13px">Nada no período selecionado.</p>';
+}
+
+// ── LISTA DE COMPRAS ──
+function lcAdicionar(){
+  const item=document.getElementById('lcItem')?.value.trim();
+  const qtd=document.getElementById('lcQtd')?.value.trim();
+  const responsavelId=document.getElementById('lcResponsavel')?.value||'';
+  if(!item){toast('⚠️ Descreva o item');return;}
+  const lista=getListaCompras();
+  lista.push({id:'lc_'+Date.now().toString(36),item,qtd,responsavelId,comprado:false});
+  setListaCompras(lista);
+  document.getElementById('lcItem').value='';document.getElementById('lcQtd').value='';
+  renderListaComprasUI();
+  toast('✅ Item adicionado!');
+}
+function lcMarcar(id){
+  setListaCompras(getListaCompras().map(i=>i.id===id?{...i,comprado:!i.comprado}:i));
+  renderListaComprasUI();
+}
+function lcRemover(id){
+  setListaCompras(getListaCompras().filter(i=>i.id!==id));
+  renderListaComprasUI();
+}
+function renderListaComprasUI(){
+  const el=document.getElementById('lcLista');if(!el)return;
+  const membros=getEquipeMembros();
+  const lista=getListaCompras();
+  el.innerHTML=lista.length?lista.map(i=>{
+    const resp=membros.find(m=>m.id===i.responsavelId);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--border)">
+      <input type="checkbox" ${i.comprado?'checked':''} onchange="lcMarcar('${i.id}')" style="width:18px;height:18px">
+      <div style="flex:1">
+        <span style="${i.comprado?'text-decoration:line-through;color:var(--text2)':''}">${i.item}${i.qtd?' — '+i.qtd:''}</span>
+        ${resp?`<div style="font-size:11px;color:var(--text2)">Buscar: ${resp.nome}</div>`:''}
+      </div>
+      <button class="tbl-btn" onclick="lcRemover('${i.id}')">🗑️</button>
+    </div>`;
+  }).join(''):'<p style="color:var(--text2);font-size:13px">Lista vazia.</p>';
+}
+
+// ══════════════════════════════════════════════════════
+// SISTEMA DE CARGOS & PERMISSÕES (Fase 1 — base do sistema)
+// Funcionário loga com o próprio e-mail/senha, mas usa os dados da EMPRESA (dono).
+// Menu é filtrado conforme as permissões marcadas pelo dono no cadastro do funcionário.
+// ══════════════════════════════════════════════════════
+const EQ_MODULOS={
+  dashboard:'Dashboard',clientes:'Clientes',projetos:'Projetos',orcamentos:'Orçamentos',
+  financeiro:'Financeiro',kanban:'Kanban',calendario:'Calendário',relatorios:'Relatórios',
+  estoque:'Estoque',equipe:'Equipe & Cronograma',solicitarProjeto:'Solicitar Projeto 3D',
+  planoCorte:'Plano de Corte',materiais:'Materiais',tabelaPrecos:'Tabela de Preços',
+  planos:'Planos',configuracoes:'Configurações',
+};
+const EQ_CARGO_PRESETS={
+  Administrador:Object.keys(EQ_MODULOS), // vê tudo, exceto o painel Admin (que é exclusivo da Stylo Design)
+  Projetista:['dashboard','clientes','projetos','orcamentos','calendario','planoCorte','materiais','tabelaPrecos','solicitarProjeto'],
+  Vendedor:['dashboard','clientes','orcamentos','calendario','relatorios'],
+  Marceneiro:['dashboard','projetos','planoCorte','materiais','tabelaPrecos','estoque','calendario','equipe'],
+  Motorista:['dashboard','equipe','calendario'],
+  Montador:['dashboard','equipe','calendario'],
+  Estoque:['dashboard','estoque','materiais','tabelaPrecos','equipe'],
+  Financeiro:['dashboard','financeiro','relatorios','clientes'],
+  Outro:['dashboard'],
+};
+function eqRenderPermissoesGrid(marcados){
+  const el=document.getElementById('eqPermissoesGrid');if(!el)return;
+  const ativos=marcados||[];
+  el.innerHTML=Object.entries(EQ_MODULOS).map(([id,label])=>`
+    <label style="display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer">
+      <input type="checkbox" class="eq-perm-check" value="${id}" ${ativos.includes(id)?'checked':''}>
+      ${label}
+    </label>`).join('');
+}
+function eqAplicarPresetCargo(){
+  const cargo=document.getElementById('eqFuncao')?.value||'Outro';
+  eqRenderPermissoesGrid(EQ_CARGO_PRESETS[cargo]||['dashboard']);
+}
+function eqColetarPermissoesMarcadas(){
+  return Array.from(document.querySelectorAll('.eq-perm-check:checked')).map(c=>c.value);
+}
+
+// Índice global (e-mail do funcionário → e-mail do dono) — precisa ser público na nuvem,
+// pois o aparelho do funcionário não sabe de qual empresa ele é até logar.
+function chaveFuncionariosIndex(){return 'funcionariosIndex';}
+async function eqPublicarIndiceFuncionario(emailFuncionario,ownerEmail){
+  if(!emailFuncionario)return;
+  try{
+    await nuvemAtualizarComRetry(
+      record=>{record.funcionariosIndex=record.funcionariosIndex||{};record.funcionariosIndex[emailFuncionario.toLowerCase()]=ownerEmail;},
+      record=>record.funcionariosIndex&&record.funcionariosIndex[emailFuncionario.toLowerCase()]===ownerEmail
+    );
+  }catch(e){console.warn('Funcionário: falha ao publicar índice',e);}
+}
+
+function eqAdicionarMembro(){
+  const nome=document.getElementById('eqNome')?.value.trim();
+  const funcao=document.getElementById('eqFuncao')?.value||'Outro';
+  const telefone=document.getElementById('eqTelefone')?.value.trim();
+  const email=document.getElementById('eqEmail')?.value.trim().toLowerCase();
+  const senha=document.getElementById('eqSenhaMembro')?.value;
+  if(!nome){toast('⚠️ Informe o nome');return;}
+  if(email&&(!senha||senha.length<4)){toast('⚠️ Defina uma senha de pelo menos 4 caracteres pro login dele');return;}
+  const lista=getEquipeMembros();
+  if(email&&lista.some(m=>m.email===email)){toast('⚠️ Já existe um funcionário com esse e-mail');return;}
+  // Só quem tem login (email) consome uma vaga de "usuário" do plano — membros só pra cronograma/aviso não contam.
+  if(email){
+    const checagem=eqChecarLimitePlano();
+    if(!checagem.ok){
+      alert(`⛔ Limite de usuários do plano atingido.\n\nSeu plano ${checagem.plano} permite até ${checagem.limite} usuário(s) com login (você + funcionários). Hoje você já tem ${checagem.usados}.\n\nPra cadastrar mais um funcionário com login, faça upgrade do plano em "Planos". Você ainda pode adicionar este membro sem login, só pra aparecer no cronograma/avisos.`);
+      return;
+    }
+  }
+  const permissoes=eqColetarPermissoesMarcadas();
+  const membro={id:'mb_'+Date.now().toString(36),nome,funcao,cargo:funcao,telefone,email:email||null,senha:email?senha:null,permissoes};
+  lista.push(membro);
+  setEquipeMembros(lista);
+  if(email){
+    const conta=LSJ('conta');
+    const ownerEmail=conta?.isFuncionario?conta.ownerEmail:conta?.email;
+    eqPublicarIndiceFuncionario(email,ownerEmail);
+  }
+  document.getElementById('eqNome').value='';document.getElementById('eqTelefone').value='';
+  document.getElementById('eqEmail').value='';document.getElementById('eqSenhaMembro').value='';
+  eqRenderMembros();eqPopularSelects();
+  eqAtualizarIndicadorUso();
+  toast(email?'✅ Funcionário adicionado! Já pode logar com o e-mail/senha cadastrados.':'✅ Membro adicionado (sem login próprio)!');
+}
+
+// Verifica se a empresa ainda tem vaga de "usuário" no plano atual (dono + funcionários com login)
+function eqChecarLimitePlano(){
+  const conta=LSJ('conta');
+  const ownerEmail=conta?.isFuncionario?conta.ownerEmail:conta?.email;
+  const lic=LSJ('licenca_'+ownerEmail)||{};
+  const plano=lic.plano||'Trial';
+  const limite=PLANO_LIMITE_USUARIOS[plano];
+  if(!limite||limite===Infinity)return{ok:true,plano,limite:'ilimitado',usados:0}; // Trial ou Enterprise: sem checagem
+  const comLogin=getEquipeMembros().filter(m=>m.email).length;
+  const usados=1+comLogin; // 1 = o dono
+  return{ok:usados<limite,plano,limite,usados};
+}
+
+// ── LOGIN DO FUNCIONÁRIO (caminho isolado do login do dono) ──
+async function fazerLoginFuncionario(){
+  const email=document.getElementById('funcEmail')?.value.trim().toLowerCase();
+  const senha=document.getElementById('funcSenha')?.value;
+  const err=document.getElementById('funcLoginErr');if(err)err.textContent='';
+  if(!email||!senha){if(err)err.textContent='⚠️ Preencha e-mail e senha';return;}
+  const record=await jbLerRegistro();
+  if(!record){if(err)err.textContent='⚠️ Sem conexão — tente novamente';return;}
+  const ownerEmail=record.funcionariosIndex&&record.funcionariosIndex[email];
+  if(!ownerEmail){if(err)err.textContent='❌ Funcionário não encontrado. Peça pro dono te cadastrar em Equipe & Cronograma.';return;}
+  const dadosEmpresa=record.dadosApp&&record.dadosApp[ownerEmail];
+  const membro=dadosEmpresa&&(dadosEmpresa.equipeMembros||[]).find(m=>m.email===email);
+  if(!membro){if(err)err.textContent='❌ Funcionário não encontrado nessa empresa.';return;}
+  if(membro.senha!==senha){if(err)err.textContent='❌ Senha incorreta.';return;}
+  const sessao={email,user:membro.nome,isFuncionario:true,ownerEmail,cargo:membro.cargo||membro.funcao,permissoes:membro.permissoes||[],membroId:membro.id};
+  LSJ('conta',sessao);
+  LS('setupDone','1');
+  fecharModal('modalLoginFuncionario');
+  entrarNoApp(sessao);
+  toast(`✅ Bem-vindo, ${membro.nome}!`);
+}
+
+// Esconde no menu lateral tudo que o cargo do funcionário não tem permissão de ver
+function aplicarPermissoesFuncionario(conta){
+  if(!conta||!conta.isFuncionario)return;
+  const permitido=new Set(conta.permissoes||[]);
+  document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
+    const page=el.dataset.page;
+    if(page==='admin')return; // painel admin nunca aparece pra funcionário, isso já é tratado à parte
+    el.style.display=permitido.has(page)?'':'none';
+  });
+}
+
+function eqAtualizarIndicadorUso(){
+  const check=eqChecarLimitePlano();
+  const el=document.getElementById('eqUsoPlano');
+  if(el){
+    if(check.limite==='ilimitado')el.textContent=`Plano ${check.plano} — usuários ilimitados.`;
+    else el.innerHTML=`Plano <b>${check.plano}</b> — ${check.usados} de ${check.limite} usuário(s) em uso${check.usados>=check.limite?' <span style="color:#ef4444">(limite atingido)</span>':''}.`;
+  }
+}
+function renderEquipe(){
+  eqPopularSelects();
+  eqRenderAvisos();
+  eqRenderMembros();
+  renderCronograma();
+  renderListaComprasUI();
+  eqAtualizarIndicadorUso();
 }
 
 function salvarOrcamento(){
