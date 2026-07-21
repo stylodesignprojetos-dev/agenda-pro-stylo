@@ -1854,19 +1854,19 @@ select.form-control option{background:var(--surface2);}
 
       <!-- PLANOS -->
       <div class="page" id="page-planos">
-        <div class="page-header"><div class="page-title"><h1>Planos & Assinaturas</h1><p>Escolha conforme o tamanho da sua equipe</p></div></div>
+        <div class="page-header"><div class="page-title"><h1>Planos & Assinaturas</h1><p>Simples e direto — escolha conforme o tamanho da sua equipe</p></div></div>
         <div class="plans-grid">
           <div class="plan-card">
-            <div class="plan-name">Starter</div>
+            <div class="plan-name">Essencial</div>
             <div class="plan-price">R$ 39,90</div><div class="plan-period">/mês</div>
             <div class="plan-features">
               <div class="plan-feature">1 usuário</div>
-              <div class="plan-feature">Projetos ilimitados</div>
-              <div class="plan-feature">CRM de clientes</div>
-              <div class="plan-feature">Orçamento + Plano de Corte</div>
-              <div class="plan-feature">Suporte por e-mail</div>
+              <div class="plan-feature">Agenda</div>
+              <div class="plan-feature">Clientes</div>
+              <div class="plan-feature">Projetos</div>
+              <div class="plan-feature">Orçamentos</div>
             </div>
-            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Starter')">Assinar Starter</button>
+            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Essencial')">Assinar Essencial</button>
           </div>
           <div class="plan-card featured">
             <div class="plan-badge">Mais escolhido</div>
@@ -1874,44 +1874,25 @@ select.form-control option{background:var(--surface2);}
             <div class="plan-price">R$ 79,90</div><div class="plan-period">/mês</div>
             <div class="plan-features">
               <div class="plan-feature">Até 5 usuários</div>
-              <div class="plan-feature">Todos os recursos</div>
-              <div class="plan-feature">Cargos e permissões</div>
-              <div class="plan-feature">Relatórios avançados</div>
-              <div class="plan-feature">Suporte prioritário</div>
+              <div class="plan-feature">Tudo do Essencial</div>
+              <div class="plan-feature">Estoque</div>
+              <div class="plan-feature">Equipe & Cronograma</div>
+              <div class="plan-feature">Financeiro</div>
+              <div class="plan-feature">Plano de Corte</div>
             </div>
             <button class="btn-primary" style="width:100%" onclick="assinarPlano('Profissional')">Assinar Profissional</button>
           </div>
           <div class="plan-card">
-            <div class="plan-name">Empresa</div>
+            <div class="plan-name">Premium</div>
             <div class="plan-price">R$ 149,90</div><div class="plan-period">/mês</div>
             <div class="plan-features">
               <div class="plan-feature">Até 15 usuários</div>
-              <div class="plan-feature">Tudo do Profissional</div>
-              <div class="plan-feature">Equipe & Cronograma completo</div>
-              <div class="plan-feature">Suporte prioritário</div>
+              <div class="plan-feature">Todos os módulos</div>
+              <div class="plan-feature">Plano de Corte Inteligente</div>
+              <div class="plan-feature">Relatórios avançados</div>
+              <div class="plan-feature">Solicitar Projeto 3D</div>
             </div>
-            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Empresa')">Assinar Empresa</button>
-          </div>
-          <div class="plan-card">
-            <div class="plan-name">Business</div>
-            <div class="plan-price">R$ 249,90</div><div class="plan-period">/mês</div>
-            <div class="plan-features">
-              <div class="plan-feature">Até 30 usuários</div>
-              <div class="plan-feature">Tudo do Empresa</div>
-              <div class="plan-feature">API personalizada</div>
-              <div class="plan-feature">White-label</div>
-            </div>
-            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Business')">Assinar Business</button>
-          </div>
-          <div class="plan-card">
-            <div class="plan-name">Enterprise</div>
-            <div class="plan-price">Sob consulta</div><div class="plan-period">a partir de R$ 399,90/mês</div>
-            <div class="plan-features">
-              <div class="plan-feature">Usuários ilimitados</div>
-              <div class="plan-feature">Tudo do Business</div>
-              <div class="plan-feature">Suporte exclusivo</div>
-            </div>
-            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Enterprise')">Falar com a Stylo</button>
+            <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Premium')">Assinar Premium</button>
           </div>
         </div>
         <div class="chart-box">
@@ -2097,11 +2078,9 @@ select.form-control option{background:var(--surface2);}
             <div class="form-group" style="margin-bottom:10px"><label>E-mail do cliente</label><input class="form-control" id="admEmailLib" placeholder="email@cliente.com"></div>
             <div class="form-group" style="margin-bottom:10px"><label>Plano</label>
               <select class="form-control" id="admPlanoLib">
-                <option value="Starter">Starter — 1 usuário</option>
+                <option value="Essencial">Essencial — 1 usuário</option>
                 <option value="Profissional" selected>Profissional — até 5 usuários</option>
-                <option value="Empresa">Empresa — até 15 usuários</option>
-                <option value="Business">Business — até 30 usuários</option>
-                <option value="Enterprise">Enterprise — usuários ilimitados</option>
+                <option value="Premium">Premium — até 15 usuários</option>
               </select>
             </div>
             <div style="display:flex;gap:8px">
@@ -4018,6 +3997,7 @@ function entrarNoApp(conta){
   } else {
     licencaIniciar();licencaVerificar();registrarUsuario();
     verificarLimiteDispositivos(conta);
+    if(!isAdmin)aplicarBloqueioPlano(conta.email); // admin da Stylo Design sempre vê tudo, sem restrição de plano
   }
   nuvemIniciarAutoSync();
   spAtualizarSino();
@@ -4062,9 +4042,22 @@ function confirmarCodigo(){
 
 // ── NAVEGAÇÃO ──
 let _sidebarOpen=true;
+function paginaBloqueadaPeloPlano(page){
+  if(page==='dashboard'||page==='planos'||page==='admin')return false;
+  const conta=LSJ('conta');if(!conta)return false;
+  if(conta.email==='stylodesignprojetos@gmail.com')return false; // admin da Stylo nunca é bloqueado
+  const ownerEmail=conta.isFuncionario?conta.ownerEmail:conta.email;
+  if(!moduloLiberadoPeloPlano(page,ownerEmail))return true; // plano do dono não inclui esse módulo
+  if(conta.isFuncionario&&!(conta.permissoes||[]).includes(page))return true; // cargo sem essa permissão
+  return false;
+}
 function navTo(page){
   if(PAGINAS_BLOQUEADAS_TRIAL_PARCIAL.includes(page) && contaEmTrialParcial()){
     toast('🔒 Este recurso é bloqueado no teste deste aparelho (já usado antes). Assine um plano para liberar.');
+    page='planos';
+  }
+  if(paginaBloqueadaPeloPlano(page)){
+    toast('🔒 Esse módulo não está disponível no seu plano atual. Veja as opções em Planos.');
     page='planos';
   }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -5406,7 +5399,7 @@ function admLiberar(email,dias){
   const venc=base+dias*86400000;
   const idx=u.findIndex(x=>x.email===email);
   if(idx>=0){u[idx].vencimento=venc;u[idx].emTeste=false;}
-  else u.push({email,vencimento:venc,emTeste:false,plano:'Pro'});
+  else u.push({email,vencimento:venc,emTeste:false,plano:'Profissional'});
   LSJ('usuarios_globais',u);
   admPublicarLiberacaoNuvem(email,venc,(u.find(x=>x.email===email)||{}).plano||'Pro');
   renderAdmin();toast(`✅ ${email} liberado por ${dias} dias`);
@@ -5771,7 +5764,7 @@ async function confirmarPagamento(){
 }
 function liberarAcessoDireto(dias){
   const conta=LSJ('conta');if(!conta)return;
-  const now=Date.now();LSJ('licenca_'+conta.email,{inicio:now,vencimento:now+dias*86400000,trial:false,plano:'Pro'});
+  const now=Date.now();LSJ('licenca_'+conta.email,{inicio:now,vencimento:now+dias*86400000,trial:false,plano:'Profissional'});
   fecharModal('modalBloqueado');toast(`✅ Acesso liberado por ${dias} dias!`);
 }
 async function liberarPorEmail(dias){
@@ -5944,9 +5937,9 @@ function nuvemSincronizarAgora(){toast('🔄 Sincronizando...');nuvemPuxarAgora(
 
 // ── LIMITE DE ACESSOS POR PLANO (dispositivos por e-mail) ──
 // Quantos APARELHOS podem usar o MESMO login (anti-compartilhamento de senha) — por plano
-const PLANO_LIMITES = { 'Starter': 1, 'Profissional': 3, 'Empresa': 5, 'Business': 8, 'Enterprise': 999 };
+const PLANO_LIMITES = { 'Essencial': 1, 'Profissional': 3, 'Premium': 5 };
 // Quantos USUÁRIOS (dono + funcionários com login próprio) a empresa pode ter — por plano
-const PLANO_LIMITE_USUARIOS = { 'Starter': 1, 'Profissional': 5, 'Empresa': 15, 'Business': 30, 'Enterprise': Infinity };
+const PLANO_LIMITE_USUARIOS = { 'Essencial': 1, 'Profissional': 5, 'Premium': 15 };
 const EMAIL_ADMIN = 'stylodesignprojetos@gmail.com';
 const ADMIN_DEVICE_LIMIT = 4; // admin: titular (PC) + até 3 extras = 4 no total, sem limite de dias
 
@@ -7648,6 +7641,35 @@ const EQ_MODULOS={
   planoCorte:'Plano de Corte',materiais:'Materiais',tabelaPrecos:'Tabela de Preços',
   planos:'Planos',configuracoes:'Configurações',
 };
+
+// ══════════════════════════════════════════════════════
+// BLOQUEIO DE MÓDULOS POR PLANO (Essencial / Profissional / Premium)
+// dashboard, planos e configuracoes ficam sempre liberados (gestão básica da conta).
+// ══════════════════════════════════════════════════════
+const PLANO_MODULOS={
+  Essencial:['dashboard','clientes','projetos','orcamentos','calendario','planos','configuracoes'],
+  Profissional:['dashboard','clientes','projetos','orcamentos','calendario','estoque','equipe','financeiro','planoCorte','materiais','tabelaPrecos','planos','configuracoes'],
+  Premium:Object.keys(EQ_MODULOS), // todos os módulos
+};
+// Durante o Trial libera tudo, pra a pessoa poder conhecer o sistema completo nos 7 dias
+function modulosLiberadosPeloPlano(ownerEmail){
+  const lic=LSJ('licenca_'+ownerEmail)||{};
+  const plano=lic.plano||'Trial';
+  return PLANO_MODULOS[plano]||Object.keys(EQ_MODULOS); // Trial (ou plano desconhecido) = tudo liberado
+}
+function moduloLiberadoPeloPlano(pageId,ownerEmail){
+  return modulosLiberadosPeloPlano(ownerEmail).includes(pageId);
+}
+// Esconde no menu lateral os módulos que o plano do DONO não inclui
+function aplicarBloqueioPlano(ownerEmail){
+  const liberados=new Set(modulosLiberadosPeloPlano(ownerEmail));
+  document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
+    const page=el.dataset.page;
+    if(page==='admin')return; // painel admin é assunto à parte, não entra nessa regra
+    if(!liberados.has(page))el.style.display='none';
+  });
+}
+
 const EQ_CARGO_PRESETS={
   Administrador:Object.keys(EQ_MODULOS), // vê tudo, exceto o painel Admin (que é exclusivo da Stylo Design)
   Projetista:['dashboard','clientes','projetos','orcamentos','calendario','planoCorte','materiais','tabelaPrecos','solicitarProjeto'],
@@ -7762,10 +7784,12 @@ async function fazerLoginFuncionario(){
 function aplicarPermissoesFuncionario(conta){
   if(!conta||!conta.isFuncionario)return;
   const permitido=new Set(conta.permissoes||[]);
+  const liberadosPeloPlano=new Set(modulosLiberadosPeloPlano(conta.ownerEmail));
   document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
     const page=el.dataset.page;
     if(page==='admin')return; // painel admin nunca aparece pra funcionário, isso já é tratado à parte
-    el.style.display=permitido.has(page)?'':'none';
+    // Só aparece se o CARGO tem permissão E o plano do dono inclui esse módulo
+    el.style.display=(permitido.has(page)&&liberadosPeloPlano.has(page))?'':'none';
   });
 }
 
