@@ -436,6 +436,7 @@ select.form-control option{background:var(--surface2);}
         <button class="nav-item" onclick="navTo('estoque')" data-page="estoque"><span class="ico">📦</span>Estoque</button>
         <button class="nav-item" onclick="navTo('equipe')" data-page="equipe"><span class="ico">👷</span>Equipe & Cronograma</button>
         <button class="nav-item" onclick="navTo('solicitarProjeto')" data-page="solicitarProjeto"><span class="ico">📐</span>Solicitar Projeto 3D</button>
+        <button class="nav-item" onclick="navTo('agendaProIA')" data-page="agendaProIA"><span class="ico">🤖</span>Agenda PRO IA</button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Sistema</div>
@@ -1852,6 +1853,24 @@ select.form-control option{background:var(--surface2);}
         </div>
       </div>
 
+      <!-- AGENDA PRO IA -->
+      <div class="page" id="page-agendaProIA">
+        <div class="page-header">
+          <div class="page-title"><h1>🤖 Agenda PRO IA</h1><p>Seu assistente inteligente de marcenaria</p></div>
+        </div>
+        <div class="chart-box" style="text-align:center;padding:50px 20px">
+          <div style="font-size:48px;margin-bottom:16px">🤖✨</div>
+          <h2 style="color:var(--accent);margin-bottom:10px">Em breve!</h2>
+          <p style="max-width:480px;margin:0 auto;color:var(--text2);font-size:14px;line-height:1.7">
+            O Agenda PRO IA vai responder perguntas como <i>"Quanto cobrar nessa cozinha?"</i>,
+            <i>"Quantas chapas eu preciso?"</i> ou <i>"Como reduzir o desperdício desse plano de corte?"</i>,
+            usando os dados reais do seu negócio. Estamos com esse módulo já reservado pra você —
+            assim que a Stylo Design ativar o assistente, ele aparece automaticamente aqui, sem
+            precisar fazer nada.
+          </p>
+        </div>
+      </div>
+
       <!-- PLANOS -->
       <div class="page" id="page-planos">
         <div class="page-header"><div class="page-title"><h1>Planos & Assinaturas</h1><p>Simples e direto — escolha conforme o tamanho da sua equipe</p></div></div>
@@ -1865,6 +1884,7 @@ select.form-control option{background:var(--surface2);}
               <div class="plan-feature">Clientes</div>
               <div class="plan-feature">Projetos</div>
               <div class="plan-feature">Orçamentos</div>
+              <div class="plan-feature">Solicitar Projeto 3D</div>
             </div>
             <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Essencial')">Assinar Essencial</button>
           </div>
@@ -1894,6 +1914,32 @@ select.form-control option{background:var(--surface2);}
             </div>
             <button class="btn-secondary" style="width:100%" onclick="assinarPlano('Premium')">Assinar Premium</button>
           </div>
+        </div>
+        <div class="chart-box" style="border:1px solid var(--accent);margin-bottom:20px">
+          <div class="chart-title" style="margin-bottom:4px">🛠️ Monte seu Plano</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Comece pelo básico e adicione só os módulos que a sua marcenaria realmente precisa.</p>
+          <div class="orc-row col2">
+            <div class="chart-box" style="padding:14px">
+              <b style="font-size:13px">Base — R$ 39,90/mês</b>
+              <p style="font-size:12px;color:var(--text2);margin-top:4px">1 usuário · Agenda, Clientes, Projetos, Orçamentos e Solicitar Projeto 3D</p>
+            </div>
+            <div class="chart-box" style="padding:14px">
+              <b style="font-size:13px">Usuários adicionais</b>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+                <input type="number" id="mpQtdExtra" value="0" min="0" style="width:70px" class="form-control" oninput="mpAtualizarTotal()">
+                <span style="font-size:12px;color:var(--text2)">× R$ 12,90/mês cada</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px">
+            <b style="font-size:13px">Módulos opcionais</b>
+            <div id="mpModulosGrid" class="orc-row col3" style="margin-top:8px;font-size:13px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:14px;background:rgba(201,168,76,0.08);border-radius:8px">
+            <span style="font-size:14px">Total mensal estimado</span>
+            <b id="mpTotalPreco" style="font-size:22px;color:var(--accent)">R$ 39,90</b>
+          </div>
+          <button class="btn-primary" style="margin-top:12px" onclick="assinarPlanoPersonalizado()">Assinar Plano Personalizado</button>
         </div>
         <div class="chart-box">
           <div class="chart-title" style="margin-bottom:14px">Assinaturas ativas</div>
@@ -2070,6 +2116,16 @@ select.form-control option{background:var(--surface2);}
           <div class="stat-card red"><div class="stat-icon">⏰</div><div class="stat-val" id="adm-venc">0</div><div class="stat-label">Vencidos</div></div>
           <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-val" id="adm-rmes">R$ 0</div><div class="stat-label">Receita mensal</div></div>
           <div class="stat-card purple"><div class="stat-icon">📊</div><div class="stat-val" id="adm-rtot">R$ 0</div><div class="stat-label">Receita total</div></div>
+        </div>
+        <div class="chart-box" style="margin-bottom:20px;border:1px solid var(--accent)">
+          <div class="chart-title">🛠️ Aplicar Plano Personalizado ("Monte seu Plano")</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Use isso quando um cliente pagar o plano personalizado — confirme com ele quais módulos e quantos usuários extras, e aplique aqui.</p>
+          <div class="orc-row col2">
+            <div class="orc-field"><label>E-mail do cliente</label><input class="form-control" id="admEmailPersonalizado" placeholder="email@cliente.com"></div>
+            <div class="orc-field"><label>Usuários extras (além do titular)</label><input class="form-control" type="number" id="admQtdExtraPersonalizado" value="0" min="0"></div>
+          </div>
+          <div id="admModulosPersonalizadoGrid" class="orc-row col3" style="font-size:12px;margin:10px 0"></div>
+          <button class="btn-primary" onclick="admAplicarPlanoPersonalizado()">💾 Aplicar Plano Personalizado (1 ano)</button>
         </div>
         <div class="two-col" style="margin-bottom:20px">
           <div class="chart-box"><div class="chart-title">Planos</div><div id="admChartPlanos" style="padding:4px 0"></div></div>
@@ -3978,7 +4034,7 @@ function fazerLogin(){
   if(conta.senha!==senha){err.textContent='❌ Senha incorreta.';return;}
   err.textContent='';entrarNoApp(conta);
 }
-function entrarNoApp(conta){
+async function entrarNoApp(conta){
   LS('sessao','1');
   setEl('userNome',conta.user||conta.email);
   const av=document.getElementById('userAvatar');
@@ -3995,7 +4051,7 @@ function entrarNoApp(conta){
     // Funcionário usa a conta/plano do dono — sem licença/trial própria e sem contar no limite de dispositivos do dono
     aplicarPermissoesFuncionario(conta);
   } else {
-    licencaIniciar();licencaVerificar();registrarUsuario();
+    await licencaIniciar();licencaVerificar();registrarUsuario();
     verificarLimiteDispositivos(conta);
     if(!isAdmin)aplicarBloqueioPlano(conta.email); // admin da Stylo Design sempre vê tudo, sem restrição de plano
   }
@@ -5350,6 +5406,7 @@ function renderIndicadoresFinanceiros(){
 function renderAdmin(){
   const conta=LSJ('conta');
   if(!conta||conta.email!=='stylodesignprojetos@gmail.com'){toast('⛔ Acesso restrito');navTo('dashboard');return;}
+  admRenderModulosPersonalizado();
   const usuarios=LSJ('usuarios_globais')||[];
   const now=Date.now();
   setEl('adm-total',usuarios.length);
@@ -5411,8 +5468,36 @@ function renderPlanos(){
   const tbody=document.getElementById('tabelaAssinaturas');
   if(!tbody)return;
   tbody.innerHTML=assinaturas.length?assinaturas.map(a=>`<tr><td>${a.email}</td><td>${a.plano}</td><td>${new Date(a.vencimento).toLocaleDateString('pt-BR')}</td><td><span class="tag ${Date.now()<a.vencimento?'status-fechado':'status-perdido'}">${Date.now()<a.vencimento?'Ativa':'Vencida'}</span></td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:30px">Sem assinaturas</td></tr>';
+  mpRenderModulos();
 }
 function assinarPlano(plano){window.open('https://mpago.li/2ax46gC','_blank');toast(`💳 Abrindo pagamento ${plano}...`);}
+
+// ── MONTE SEU PLANO (plano personalizado, módulos avulsos) ──
+function mpRenderModulos(){
+  const el=document.getElementById('mpModulosGrid');if(!el)return;
+  el.innerHTML=Object.entries(MODULOS_OPCIONAIS_PRECOS).map(([id,m])=>`
+    <label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+      <input type="checkbox" class="mp-modulo-check" value="${id}" onchange="mpAtualizarTotal()">
+      <span style="flex:1">${m.label}</span>
+      <b style="color:var(--accent2);white-space:nowrap">+${formatBRL(m.preco)}</b>
+    </label>`).join('');
+  mpAtualizarTotal();
+}
+function mpAtualizarTotal(){
+  const qtdExtra=parseInt(document.getElementById('mpQtdExtra')?.value)||0;
+  const marcados=Array.from(document.querySelectorAll('.mp-modulo-check:checked')).map(c=>c.value);
+  let total=PLANO_PERSONALIZADO_BASE_PRECO+qtdExtra*PLANO_PERSONALIZADO_USUARIO_EXTRA_PRECO;
+  marcados.forEach(id=>{total+=MODULOS_OPCIONAIS_PRECOS[id].preco;});
+  const el=document.getElementById('mpTotalPreco');if(el)el.textContent=formatBRL(total);
+  return{qtdExtra,marcados,total};
+}
+function assinarPlanoPersonalizado(){
+  const {qtdExtra,marcados,total}=mpAtualizarTotal();
+  const nomesModulos=marcados.map(id=>MODULOS_OPCIONAIS_PRECOS[id].label).join(', ')||'nenhum módulo extra';
+  window.open('https://mpago.li/2ax46gC','_blank');
+  toast(`💳 Plano personalizado: ${formatBRL(total)}/mês`);
+  alert(`Seu plano personalizado ficou assim:\n\n👤 ${1+qtdExtra} usuário(s)\n🧩 Módulos extras: ${nomesModulos}\n💰 Total: ${formatBRL(total)}/mês\n\nApós o pagamento, envie esse resumo pra Stylo Design confirmar a liberação do seu plano.`);
+}
 
 // ── CONFIGURAÇÕES ──
 // ══════════════ MATERIAIS: MDF + PUXADORES ══════════════
@@ -5657,7 +5742,10 @@ async function licencaPuxarAdminNuvem(){
     if(!over)return;
     const atual=LSJ('licenca_'+conta.email)||{};
     if(!atual._adminAplicadoEm || over.aplicadoEm>atual._adminAplicadoEm){
-      LSJ('licenca_'+conta.email,{...atual,vencimento:over.vencimento,plano:over.plano,trial:false,parcial:false,_adminAplicadoEm:over.aplicadoEm});
+      const extra={};
+      if(over.modulosExtras)extra.modulosExtras=over.modulosExtras;
+      if(over.limiteUsuarios)extra.limiteUsuarios=over.limiteUsuarios;
+      LSJ('licenca_'+conta.email,{...atual,vencimento:over.vencimento,plano:over.plano,trial:false,parcial:false,_adminAplicadoEm:over.aplicadoEm,...extra});
     }
   }catch(e){console.warn('Licença: falha ao verificar liberação do admin',e);}
 }
@@ -5767,6 +5855,32 @@ function liberarAcessoDireto(dias){
   const now=Date.now();LSJ('licenca_'+conta.email,{inicio:now,vencimento:now+dias*86400000,trial:false,plano:'Profissional'});
   fecharModal('modalBloqueado');toast(`✅ Acesso liberado por ${dias} dias!`);
 }
+function admRenderModulosPersonalizado(){
+  const el=document.getElementById('admModulosPersonalizadoGrid');if(!el)return;
+  el.innerHTML=Object.entries(MODULOS_OPCIONAIS_PRECOS).map(([id,m])=>`
+    <label style="display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer">
+      <input type="checkbox" class="adm-mp-check" value="${id}">
+      ${m.label} <span style="color:var(--text2)">(+${formatBRL(m.preco)})</span>
+    </label>`).join('');
+}
+async function admAplicarPlanoPersonalizado(){
+  const email=document.getElementById('admEmailPersonalizado')?.value.trim();
+  const qtdExtra=parseInt(document.getElementById('admQtdExtraPersonalizado')?.value)||0;
+  if(!email){toast('⚠️ Informe o e-mail do cliente');return;}
+  const marcados=Array.from(document.querySelectorAll('.adm-mp-check:checked')).map(c=>c.value);
+  let modulosExtras=[...MODULOS_BASE_PERSONALIZADO];
+  marcados.forEach(id=>{MODULOS_OPCIONAIS_PRECOS[id].modulos.forEach(m=>{if(!modulosExtras.includes(m))modulosExtras.push(m);});});
+  const now=Date.now();
+  LSJ('licenca_'+email,{inicio:now,vencimento:now+365*86400000,trial:false,plano:'Personalizado',modulosExtras,limiteUsuarios:1+qtdExtra});
+  let u=LSJ('usuarios_globais')||[];
+  const idx=u.findIndex(x=>x.email===email);
+  const info={email,vencimento:now+365*86400000,emTeste:false,plano:'Personalizado'};
+  if(idx>=0)u[idx]={...u[idx],...info};else u.push(info);
+  LSJ('usuarios_globais',u);
+  await admPublicarLiberacaoNuvem(email,now+365*86400000,'Personalizado',{modulosExtras,limiteUsuarios:1+qtdExtra});
+  renderAdmin();
+  toast(`✅ Plano personalizado aplicado pra ${email}!`);
+}
 async function liberarPorEmail(dias){
   const el=document.getElementById('admEmailLib');const email=el?.value.trim();
   const planoEl=document.getElementById('admPlanoLib');const plano=planoEl?.value||'Pro';
@@ -5800,12 +5914,12 @@ async function nuvemAtualizarComRetry(mutatorFn,verificarFn,tentativas=4){
   }
   return false;
 }
-async function admPublicarLiberacaoNuvem(email,vencimento,plano){
+async function admPublicarLiberacaoNuvem(email,vencimento,plano,extras){
   try{
     await nuvemAtualizarComRetry(
       record=>{
         record.licencasAdmin=record.licencasAdmin||{};
-        record.licencasAdmin[email]={vencimento,plano,aplicadoEm:Date.now()};
+        record.licencasAdmin[email]={vencimento,plano,aplicadoEm:Date.now(),...(extras||{})};
       },
       record=>!!(record.licencasAdmin&&record.licencasAdmin[email]&&record.licencasAdmin[email].vencimento===vencimento)
     );
@@ -7639,22 +7753,41 @@ const EQ_MODULOS={
   financeiro:'Financeiro',kanban:'Kanban',calendario:'Calendário',relatorios:'Relatórios',
   estoque:'Estoque',equipe:'Equipe & Cronograma',solicitarProjeto:'Solicitar Projeto 3D',
   planoCorte:'Plano de Corte',materiais:'Materiais',tabelaPrecos:'Tabela de Preços',
-  planos:'Planos',configuracoes:'Configurações',
+  planos:'Planos',configuracoes:'Configurações',agendaProIA:'Agenda PRO IA',
 };
 
 // ══════════════════════════════════════════════════════
-// BLOQUEIO DE MÓDULOS POR PLANO (Essencial / Profissional / Premium)
-// dashboard, planos e configuracoes ficam sempre liberados (gestão básica da conta).
+// BLOQUEIO DE MÓDULOS POR PLANO (Essencial / Profissional / Premium / Personalizado)
+// dashboard, planos, configuracoes e solicitarProjeto ficam sempre liberados em TODOS os
+// planos — Solicitar Projeto 3D é o canal direto com a Stylo Design, disponível pra todo mundo.
 // ══════════════════════════════════════════════════════
+const MODULOS_SEMPRE_LIBERADOS=['dashboard','planos','configuracoes','solicitarProjeto'];
 const PLANO_MODULOS={
-  Essencial:['dashboard','clientes','projetos','orcamentos','calendario','planos','configuracoes'],
-  Profissional:['dashboard','clientes','projetos','orcamentos','calendario','estoque','equipe','financeiro','planoCorte','materiais','tabelaPrecos','planos','configuracoes'],
+  Essencial:['dashboard','clientes','projetos','orcamentos','calendario','solicitarProjeto','planos','configuracoes'],
+  Profissional:['dashboard','clientes','projetos','orcamentos','calendario','estoque','equipe','financeiro','planoCorte','materiais','tabelaPrecos','solicitarProjeto','planos','configuracoes'],
   Premium:Object.keys(EQ_MODULOS), // todos os módulos
 };
+// Base do plano "Monte seu Plano" (Personalizado) — igual ao Essencial, e os módulos extras
+// escolhidos pelo cliente são somados a essa base (ver montarPlanoPersonalizado()).
+const MODULOS_BASE_PERSONALIZADO=['dashboard','clientes','projetos','orcamentos','calendario','solicitarProjeto','planos','configuracoes'];
+// Módulos opcionais que o cliente pode comprar avulsos no "Monte seu Plano"
+const MODULOS_OPCIONAIS_PRECOS={
+  estoque:{label:'📦 Estoque Inteligente',preco:19.90,modulos:['estoque','materiais','tabelaPrecos']},
+  agendaProIA:{label:'🤖 Agenda PRO IA',preco:29.90,modulos:['agendaProIA']},
+  planoCorte:{label:'🪵 Plano de Corte Inteligente',preco:39.90,modulos:['planoCorte']},
+  financeiro:{label:'📊 Financeiro Completo',preco:19.90,modulos:['financeiro']},
+  equipe:{label:'👷 Equipe & Cronograma',preco:14.90,modulos:['equipe']},
+  kanban:{label:'🗂️ Kanban',preco:9.90,modulos:['kanban']},
+  relatorios:{label:'📈 Relatórios Avançados',preco:14.90,modulos:['relatorios']},
+};
+const PLANO_PERSONALIZADO_BASE_PRECO=39.90;
+const PLANO_PERSONALIZADO_USUARIO_EXTRA_PRECO=12.90;
+
 // Durante o Trial libera tudo, pra a pessoa poder conhecer o sistema completo nos 7 dias
 function modulosLiberadosPeloPlano(ownerEmail){
   const lic=LSJ('licenca_'+ownerEmail)||{};
   const plano=lic.plano||'Trial';
+  if(plano==='Personalizado')return lic.modulosExtras||MODULOS_BASE_PERSONALIZADO;
   return PLANO_MODULOS[plano]||Object.keys(EQ_MODULOS); // Trial (ou plano desconhecido) = tudo liberado
 }
 function moduloLiberadoPeloPlano(pageId,ownerEmail){
@@ -7751,8 +7884,8 @@ function eqChecarLimitePlano(){
   const ownerEmail=conta?.isFuncionario?conta.ownerEmail:conta?.email;
   const lic=LSJ('licenca_'+ownerEmail)||{};
   const plano=lic.plano||'Trial';
-  const limite=PLANO_LIMITE_USUARIOS[plano];
-  if(!limite||limite===Infinity)return{ok:true,plano,limite:'ilimitado',usados:0}; // Trial ou Enterprise: sem checagem
+  const limite=plano==='Personalizado'?(lic.limiteUsuarios||1):PLANO_LIMITE_USUARIOS[plano];
+  if(!limite||limite===Infinity)return{ok:true,plano,limite:'ilimitado',usados:0}; // Trial ou plano sem limite: sem checagem
   const comLogin=getEquipeMembros().filter(m=>m.email).length;
   const usados=1+comLogin; // 1 = o dono
   return{ok:usados<limite,plano,limite,usados};
