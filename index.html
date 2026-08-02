@@ -6247,7 +6247,7 @@ function nuvemSincronizarAgora(){toast('🔄 Sincronizando...');nuvemPuxarAgora(
 // (ver worker-caixa-kv.js) — se não estiver configurado ainda, essas chamadas
 // falham em silêncio e o financeiro simplesmente continua só local, sem quebrar
 // o resto do app.
-const CAIXA_SYNC_URL = NUVEM_PROXY_URL.replace(/\/dados$/,'')+'/caixa';
+const CAIXA_SYNC_URL_FN = ()=>NUVEM_PROXY_URL.replace(/\/dados$/,'')+'/caixa';
 let _caixaProEnvioTimer = null;
 
 function caixaProAgendarEnvio(state){
@@ -6258,14 +6258,14 @@ function caixaProAgendarEnvio(state){
 async function caixaProEnviarNuvem(state){
   const email=chaveContaNuvem();if(!email)return;
   try{
-    await fetch(CAIXA_SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,state})});
+    await fetch(CAIXA_SYNC_URL_FN(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,state})});
   }catch(e){console.error('Falha ao sincronizar financeiro',e);}
 }
 
 async function caixaProReceberNuvem(){
   const email=chaveContaNuvem();if(!email)return;
   try{
-    const r=await fetch(CAIXA_SYNC_URL+'?email='+encodeURIComponent(email));
+    const r=await fetch(CAIXA_SYNC_URL_FN()+'?email='+encodeURIComponent(email));
     if(!r.ok)return;
     const remoto=await r.json();
     if(!remoto||!remoto.atualizadoEm)return;
