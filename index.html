@@ -5091,7 +5091,11 @@ function _caixaProDecode(){
 // mandamos a lista de clientes + o estado mais recente vindo da nuvem, e
 // recebemos de volta o estado toda vez que ele salva algo, pra sincronizar.
 function getCaixaProState(){return LSJ('ap2_caixapro_state');}
-function setCaixaProState(v){LSJ('ap2_caixapro_state',v);if(!_nuvemAplicandoRemoto)nuvemAgendarEnvio();}
+function setCaixaProState(v){LSJ('ap2_caixapro_state',v);caixaProAgendarEnvio(v);}
+// NOTA: o financeiro (C.A.I.X.A. PRO) sincroniza agora por uma via separada
+// (Cloudflare KV, funções caixaProAgendarEnvio/caixaProReceberNuvem mais abaixo)
+// em vez de ir junto no pacote grande — isso evitou o erro 500 por estourar
+// o limite de 1MB do JSONBin.
 function _caixaProClientesResumo(){
   return getClientes().map(c=>({id:c.id,nome:c.nome}));
 }
@@ -6170,7 +6174,6 @@ function nuvemEmpacotarDados(){
   return {clientes:getClientes(),projetos:getProjetos(),lancamentos:getLanc(),eventos:getEventos(),
     equipeMembros:getEquipeMembros(),avisos:getAvisos(),cronograma:getCronograma(),listaCompras:getListaCompras(),estoqueGenerico:getEstoqueGenerico(),
     materiaisMDF:LSJ(chaveMateriais())||[],puxadores:LSJ(chavePuxadores())||[],
-    caixaPro:getCaixaProState(),
     atualizadoEm:Date.now()};
 }
 
@@ -6212,7 +6215,7 @@ async function nuvemPuxarAgora(){
     setEstoqueGenerico(remoto.estoqueGenerico||[]);
     LSJ(chaveMateriais(),remoto.materiaisMDF||[]);
     LSJ(chavePuxadores(),remoto.puxadores||[]);
-    if(remoto.caixaPro) setCaixaProState(remoto.caixaPro);
+    if(remoto.caixaPro){/* financeiro não sincroniza mais em nuvem por enquanto — ver nota acima */}
     _nuvemAplicandoRemoto=false;
     LS('nuvemVersao_'+email,String(remoto.atualizadoEm));
     nuvemAtualizarTelas();
@@ -6230,11 +6233,50 @@ function nuvemAtualizarTelas(){
 
 function nuvemIniciarAutoSync(){
   nuvemPuxarAgora();
+  caixaProReceberNuvem();
   clearInterval(_nuvemSyncInterval);
-  _nuvemSyncInterval=setInterval(nuvemPuxarAgora,NUVEM_INTERVALO_MS);
+  _nuvemSyncInterval=setInterval(()=>{nuvemPuxarAgora();caixaProReceberNuvem();},NUVEM_INTERVALO_MS);
 }
 function nuvemPararAutoSync(){clearInterval(_nuvemSyncInterval);_nuvemSyncInterval=null;}
-function nuvemSincronizarAgora(){toast('🔄 Sincronizando...');nuvemPuxarAgora();}
+function nuvemSincronizarAgora(){toast('🔄 Sincronizando...');nuvemPuxarAgora();caixaProReceberNuvem();}
+
+// ── SINCRONIZAÇÃO DO FINANCEIRO (C.A.I.X.A. PRO) — gaveta separada no Cloudflare KV ──
+// O financeiro tem histórico próprio (transações, contas a pagar/receber) que
+// cresce bastante, por isso guarda separado do pacote principal (que fica no
+// JSONBin com limite de 1MB). Precisa do endpoint /caixa configurado no Worker
+// (ver worker-caixa-kv.js) — se não estiver configurado ainda, essas chamadas
+// falham em silêncio e o financeiro simplesmente continua só local, sem quebrar
+// o resto do app.
+const CAIXA_SYNC_URL = NUVEM_PROXY_URL.replace(/\/dados$/,'')+'/caixa';
+let _caixaProEnvioTimer = null;
+
+function caixaProAgendarEnvio(state){
+  clearTimeout(_caixaProEnvioTimer);
+  _caixaProEnvioTimer=setTimeout(()=>caixaProEnviarNuvem(state),2000);
+}
+
+async function caixaProEnviarNuvem(state){
+  const email=chaveContaNuvem();if(!email)return;
+  try{
+    await fetch(CAIXA_SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,state})});
+  }catch(e){console.error('Falha ao sincronizar financeiro',e);}
+}
+
+async function caixaProReceberNuvem(){
+  const email=chaveContaNuvem();if(!email)return;
+  try{
+    const r=await fetch(CAIXA_SYNC_URL+'?email='+encodeURIComponent(email));
+    if(!r.ok)return;
+    const remoto=await r.json();
+    if(!remoto||!remoto.atualizadoEm)return;
+    const local=getCaixaProState();
+    const localAtualizadoEm=(local&&local.atualizadoEm)||0;
+    if(remoto.atualizadoEm>localAtualizadoEm){
+      LSJ('ap2_caixapro_state',remoto);
+      _caixaProEnviarInit();
+    }
+  }catch(e){console.error('Falha ao buscar financeiro da nuvem',e);}
+}
 
 // ── LIMITE DE ACESSOS POR PLANO (dispositivos por e-mail) ──
 // Quantos APARELHOS podem usar o MESMO login (anti-compartilhamento de senha) — por plano
