@@ -6186,20 +6186,26 @@ async function nuvemEnviarAgora(){
   const email=chaveContaNuvem();if(!email)return;
   nuvemSetStatus('enviando');
   const pacote=nuvemEmpacotarDados();
-  const ok=await nuvemAtualizarComRetry(
-    record=>{record.dadosApp=record.dadosApp||{};record.dadosApp[email]=pacote;},
-    record=>!!(record.dadosApp&&record.dadosApp[email]&&record.dadosApp[email].atualizadoEm===pacote.atualizadoEm)
-  );
-  if(ok){LS('nuvemVersao_'+email,String(pacote.atualizadoEm));nuvemSetStatus('ok');}
-  else nuvemSetStatus('erro');
+  try{
+    const r=await fetch(_meusDadosSyncUrl(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,pacote})});
+    if(r.ok){LS('nuvemVersao_'+email,String(pacote.atualizadoEm));nuvemSetStatus('ok');}
+    else nuvemSetStatus('erro');
+  }catch(e){nuvemSetStatus('erro');}
 }
+
+// URL do endpoint que guarda os dados de cada usuário separado no Cloudflare KV
+// (em vez do JSONBin compartilhado, que estourou a cota de 10.000 requisições).
+function _meusDadosSyncUrl(){return NUVEM_PROXY_URL.replace(/\/dados$/,'')+'/meudados';}
 
 async function nuvemPuxarAgora(){
   const email=chaveContaNuvem();if(!email)return;
   nuvemSetStatus('recebendo');
-  const record=await jbLerRegistro();
-  if(record===null){nuvemSetStatus('erro');return;}
-  const remoto=record.dadosApp&&record.dadosApp[email];
+  let remoto=null;
+  try{
+    const r=await fetch(_meusDadosSyncUrl()+'?email='+encodeURIComponent(email));
+    if(r.ok) remoto=await r.json();
+    else {nuvemSetStatus('erro');return;}
+  }catch(e){nuvemSetStatus('erro');return;}
   if(!remoto){nuvemAgendarEnvio();nuvemSetStatus('ok');return;} // nada na nuvem ainda: envia os dados locais pra começar
   const versaoLocal=Number(LS('nuvemVersao_'+email)||0);
   if(remoto.atualizadoEm>versaoLocal){
@@ -6215,7 +6221,6 @@ async function nuvemPuxarAgora(){
     setEstoqueGenerico(remoto.estoqueGenerico||[]);
     LSJ(chaveMateriais(),remoto.materiaisMDF||[]);
     LSJ(chavePuxadores(),remoto.puxadores||[]);
-    if(remoto.caixaPro){/* financeiro não sincroniza mais em nuvem por enquanto — ver nota acima */}
     _nuvemAplicandoRemoto=false;
     LS('nuvemVersao_'+email,String(remoto.atualizadoEm));
     nuvemAtualizarTelas();
