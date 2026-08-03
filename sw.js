@@ -50,9 +50,73 @@
       igual já fez com o worker-adicionar-lembretes.js.
    ══════════════════════════════════════════════════════════════ */
 
-// Se seu Worker já tem uma constante de CORS com outro nome, reutiliza ela
-// no lugar dessa — o importante é que /caixa responda com os mesmos headers
-// de CORS que o resto do seu Worker já usa, pra o navegador não bloquear.
+/* ══════════════════════════════════════════════════════════════
+   ATUALIZAÇÃO — endpoint /meudados adicionado (migração pra tirar
+   a sincronização principal do JSONBin, que estourou a cota de
+   10.000 requisições). Usa o MESMO KV que você já criou e vinculou
+   pro financeiro (CAIXA_KV) — não precisa criar namespace novo,
+   só reaproveita, com um prefixo de chave diferente ("app:" em vez
+   de "caixa:") pra não misturar os dados.
+
+   Se você já colou a versão anterior deste arquivo no seu Worker,
+   só precisa adicionar a rota nova no fetch e a função
+   tratarRotaMeusDados — o resto (tratarRotaCaixa) continua igual.
+   ══════════════════════════════════════════════════════════════ */
+
+async function tratarRotaMeusDados(request, url, env) {
+  if (request.method === 'GET') {
+    const email = url.searchParams.get('email');
+    if (!email) {
+      return new Response(JSON.stringify({ erro: 'email obrigatório' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    }
+    const salvo = await env.CAIXA_KV.get(`app:${email}`);
+    return new Response(salvo || 'null', {
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+    });
+  }
+
+  if (request.method === 'POST') {
+    try {
+      const body = await request.json();
+      if (!body.email || !body.pacote) {
+        return new Response(JSON.stringify({ erro: 'email e pacote obrigatórios' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+        });
+      }
+      await env.CAIXA_KV.put(`app:${body.email}`, JSON.stringify(body.pacote));
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({ erro: 'JSON inválido' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    }
+  }
+
+  return new Response('Método não permitido', { status: 405, headers: CORS_HEADERS });
+}
+
+/* Lembrete de como fica o roteamento dentro do seu fetch existente:
+
+     if (url.pathname === '/caixa') {
+       return tratarRotaCaixa(request, url, env);
+     }
+     if (url.pathname === '/meudados') {
+       return tratarRotaMeusDados(request, url, env);
+     }
+
+   IMPORTANTE: a rota antiga /dados (que fala com o JSONBin) continua
+   existindo e continua sendo usada — é só pra licenças de admin,
+   catálogo global, e pedidos de projeto 3D, que usam bem pouca cota.
+   NÃO apague o código antigo do /dados, só ADICIONE as rotas novas.
+*/
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
